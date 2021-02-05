@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <!-- Start Gazebo with wg world running in (max) realtime -->
+  <include file="$(find hector_gazebo_worlds)/launch/test1.launch"/>
+
+  <!-- Spawn simulated quadrotor uav -->
+  <include file="$(find hector_quadrotor_gazebo)/launch/spawn_three_quadrotors.launch">
+    <arg name="model" value="$(find hector_quadrotor_description)/urdf/quadrotor_hokuyo_utm30lx.gazebo.xacro"/>
+    <!--arg name="controllers" value="
+        controller/attitude
+        controller/velocity
+        controller/position
+        "/-->
+  </include>
+
+  <!--node pkg="obstacle_avoid" type="filter_scan.py" name="filter_scan" output="screen"/-->
+
+  <node pkg="rosservice" type="rosservice" name="enablemotor_uav1" args="call --wait uav1/enable_motors true"/> 
+  <node pkg="rosservice" type="rosservice" name="enablemotor_uav2" args="call --wait uav2/enable_motors true"/> 
+  <node pkg="rosservice" type="rosservice" name="enablemotor_uav3" args="call --wait uav3/enable_motors true"/> 
+
+  <!--include file="$(find hector_quadrotor_teleop)/launch/xbox_controller.launch" >
+    <arg name="control_mode" value="position"/>
+  </include!-->
+  
+  <!--<node pkg="obstacle_avoid" type="wp_following_k.py" name="wp_followin" output="screen"/>
+  <node pkg="obstacle_avoid" type="waypoint.py" name="waypoint" />-->
+  
+
+</launch>

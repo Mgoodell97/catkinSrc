@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<launch>
+   <!--arg name="model" default="$(find hector_quadrotor_description)/urdf/quadrotor.gazebo.xacro" /-->
+   <arg name="model" value="$(find hector_quadrotor_description)/urdf/quadrotor_hokuyo_utm30lx.gazebo.xacro"/>
+   <group ns="$(arg agent)">
+     <include file="$(find hector_quadrotor_gazebo)/launch/spawn_quadrotor.launch">
+       <arg name="name" value="$(arg agent)" />
+       <arg name="tf_prefix" value="$(arg agent)" />
+       <arg name="model" value="$(arg model)" />
+       <arg name="y" value="$(arg y)" />
+       <arg name="x" value="$(arg x)" />
+     </include>
+   </group>
+
+   <node pkg="rosservice" type="rosservice" name="enablemotor_$(arg agent)" args="call --wait $(arg agent)/enable_motors true"/> 
+
+</launch>
+

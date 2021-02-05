@@ -1,0 +1,13 @@
+string gasID
+float32 percentLEL
+float32 temperature
+float32 pressure
+float32 humidity
+float32 absHumidity
+float32 humidAirDensity
+float32 local_x
+float32 local_y
+float32 local_z
+float64 GPS_latitude
+float64 GPS_longitude
+float32 GPS_altitude

@@ -1,0 +1,135 @@
+/*********************************************************************************************************
+*                                       Copyright Notice
+*
+*********************************************************************************************************/
+
+/*********************************************************************************************************
+*                                  COMMAND & RESPONSE OPERATIONS
+* Filename      : commandResponse.c
+* Version       : V1.0.0
+* Programmers(s): Xiang He
+**********************************************************************************************************
+* Notes         : (1) n/a
+*/
+
+/* Includes ---------------------------------------------------------------------------------------------*/
+#include "commandResponse.h"
+
+/* Defines ----------------------------------------------------------------------------------------------*/
+/* Variables --------------------------------------------------------------------------------------------*/
+/* Functions --------------------------------------------------------------------------------------------*/
+int sendCommand_I2C(uint16_t command, uint8_t *txData, uint16_t txDataLength, int fd){
+  uint8_t *txPacket, begin = 0x7E;
+  uint16_t txPacketLength = txDataLength+10;
+  uint32_t checksumCalc = 0x00000000;
+
+  write(fd, &begin, 1);                                                      /* send start byte */
+
+  txPacket = (uint8_t *) calloc(txPacketLength, sizeof(uint8_t));
+  if(txPacket == NULL){
+    printf("Error allocating memory for tx packet!\n");
+    close(fd);
+    return 1;
+  }
+
+  PUT_U16(&txPacket[0], VERSION);                                            /* set packet version  */
+  PUT_U16(&txPacket[2], command);                                            /* set command code */
+  PUT_U16(&txPacket[4], txDataLength);                                       /* set data length */
+  
+  memcpy(&txPacket[HEADER_LENGTH], txData, txDataLength);                    /* put data in header */
+
+  write(fd, &txPacket[0], HEADER_LENGTH);                                    /* send header */
+  
+  for(int i = 0; i < txPacketLength-4; i++){                                 /* calculate checksum */
+    checksumCalc += txPacket[i];
+  }
+
+  PUT_U32(&txPacket[txPacketLength-4], checksumCalc);                        /* put checksum in packet */
+
+  write(fd, &txPacket[HEADER_LENGTH], txDataLength+4);                       /* send data */
+
+  free(txPacket);                                                            /* free transmit packet memory */
+
+  return 0;                                                                  /* no errors, return 0 */
+}
+
+uint8_t* receiveData_I2C(uint16_t command, uint16_t *rxDataLength, uint32_t timeout, int fd){
+  uint8_t header[HEADER_LENGTH], begin;
+  uint8_t checksum[4];
+  uint32_t checksumCalc = 0x00000000, checksumGiven = 0x00000000;
+  uint16_t version, rxCommand;
+  uint8_t *rxData, *p;
+
+  struct timeval tvstart;
+  struct timeval tvend;
+  double interval;
+  int bytesRead = 0;
+  uint16_t bytesToRead;
+
+  gettimeofday(&tvstart,NULL);
+
+  while(begin != HEADER){
+    read(fd, &begin, 1);                                                    /* receive begin byte */
+    printf("%04x", begin);
+    gettimeofday(&tvend,NULL);
+    interval = tvend.tv_sec - tvstart.tv_sec + 1e-6 * (tvend.tv_usec - tvstart.tv_usec);
+
+    if(interval > timeout){
+      printf("timeout (%d seconds)\n", timeout);
+      return NULL;
+    }
+  }
+
+  read(fd, &header[0], HEADER_LENGTH);                                      /* receive packet header */
+  
+  version = GET_U16(&header[0]);                                            /* get version of packet structure */
+  if(version != VERSION){                                                   /* compare version */
+    printf("version mismatch! (0x%04x)\n0x", version);
+    return NULL;
+  }
+  
+  rxCommand = GET_U16(&header[2]);                                          /* get command code */
+  if(rxCommand != command){                                                 /* compare commands */
+    printf("command mismatch! (0x%04x)\n", rxCommand);
+    return NULL;
+  }
+
+  bytesToRead = *rxDataLength = GET_U16(&header[4]);                        /* get data length */
+  p = rxData = (uint8_t *) calloc(*rxDataLength+4, sizeof(uint8_t));                    /* allocate memory for data */
+  if(rxData == NULL){
+    printf("Error allocating memory for data!\n");
+    return NULL;
+  }
+
+  gettimeofday(&tvstart,NULL);
+  do {
+    bytesRead = read(fd, p, bytesToRead);                                   /* receive packet data */
+    p += bytesRead;
+    bytesToRead -= bytesRead;
+
+    if(bytesToRead != 0) {
+      gettimeofday(&tvend,NULL);
+      interval = tvend.tv_sec - tvstart.tv_sec + 1e-6 * (tvend.tv_usec - tvstart.tv_usec);
+
+      if(interval > timeout){
+        printf("timeout (%d seconds)\n", timeout);
+        return NULL;
+      }
+    }
+  } while (bytesToRead != 0);   /* If not enough data try reading again */
+
+  read(fd, &checksum[0], 4);                                                /* receive packet checksum */
+
+  checksumGiven = GET_U32(checksum);                                        /* get checksum */
+                                              
+  for(int i = 0; i < HEADER_LENGTH; i++) checksumCalc += header[i];         /* calculate checksum */
+  for(int i = 0; i < *rxDataLength; i++) checksumCalc += rxData[i];
+  
+  if(checksumCalc != checksumGiven){                                        /* compare checksum */
+    printf("checksum mismatch! (calc:0x%08x != rec:0x%08x)\n", checksumCalc, checksumGiven);
+    printf("rxDataLength = %d (missing %d bytes)\n", *rxDataLength, bytesToRead);
+    // return NULL;
+  }
+
+  return rxData;
+}

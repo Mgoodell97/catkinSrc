@@ -1,0 +1,9 @@
+<launch>
+	<node pkg="turtlesim" type="turtlesim_node" name="turtlesim" respawn="true" />
+
+	<node pkg="pyagitr" type="pubvel_with_max.py" name="publish_velocity" respawn="true" output="screen">
+		<param name="max_vel" value="0.5" />
+	</node>
+
+	<node pkg="pyagitr" type="set_bg_color.py" name="set_bg_color" />
+</launch>

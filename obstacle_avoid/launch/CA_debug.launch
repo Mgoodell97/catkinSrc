@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<launch>
+
+<rosparam param="bag">1</rosparam>
+<rosparam param="mode">3</rosparam>
+<node pkg="obstacle_avoid" type="open_sim_5_4.py" name="CA" output="screen"/>
+
+
+</launch>

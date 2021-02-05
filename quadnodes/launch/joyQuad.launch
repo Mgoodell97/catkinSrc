@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- MAVROS PX4 SITL and Gazebo -->
+    <include file="$(find px4)/launch/mavros_posix_sitl.launch">
+      <!-- gazebo configs -->
+      <arg name="gui" default="false"/>
+      <!-- vehicle model and world -->
+      <arg name="vehicle" default="iris"/>
+      <arg name="world" default="$(find mavlink_sitl_gazebo)/worlds/empty.world"/>
+
+    </include>
+
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find quad_rviz)/rviz/quad_rviz_basic_config.rviz"/>
+
+    <node name="copter_visualization" pkg="mavros_extras" type="visualization">
+        <param name="num_rotors" value="4"/>
+        <param name="arm_len" value="0.22"/>
+    </node>
+
+    <param name="joy_node/dev" value="/dev/input/js0"/>
+    <node name="joy_node" pkg="joy" type="joy_node"/>
+    <node name="xboxVelControl" pkg="quadnodes" type="xboxVelControl"/>
+
+</launch>

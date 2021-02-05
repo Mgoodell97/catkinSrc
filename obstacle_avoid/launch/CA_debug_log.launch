@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<launch>
+
+   <group ns="agent_1">
+        <node pkg="obstacle_avoid" type="open_sim_5_0.py" name="CA1" output="log"/>
+
+   </group>
+
+</launch>
+

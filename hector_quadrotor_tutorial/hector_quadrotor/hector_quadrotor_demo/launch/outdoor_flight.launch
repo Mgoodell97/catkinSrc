@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <!-- Start Gazebo with wg world running in (max) realtime -->
+  <include file="$(find hector_gazebo_worlds)/launch/test1.launch"/>
+
+  <!-- Spawn simulated quadrotor uav -->
+
+  <!--node pkg="obstacle_avoid" type="filter_scan.py" name="filter_scan" output="screen"/-->
+
+  <!--include file="$(find hector_quadrotor_teleop)/launch/xbox_controller.launch" >
+    <arg name="control_mode" value="position"/>
+  </include!-->
+  
+  <!--<node pkg="obstacle_avoid" type="wp_following_k.py" name="wp_followin" output="screen"/>
+  <node pkg="obstacle_avoid" type="waypoint.py" name="waypoint" />-->
+  
+
+</launch>

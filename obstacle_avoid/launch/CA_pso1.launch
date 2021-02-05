@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<launch>
+ <rosparam param="runAlg">"PSO"</rosparam>
+   <group ns="$(arg agent)">
+        <rosparam param="bag">0</rosparam>
+        <rosparam param="mode">1</rosparam>
+	      <param name="AGENT_NUMBER" value="$(arg agent)"/>
+        <node pkg="obstacle_avoid" type="open_sim_5_5.py" name="CA" output="log"/>
+        <node pkg="obstacle_avoid" type="waypoint.py" name="waypoint" output="log"/>
+        <node pkg="obstacle_avoid" type="pub_rot_box.py" name="pub_box" output="log"/>
+        <node pkg="obstacle_avoid" type="pso_agents.py" name="pso" output="log"/>
+        <node pkg="obstacle_avoid" type="scan_to_segment.py" name="scan_to_seg_scan" output="screen"/>
+   </group>
+
+</launch>
