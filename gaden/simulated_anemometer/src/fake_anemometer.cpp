@@ -11,8 +11,8 @@ typedef boost::normal_distribution<double> NormalDistribution;
 typedef boost::mt19937 RandomGenerator;
 typedef boost::variate_generator<RandomGenerator&, \
                        NormalDistribution> GaussianGenerator;
-                       
-                       
+
+
 
 int main( int argc, char** argv )
 {
@@ -25,13 +25,13 @@ int main( int argc, char** argv )
 	//Read parameters
 	loadNodeParameters(pn);
 
-	
+
 	//Publishers
 	//ros::Publisher sensor_read_pub = n.advertise<std_msgs::Float32MultiArray>("WindSensor_reading", 500);
 	ros::Publisher sensor_read_pub = n.advertise<olfaction_msgs::anemometer>("WindSensor_reading", 500);
 	ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("WindSensor_display", 100);
 
-	
+
 	//Service to request wind values to simulator
     ros::ServiceClient client = n.serviceClient<gaden_player::WindPosition>("/wind_value");
 	tf::TransformListener tf_;
@@ -46,9 +46,9 @@ int main( int argc, char** argv )
 	visualization_msgs::Marker connector_inv;
 	visualization_msgs::Marker wind_point;
 	visualization_msgs::Marker wind_point_inv;
-	
+
 	sensor.header.frame_id = input_fixed_frame.c_str();
-	sensor.ns = "sensor_visualization";	
+	sensor.ns = "sensor_visualization";
 	sensor.action = visualization_msgs::Marker::ADD;
 	sensor.type = visualization_msgs::Marker::SPHERE;
 	sensor.id = 0;
@@ -59,7 +59,7 @@ int main( int argc, char** argv )
 	sensor.color.g = 0.0f;
 	sensor.color.b = 1.0f;
 	sensor.color.a = 1.0;
-	
+
 	connector.header.frame_id = input_fixed_frame.c_str();
 	connector.ns  = "sensor_visualization";
 	connector.action = visualization_msgs::Marker::ADD;
@@ -78,7 +78,7 @@ int main( int argc, char** argv )
 	wind_point.ns = "measured_wind";
 	wind_point.type = visualization_msgs::Marker::ARROW;
 
-	// Init Marker: arrow to display the inverted wind direction measured.	
+	// Init Marker: arrow to display the inverted wind direction measured.
 	wind_point_inv.header.frame_id = input_sensor_frame.c_str();
 	wind_point_inv.action = visualization_msgs::Marker::ADD;
 	wind_point_inv.ns = "measured_wind_inverted";
@@ -174,7 +174,7 @@ int main( int argc, char** argv )
                 else
                 {
                     // for simulations
-                    wind_direction = downWind_direction_map;
+                    wind_direction = angles::normalize_angle(downWind_direction_map);
                 }
 
 
@@ -193,6 +193,7 @@ int main( int argc, char** argv )
                     anemo_msg.header.frame_id = input_fixed_frame.c_str();
                 else
                     anemo_msg.header.frame_id = input_sensor_frame.c_str();
+
 				anemo_msg.sensor_label = "Fake_Anemo";
                 anemo_msg.wind_direction = wind_direction;  //rad
                 anemo_msg.wind_speed = wind_speed;	 //m/s
@@ -219,14 +220,21 @@ int main( int argc, char** argv )
 				wind_point.color.a = 1.0;
 				marker_pub.publish(wind_point);
                 */
-				
+
                 //Add inverted wind marker --> DownWind
 				wind_point_inv.header.stamp = ros::Time::now();
+				wind_point_inv.header.frame_id=anemo_msg.header.frame_id;
 				wind_point_inv.points.clear();
 				wind_point_inv.id = 1;  //unique identifier for each arrow
-				wind_point_inv.pose.position.x = 0.0;
-				wind_point_inv.pose.position.y = 0.0;
-				wind_point_inv.pose.position.z = 0.0;
+				if(use_map_ref_system){
+					wind_point_inv.pose.position.x = x_pos;
+					wind_point_inv.pose.position.y = y_pos;
+					wind_point_inv.pose.position.z = z_pos;
+				}else{
+					wind_point_inv.pose.position.x = 0.0;
+					wind_point_inv.pose.position.y = 0.0;
+					wind_point_inv.pose.position.z = 0.0;
+				}
                 wind_point_inv.pose.orientation = tf::createQuaternionMsgFromYaw(wind_direction+3.1416);
 				wind_point_inv.scale.x = 2*sqrt(pow(u,2)+pow(v,2));	  //arrow lenght
 				wind_point_inv.scale.y = 0.1;	  //arrow width
@@ -282,23 +290,14 @@ void loadNodeParameters(ros::NodeHandle private_nh)
 	private_nh.param<std::string>("sensor_frame", input_sensor_frame, "/anemometer_link");
 
 	//fixed frame
-	private_nh.param<std::string>("fixed_frame", input_fixed_frame, "/map");
-	
+	private_nh.param<std::string>("fixed_frame", input_fixed_frame, "/map_gaden");
+
 	//Noise
 	private_nh.param<double>("noise_std", noise_std, 0.1);
 
     //What ref system to use for publishing measurements
     private_nh.param<bool>("use_map_ref_system", use_map_ref_system, false);
-	
+
 	ROS_INFO("[fake anemometer]: wind noise: %f", noise_std);
-	
+
 }
-
-
-
-
-
-
-
-
-

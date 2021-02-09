@@ -19,10 +19,10 @@ int main( int argc, char** argv )
 
     //Read parameters
     loadNodeParameters(pn);
-	
+
     //Publishers
     ros::Publisher enose_pub = n.advertise<olfaction_msgs::gas_sensor_array>(topic_id, 500);
-	
+
     //Service to request gas concentration
     ros::ServiceClient client = n.serviceClient<gaden_player::GasPosition>("/odor_value");
 
@@ -69,7 +69,7 @@ int main( int argc, char** argv )
             gaden_player::GasPosition srv;
             srv.request.x = x_pos;
             srv.request.y = y_pos;
-            srv.request.z = z_pos;            
+            srv.request.z = z_pos;
             if (client.call(srv))
             {
                 /*
@@ -197,7 +197,7 @@ float simulate_mox_as_line_loglog(gaden_player::GasPositionResponse GT_gas_conce
         sensor_array[s_idx].first_reading = false;
     }
     else
-    {        
+    {
         //1. Set Sensor Output based on gas concentrations (gas type dependent)
         //---------------------------------------------------------------------
         // RS/R0 = A*conc^B (a line in the loglog scale)
@@ -340,17 +340,8 @@ void loadNodeParameters(ros::NodeHandle private_nh)
     private_nh.param<std::string>("frame_id", frame_id, "enose_frame");
 
 	//fixed frame
-    private_nh.param<std::string>("fixed_frame", fixed_frame, "/map");
+    private_nh.param<std::string>("fixed_frame", fixed_frame, "/map_gaden");
 
     //PID_correction_factors
     private_nh.param<bool>("use_PID_correction_factors", use_PID_correction_factors, false);
 }
-
-
-
-
-
-
-
-
-

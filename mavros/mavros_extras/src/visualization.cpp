@@ -228,8 +228,8 @@ static void create_vehicle_markers( int num_rotors, float arm_len, float body_wi
 				rotor.color.a = 0.8;
 			}
 		}
-		
-		
+
+
 		rotor.pose.position.x = arm_len * cos(angle) * marker_scale;
 		rotor.pose.position.y = arm_len * sin(angle) * marker_scale;
 		rotor.id++;
@@ -257,6 +257,7 @@ static void create_vehicle_markers( int num_rotors, float arm_len, float body_wi
 	body.color.g = 1.0;
 	body.color.b = 0.0;
 	body.color.a = 0.8;
+
 
 	vehicle_marker->markers.push_back(body);
 }
@@ -309,8 +310,9 @@ int main(int argc, char *argv[])
 	wp_marker_pub = nh.advertise<visualization_msgs::Marker>("wp_markers", 10);
 	lt_marker_pub = nh.advertise<visualization_msgs::Marker>("landing_target", 10);
 
-	auto pos_sub = nh.subscribe("local_position", 10, local_position_sub_cb);
-	auto wp_sub = nh.subscribe("local_setpoint", 10, setpoint_local_pos_sub_cb);
+
+	auto pos_sub = nh.subscribe("mavros/local_position/pose", 10, local_position_sub_cb);
+	auto wp_sub = nh.subscribe("mavros/setpoint_position/local", 10, setpoint_local_pos_sub_cb);
 	lt_marker_sub = nh.subscribe("lt_marker", 10, lt_marker_sub_cb);
 
 	ros::spin();

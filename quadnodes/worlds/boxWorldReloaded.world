@@ -10,9 +10,6 @@
       <uri>model://ground_plane</uri>
     </include>
 
-
-
-
     <physics name='default_physics' default='0' type='ode'>
       <gravity>0 0 -9.8066</gravity>
       <ode>
@@ -35,6 +32,12 @@
       <magnetic_field>6.0e-6 2.3e-5 -4.2e-5</magnetic_field>
     </physics>
 
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <latitude_deg>40.769052</latitude_deg>
+      <longitude_deg>-111.848071</longitude_deg>
+      <elevation>1940</elevation>
+    </spherical_coordinates>
     <!-- Boxes -->
     <model name='b0'>
      <static>1</static>

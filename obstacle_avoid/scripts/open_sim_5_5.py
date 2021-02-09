@@ -1246,7 +1246,7 @@ if __name__ == '__main__':
         rospy.Subscriber("mavros/global_position/global", NavSatFix,set_lat_lon, queue_size=1)
         rospy.Subscriber("seg_scan", LaserScan, process_laser, queue_size=1)
         rospy.Subscriber("mavros/distance_sensor/lidarlite_pub", Range, distSensor_callback, queue_size=1)
-        rospy.Subscriber("mavros/local_position/velocity", TwistStamped, set_global_vel, queue_size=1)
+        rospy.Subscriber("mavros/local_position/velocity", TwistStamped, set_global_vel, queue_size=1) # ? dont have but do I need it
         rospy.Subscriber("agent_mps_data", enif_iuc.msg.AgentMPS, callback_avoid_agents, queue_size=1)
         rospy.Subscriber("CA_waypoint", enif_iuc.msg.Waypoint, set_waypoint, queue_size=1)
         rospy.Subscriber("waypoint_list", enif_iuc.msg.WaypointTask, set_t_m, queue_size=1)
