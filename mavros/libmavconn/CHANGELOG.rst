@@ -2,9 +2,6 @@
 Changelog for package libmavconn
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.5.2 (2021-02-02)
-------------------
-
 1.5.1 (2021-01-04)
 ------------------
 * Fix test for renaming of HEARTBEAT
