@@ -1,0 +1,41 @@
+[submodule "DynamixelSDK"]
+	path = DynamixelSDK
+	url = https://github.com/ROBOTIS-GIT/DynamixelSDK.git
+	branch = master
+[submodule "PX4-Autopilot"]
+	path = PX4-Autopilot
+	url = https://github.com/PX4/PX4-Autopilot.git
+	branch = master
+[submodule "dynamixel-workbench"]
+	path = dynamixel-workbench
+	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench.git
+	branch = master
+[submodule "dynamixel-workbench-msgs"]
+	path = dynamixel-workbench-msgs
+	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git
+	branch = master
+[submodule "gazebo_ros_demos"]
+	path = gazebo_ros_demos
+	url = https://github.com/ros-simulation/gazebo_ros_demos.git
+	branch = master
+[submodule "joint_state_publisher"]
+	path = joint_state_publisher
+	url = https://github.com/ros/joint_state_publisher.git
+	branch = master
+[submodule "mavlink"]
+	path = mavlink
+	url = https://github.com/mavlink/mavlink.git
+	branch = master
+[submodule "navigation"]
+	path = navigation
+	url = https://github.com/ros-planning/navigation.git
+	branch = master
+[submodule "olfaction_msgs"]
+	path = olfaction_msgs
+	url = https://github.com/MAPIRlab/olfaction_msgs.git
+	branch = master
+[submodule "urg_node"]
+	path = urg_node
+	url = https://github.com/ros-drivers/urg_node.git
+	branch = master
+
