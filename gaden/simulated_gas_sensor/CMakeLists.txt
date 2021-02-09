@@ -19,7 +19,7 @@ find_package(
 FILE(GLOB_RECURSE MYFILES_CPP "src/*.cpp")
 
 catkin_package(
-	DEPENDS 
+	DEPENDS
 	roscpp
 	visualization_msgs
 	std_msgs

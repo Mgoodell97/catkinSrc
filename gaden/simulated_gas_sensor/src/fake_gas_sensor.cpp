@@ -19,14 +19,14 @@ int main( int argc, char** argv )
 
     //Read parameters
     loadNodeParameters(pn);
-	
+
     //Publishers
     ros::Publisher sensor_read_pub = n.advertise<olfaction_msgs::gas_sensor>("Sensor_reading", 500);
-	ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("Sensor_display", 100);
-	
+	  ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("Sensor_display", 100);
+
     //Service to request gas concentration
     ros::ServiceClient client = n.serviceClient<gaden_player::GasPosition>("/odor_value");
-	
+
 
     //Init Visualization data (marker)
     //---------------------------------
@@ -34,7 +34,7 @@ int main( int argc, char** argv )
     // conector = stick from the floor to the sensor
 	visualization_msgs::Marker sensor,connector;
 	sensor.header.frame_id = input_fixed_frame.c_str();
-	sensor.ns = "sensor_visualization";	
+	sensor.ns = "sensor_visualization";
     sensor.action = visualization_msgs::Marker::ADD;
 	sensor.type = visualization_msgs::Marker::SPHERE;
     sensor.id = 0;
@@ -44,7 +44,7 @@ int main( int argc, char** argv )
     sensor.color.r = 2.0f;
 	sensor.color.g = 1.0f;
     sensor.color.a = 1.0;
-	
+
 	connector.header.frame_id = input_fixed_frame.c_str();
 	connector.ns  = "sensor_visualization";
 	connector.action = visualization_msgs::Marker::ADD;
@@ -95,7 +95,7 @@ int main( int argc, char** argv )
             gaden_player::GasPosition srv;
             srv.request.x = x_pos;
             srv.request.y = y_pos;
-            srv.request.z = z_pos;            
+            srv.request.z = z_pos;
             if (client.call(srv))
             {
 /*
@@ -226,7 +226,7 @@ float simulate_mox_as_line_loglog(gaden_player::GasPositionResponse GT_gas_conce
         first_reading = false;
     }
     else
-    {        
+    {
         //1. Set Sensor Output based on gas concentrations (gas type dependent)
         //---------------------------------------------------------------------
         // RS/R0 = A*conc^B (a line in the loglog scale)
@@ -347,9 +347,9 @@ float simulate_pid(gaden_player::GasPositionResponse GT_gas_concentrations)
 //      Load Node Parameters      //
 // ===============================//
 void loadNodeParameters(ros::NodeHandle private_nh)
-{	
+{
     //fixed frame
-    private_nh.param<std::string>("fixed_frame", input_fixed_frame, "map");
+    private_nh.param<std::string>("fixed_frame", input_fixed_frame, "map_gaden");
 
     //Sensor Model
     private_nh.param<int>("sensor_model", input_sensor_model, DEFAULT_SENSOR_MODEL);
@@ -367,14 +367,5 @@ void loadNodeParameters(ros::NodeHandle private_nh)
     ROS_INFO("The data provided in the roslaunch file is:");
 	ROS_INFO("Sensor model: %d",input_sensor_model);
 	ROS_INFO("Fixed frame: %s",input_fixed_frame.c_str());
-    ROS_INFO("Sensor frame: %s",input_sensor_frame.c_str());    
+    ROS_INFO("Sensor frame: %s",input_sensor_frame.c_str());
 }
-
-
-
-
-
-
-
-
-

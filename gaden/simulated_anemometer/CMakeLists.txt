@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(simulated_anemometer)
 
-find_package(
-    catkin REQUIRED COMPONENTS
+find_package(catkin REQUIRED COMPONENTS
     roscpp
     visualization_msgs
     std_msgs
@@ -12,13 +11,14 @@ find_package(
     gaden_player
 )
 
+
 FILE(GLOB_RECURSE MYFILES_CPP "src/*.cpp")
 
 catkin_package(
-    DEPENDS 
-    roscpp 
-    visualization_msgs 
-    std_msgs 
+    DEPENDS
+    roscpp
+    visualization_msgs
+    std_msgs
     nav_msgs
     olfaction_msgs
     tf

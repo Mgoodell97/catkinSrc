@@ -6,7 +6,7 @@
  */
 
 #include "environment/environment.h"
-
+#include <boost/format.hpp>
 
 // ===============================//
 //      Load Node parameters      //
@@ -19,7 +19,7 @@ void loadNodeParameters(ros::NodeHandle private_nh)
     private_nh.param<bool>("wait_preprocessing", wait_preprocessing, false);
     if (verbose) ROS_INFO("[env] wait_preprocessing: %u",wait_preprocessing);
 
-    private_nh.param<std::string>("fixed_frame", fixed_frame, "map");
+    private_nh.param<std::string>("fixed_frame", fixed_frame, "map_gaden");
     if (verbose) ROS_INFO("[env] Fixed Frame: %s",fixed_frame.c_str());
 
     private_nh.param<int>("number_of_sources", number_of_sources, 0);

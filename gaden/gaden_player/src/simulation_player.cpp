@@ -5,8 +5,8 @@
  * It also generates a point cloud representing the gas concentration [ppm] on the 3D environment
  --------------------------------------------------------------------------------*/
 
-#include "simulation_player.h"
 #include <boost/format.hpp>
+#include "simulation_player.h"
 
 //--------------- SERVICES CALLBACKS----------------------//
 bool get_gas_value_srv(gaden_player::GasPosition::Request  &req, gaden_player::GasPosition::Response &res)
@@ -74,7 +74,7 @@ int main( int argc, char** argv )
     srand(time(NULL));// initialize random seed
 
     //Init Markers for RVIZ visualization
-    mkr_gas_points.header.frame_id = "/map";
+    mkr_gas_points.header.frame_id = "/map_gaden";
     mkr_gas_points.header.stamp = ros::Time::now();
     mkr_gas_points.ns = "Gas_Dispersion";
     mkr_gas_points.action = visualization_msgs::Marker::ADD;
@@ -99,6 +99,17 @@ int main( int argc, char** argv )
             load_all_data_from_logfiles(iteration_counter); //On the first time, we configure gas type, source pos, etc.
             display_current_gas_distribution();    //Rviz visualization
             iteration_counter++;
+
+            //Looping?
+            if (allow_looping)
+            {
+               if (iteration_counter >= loop_to_iteration)
+               {
+                   iteration_counter = loop_from_iteration;
+                   if (verbose)
+                       ROS_INFO("[Player] Looping");
+               }
+            }
             time_last_loaded_file = ros::Time::now();
         }
 
@@ -141,7 +152,11 @@ void loadNodeParameters(ros::NodeHandle private_nh)
     }
 
     // Initial iteration
-     private_nh.param<int>("initial_iteration", initial_iteration, 1);
+    private_nh.param<int>("initial_iteration", initial_iteration, 1);
+    // Loop
+    private_nh.param<bool>("allow_looping", allow_looping, false);
+    private_nh.param<int>("loop_from_iteration", loop_from_iteration, 1);
+    private_nh.param<int>("loop_to_iteration", loop_to_iteration, 1);
 }
 
 
@@ -220,135 +235,136 @@ void sim_obj::load_data_from_logfile(int sim_iteration)
     std::string filename = boost::str( boost::format("%s%i") % simulation_filename.c_str() % sim_iteration);
 
     //Open file
-    std::ifstream myfile;
-    myfile.open(filename.c_str());
-    if (myfile.is_open())
+    if (FILE *file = fopen(filename.c_str(), "r"))
     {
-        size_t pos;
-        double conc,u,v,w;
-        int x, y, z;
+        //File exists!, keep going!
+        fclose(file);
+    }else{
+        std::cout<< "File " << filename << " does not exist\n";
+    }
 
-        while( std::getline(myfile,line) )
+    std::ifstream infile(filename.c_str(), std::ios_base::binary);
+    boost::iostreams::filtering_istream inbuf;
+    inbuf.push(boost::iostreams::zlib_decompressor());
+    inbuf.push(infile);
+    size_t pos;
+    double conc, u, v, w;
+    int x, y, z;
+
+    while (std::getline(inbuf, line))
+    {
+        line_counter++;
+        //ROS_INFO("Reading Line %i", line_counter);
+        //ROS_INFO("%s",line.c_str());
+
+        if (first_reading && (line_counter == 1))
         {
-            line_counter++;
-            //ROS_INFO("Reading Line %i", line_counter);
-            //ROS_INFO("%s",line.c_str());
+            //Line 1 (min values of environment)
+            size_t pos = line.find(" ");
+            line.erase(0, pos + 1);
+            pos = line.find(" ");
+            env_min_x = atof(line.substr(0, pos).c_str());
+            line.erase(0, pos + 1);
+            pos = line.find(" ");
+            env_min_y = atof(line.substr(0, pos).c_str());
+            env_min_z = atof(line.substr(pos + 1).c_str());
+        }
+        else if (first_reading && (line_counter == 2))
+        {
+            //Line 2 (max values of environment)
+            pos = line.find(" ");
+            line.erase(0, pos + 1);
+            pos = line.find(" ");
+            env_max_x = atof(line.substr(0, pos).c_str());
+            line.erase(0, pos + 1);
+            pos = line.find(" ");
+            env_max_y = atof(line.substr(0, pos).c_str());
+            env_max_z = atof(line.substr(pos + 1).c_str());
+        }
+        else if (first_reading && (line_counter == 3))
+        {
+            //Get Number of cells (X,Y,Z)
+            pos = line.find(" ");
+            line.erase(0, pos + 1);
 
-            if (first_reading && (line_counter==1))
+            pos = line.find(" ");
+            environment_cells_x = atoi(line.substr(0, pos).c_str());
+            line.erase(0, pos + 1);
+            pos = line.find(" ");
+            environment_cells_y = atoi(line.substr(0, pos).c_str());
+            environment_cells_z = atoi(line.substr(pos + 1).c_str());
+        }
+        else if (first_reading && (line_counter == 4))
+        {
+            //Get Cell_size
+            pos = line.find(" ");
+            line.erase(0, pos + 1);
+
+            pos = line.find(" ");
+            environment_cell_size = atof(line.substr(0, pos).c_str());
+        }
+        else if (first_reading && (line_counter == 5))
+        {
+            //Get GasSourceLocation
+            pos = line.find(" ");
+            line.erase(0, pos + 1);
+
+            pos = line.find(" ");
+            source_pos_x = atof(line.substr(0, pos).c_str());
+            line.erase(0, pos + 1);
+
+            pos = line.find(" ");
+            source_pos_y = atof(line.substr(0, pos).c_str());
+            source_pos_z = atof(line.substr(pos + 1).c_str());
+        }
+        else if (first_reading && (line_counter == 6))
+        {
+            //Get Gas_Type
+            pos = line.find(" ");
+            gas_type = line.substr(pos + 1);
+            //Configure instances
+            configure_environment();
+        }
+        else if (line_counter > 7)
+        {
+            //A line has the format x y z conc u v w
+            pos = line.find(" ");
+            x = atoi(line.substr(0, pos).c_str());
+            line.erase(0, pos + 1);
+
+            pos = line.find(" ");
+            y = atoi(line.substr(0, pos).c_str());
+            line.erase(0, pos + 1);
+
+            pos = line.find(" ");
+            z = atoi(line.substr(0, pos).c_str());
+            line.erase(0, pos + 1);
+
+            pos = line.find(" ");
+            conc = atof(line.substr(0, pos).c_str());
+            line.erase(0, pos + 1);
+
+            pos = line.find(" ");
+            u = atof(line.substr(0, pos).c_str());
+            line.erase(0, pos + 1);
+
+            pos = line.find(" ");
+            v = atof(line.substr(0, pos).c_str());
+            w = atof(line.substr(pos + 1).c_str());
+
+            //Save data to internal storage
+            C[x][y][z] = conc / 1000;
+            if (load_wind_data)
             {
-                //Line 1 (min values of environment)
-                size_t pos = line.find(" ");
-                line.erase(0, pos+1);
-                pos = line.find(" ");
-                env_min_x = atof(line.substr(0, pos).c_str());
-                line.erase(0, pos+1);
-                pos = line.find(" ");
-                env_min_y = atof(line.substr(0, pos).c_str());
-                env_min_z = atof(line.substr(pos+1).c_str());
-            }
-            else if (first_reading && (line_counter==2))
-            {
-                //Line 2 (max values of environment)
-                pos = line.find(" ");
-                line.erase(0, pos+1);
-                pos = line.find(" ");
-                env_max_x = atof(line.substr(0, pos).c_str());
-                line.erase(0, pos+1);
-                pos = line.find(" ");
-                env_max_y = atof(line.substr(0, pos).c_str());
-                env_max_z = atof(line.substr(pos+1).c_str());
-            }
-            else if (first_reading && (line_counter==3))
-            {
-                //Get Number of cells (X,Y,Z)
-                pos = line.find(" ");
-                line.erase(0, pos+1);
-
-                pos = line.find(" ");
-                environment_cells_x = atoi(line.substr(0, pos).c_str());
-                line.erase(0, pos+1);
-                pos = line.find(" ");
-                environment_cells_y = atoi(line.substr(0, pos).c_str());
-                environment_cells_z = atoi(line.substr(pos+1).c_str());
-            }
-            else if (first_reading && (line_counter==4))
-            {
-                //Get Cell_size
-                pos = line.find(" ");
-                line.erase(0, pos+1);
-
-                pos = line.find(" ");
-                environment_cell_size = atof(line.substr(0, pos).c_str());
-            }
-            else if (first_reading && (line_counter==5))
-            {
-                //Get GasSourceLocation
-                pos = line.find(" ");
-                line.erase(0, pos+1);
-
-                pos = line.find(" ");
-                source_pos_x = atof(line.substr(0, pos).c_str());
-                line.erase(0, pos+1);
-
-                pos = line.find(" ");
-                source_pos_y = atof(line.substr(0, pos).c_str());
-                source_pos_z = atof(line.substr(pos+1).c_str());
-            }
-            else if (first_reading && (line_counter==6))
-            {
-                //Get Gas_Type
-                pos = line.find(" ");
-                gas_type = line.substr(pos+1);
-                //Configure instances
-                configure_environment();
-            }
-            else if (line_counter > 7)
-            {
-                //A line has the format x y z conc u v w
-                pos = line.find(" ");
-                x = atoi(line.substr(0, pos).c_str());
-                line.erase(0, pos+1);
-
-                pos = line.find(" ");
-                y = atoi(line.substr(0, pos).c_str());
-                line.erase(0, pos+1);
-
-                pos = line.find(" ");
-                z = atoi(line.substr(0, pos).c_str());
-                line.erase(0, pos+1);
-
-                pos = line.find(" ");
-                conc = atof(line.substr(0, pos).c_str());
-                line.erase(0, pos+1);
-
-                pos = line.find(" ");
-                u = atof(line.substr(0, pos).c_str());
-                line.erase(0, pos+1);
-
-                pos = line.find(" ");
-                v = atof(line.substr(0, pos).c_str());
-                w = atof(line.substr(pos+1).c_str());
-
-                //Save data to internal storage
-                C[x][y][z] = conc;
-                if (load_wind_data)
-                {
-                    U[x][y][z] = u;
-                    V[x][y][z] = v;
-                    W[x][y][z] = w;
-                }
+                U[x][y][z] = u / 1000;
+                V[x][y][z] = v / 1000;
+                W[x][y][z] = w / 1000;
             }
         }
-        myfile.close();
-
-        if (first_reading)
-            first_reading = false;
     }
-    else
-    {
-        if (verbose)
-            ROS_ERROR("[Player]Unable to open log_file");
-    }
+    infile.close();
+    if (first_reading)
+        first_reading = false;
 }
 
 
