@@ -26,6 +26,7 @@
 // parameters
 static std::string fixed_frame_id;
 static std::string child_frame_id;
+static std::string UAV_Name;
 static double marker_scale;
 static int max_track_size = 100;
 
@@ -292,8 +293,10 @@ int main(int argc, char *argv[])
 	int num_rotors, prop_direction;
 	double arm_len, body_width, body_height;
 
-	priv_nh.param<std::string>("fixed_frame_id", fixed_frame_id, "map");
-	priv_nh.param<std::string>("child_frame_id", child_frame_id, "base_link");
+	priv_nh.param<std::string>("fixed_frame_id", fixed_frame_id, "world");
+
+	ros::param::get("tfWorldUAV/UAV_Name", UAV_Name);
+	priv_nh.param<std::string>("child_frame_id", child_frame_id, UAV_Name);
 
 	priv_nh.param("marker_scale", marker_scale, 1.0);
 	priv_nh.param("num_rotors", num_rotors, 6);
@@ -311,7 +314,7 @@ int main(int argc, char *argv[])
 	lt_marker_pub = nh.advertise<visualization_msgs::Marker>("landing_target", 10);
 
 
-	auto pos_sub = nh.subscribe("mavros/local_position/pose", 10, local_position_sub_cb);
+	auto pos_sub = nh.subscribe("true_position", 10, local_position_sub_cb);
 	auto wp_sub = nh.subscribe("mavros/setpoint_position/local", 10, setpoint_local_pos_sub_cb);
 	lt_marker_sub = nh.subscribe("lt_marker", 10, lt_marker_sub_cb);
 

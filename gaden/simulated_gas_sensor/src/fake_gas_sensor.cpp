@@ -14,11 +14,25 @@
 int main( int argc, char** argv )
 {
     ros::init(argc, argv, NODE_NAME);
-	ros::NodeHandle n;
+	  ros::NodeHandle n;
     ros::NodeHandle pn("~");
 
     //Read parameters
     loadNodeParameters(pn);
+
+    float xMapMin;
+    float xMapMax;
+    float yMapMin;
+    float yMapMax;
+    float zMapMin;
+    float zMapMax;
+
+    ros::param::get("/xMapMin", xMapMin);
+    ros::param::get("/xMapMax", xMapMax);
+    ros::param::get("/yMapMin", yMapMin);
+    ros::param::get("/yMapMax", yMapMax);
+    ros::param::get("/zMapMin", zMapMin);
+    ros::param::get("/zMapMax", zMapMax);
 
     //Publishers
     ros::Publisher sensor_read_pub = n.advertise<olfaction_msgs::gas_sensor>("Sensor_reading", 500);
@@ -90,9 +104,42 @@ int main( int argc, char** argv )
             float y_pos = transform.getOrigin().y();
             float z_pos = transform.getOrigin().z();
 
+            // Limit x position to be in the map
+            if (x_pos > xMapMax){
+              // ROS_ERROR("x_pos limited to xMapMax from %f to %f", x_pos, xMapMax0);
+              x_pos = xMapMax;
+            }
+            if (x_pos < xMapMin){
+              // ROS_ERROR("x_pos limited to xMapMin from %f to %f", x_pos, xMapMax);
+              x_pos = xMapMin;
+            }
+
+            // Limit y position to be in the map
+            if (y_pos > yMapMax){
+              // ROS_ERROR("y_pos limited to yMapMax from %f to %f", y_pos, yMapMax);
+              y_pos = yMapMax;
+            }
+            if (y_pos < yMapMin){
+              // ROS_ERROR("y_pos limited to yMapMin from %f to %f", y_pos, yMapMin);
+              y_pos = yMapMin;
+            }
+
+            // Limit z position to be in the map
+            if (z_pos > zMapMax){
+              // ROS_ERROR("z_pos limited to zMapMax from %f to %f", z_pos, zMapMax);
+              z_pos = zMapMax;
+            }
+            if (z_pos < zMapMin){
+              // ROS_ERROR("z_pos limited to zMapMin from %f to %f", z_pos, zMapMin);
+              z_pos = zMapMin;
+            }
+
             // Get Gas concentration at current position (of each gas present)
             // Service request to the simulator
             gaden_player::GasPosition srv;
+            srv.request.x = 0;
+            srv.request.y = 0;
+            srv.request.z = 0;
             srv.request.x = x_pos;
             srv.request.y = y_pos;
             srv.request.z = z_pos;
