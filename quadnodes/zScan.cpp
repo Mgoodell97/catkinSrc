@@ -19,6 +19,7 @@ int yawAbsCount;
 int lastFrame;
 
 double desiredYaw[4] = { 0 , M_PI/2 , M_PI , 3*M_PI/2 };
+// double desiredYaw[2] = { 0, 0 };
 double absYaw;
 
 bool state_cb_flag = false;

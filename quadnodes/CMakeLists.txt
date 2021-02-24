@@ -7,7 +7,7 @@ project(quadnodes)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED roscpp geometry_msgs mavros_msgs sensor_msgs)
+find_package(catkin REQUIRED roscpp geometry_msgs mavros_msgs sensor_msgs nav_msgs tf2 tf2_ros message_generation)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -43,11 +43,10 @@ find_package(catkin REQUIRED roscpp geometry_msgs mavros_msgs sensor_msgs)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+    FILES
+    guassian.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -64,10 +63,10 @@ find_package(catkin REQUIRED roscpp geometry_msgs mavros_msgs sensor_msgs)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   std_msgs  # Or other packages containing msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -99,6 +98,8 @@ find_package(catkin REQUIRED roscpp geometry_msgs mavros_msgs sensor_msgs)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
+  CATKIN_DEPENDS
+  message_runtime
 #  INCLUDE_DIRS include
 #  LIBRARIES quadnodes
 #  CATKIN_DEPENDS other_catkin_pkg
@@ -132,10 +133,11 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/quadnodes_node.cpp)
 add_executable(offb_node offb_node.cpp)
 add_executable(zScan zScan.cpp)
+add_executable(zScanNoYaw zScanNoYaw.cpp)
 add_executable(xboxVelControl xboxVelControl.cpp)
 add_executable(xboxAltControl xboxAltControl.cpp)
 add_executable(xboxJoyTest xboxJoyTest.cpp)
-add_executable(segLidarLite segLidarLite.cpp)
+add_executable(tfWorldUAV tfWorldUAV.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -153,10 +155,11 @@ add_executable(segLidarLite segLidarLite.cpp)
 # )
 target_link_libraries(offb_node ${catkin_LIBRARIES})
 target_link_libraries(zScan ${catkin_LIBRARIES})
+target_link_libraries(zScanNoYaw ${catkin_LIBRARIES})
 target_link_libraries(xboxVelControl ${catkin_LIBRARIES})
 target_link_libraries(xboxAltControl ${catkin_LIBRARIES})
 target_link_libraries(xboxJoyTest ${catkin_LIBRARIES})
-target_link_libraries(segLidarLite ${catkin_LIBRARIES})
+target_link_libraries(tfWorldUAV ${catkin_LIBRARIES})
 
 #############
 ## Install ##

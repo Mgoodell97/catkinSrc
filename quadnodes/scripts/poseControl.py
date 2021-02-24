@@ -12,6 +12,7 @@ from mavros_msgs.msg import State #include <mavros_msgs/State.h>
 global current_state
 current_state = State()
 # create a simple callback which will save the current state of the autopilot. This will allow us to check connection, arming and Offboard flags
+
 def state_cb(state_sub):
     global current_state
     current_state = state_sub
@@ -36,8 +37,7 @@ def main():
     #the setpoint publishing rate MUST be faster than 2Hz
     #The px4 flight stack has a timeout of 500ms between two Offboard commands
 
-    #cpp ros::Rate rate(20.0);
-    rate = rospy.Rate(5)
+    rate = rospy.Rate(20)
     #Before publishing anything, we wait for the connection to be established between MAVROS and the autopilot.
     while not rospy.is_shutdown() and current_state.connected:
         # spinonce is not needed in python
@@ -58,21 +58,6 @@ def main():
 
     last_request = rospy.get_rostime()
 
-    #while(ros::ok()){
-    #    if (current_state.mode != "OFFBOARD" && (ros::Time::now() - last_request > ros::Duration(5.0))){
-    #        if( set_mode_client.call(offb_set_mode) && offb_set_mode.response.mode_sent){
-    #            ROS_INFO("Offboard enabled");
-    #            }
-    #        last_request = ros::Time::now();
-    #} else {
-    #    if( !current_state.armed && (ros::Time::now() - last_request > ros::Duration(5.0))){
-    #        if( arming_client.call(arm_cmd) && arm_cmd.response.success){
-    #            ROS_INFO("Vehicle armed");
-    #            }
-    #        last_request = ros::Time::now();
-    #        }
-    #    }
-
     while not rospy.is_shutdown():
         if ( not current_state.mode == "OFFBOARD" and (rospy.get_rostime() - last_request) > rospy.Duration.from_sec(5.0)):
             modeResponse = set_mode_client(0,"OFFBOARD")
@@ -87,6 +72,7 @@ def main():
                 last_request = rospy.get_rostime()
 
         local_pos_pub.publish(Desiredpose);
+
         #rospy.spin()
         rospy.loginfo("Whileloop   Current mode: %s  Current state: %s" , current_state.mode, current_state.connected)
         #current_state = rospy.wait_for_message("mavros/state", State, timeout=None)

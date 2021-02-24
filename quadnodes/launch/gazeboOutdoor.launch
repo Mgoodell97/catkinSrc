@@ -7,6 +7,8 @@
   <arg name="verbose" default="false"/>
   <arg name="paused" default="false"/>
 
+  <!-- <node pkg="tf" type="static_transform_publisher" name="map2World" args="0.0 0.0 0.0 0 0 0 world worldUAVs 100" /> -->
+
   <!-- Gazebo sim -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
       <arg name="gui" value="$(arg gui)"/>
@@ -15,4 +17,5 @@
       <arg name="verbose" value="$(arg verbose)"/>
       <arg name="paused" value="$(arg paused)"/>
   </include>
+
 </launch>

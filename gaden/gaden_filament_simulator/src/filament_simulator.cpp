@@ -107,7 +107,7 @@ CFilamentSimulator::CFilamentSimulator()
 	// Specific gravity is the ratio of the density of a substance to the density of a reference substance; equivalently,
 	// it is the ratio of the mass of a substance to the mass of a reference substance for the same given volume.
 	SpecificGravity[0] = 1.0378;	  //ethanol   (heavier than air)
-    SpecificGravity[1] = 0.5537;	  //methane   (lighter than air)
+  SpecificGravity[1] = 0.5537;	  //methane   (lighter than air)
 	SpecificGravity[2] = 0.0696;	  //hydrogen  (lighter than air)
 	SpecificGravity[6] = 1.4529;	  //acetone   (heavier than air)
 

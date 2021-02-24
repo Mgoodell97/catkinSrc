@@ -4,7 +4,7 @@
     <!-- MAVROS PX4 SITL and Gazebo -->
     <include file="$(find px4)/launch/mavros_posix_sitl.launch">
       <!-- gazebo configs -->
-      <arg name="gui" default="false"/>
+      <arg name="gui" default="True"/>
       <!-- vehicle model and world -->
       <arg name="vehicle" default="iris1"/>
       <arg name="world" default="$(find mavlink_sitl_gazebo)/worlds/empty.world"/>

@@ -8,9 +8,10 @@
     <arg name="x" default="0"/>
     <arg name="y" default="0"/>
     <arg name="z" default="0"/>
+    <arg name="UAV" default="UAV1"/>
 
     <!-- UAV1 -->
-    <group ns="uav1">
+    <group ns="$(arg UAV)">
         <!-- MAVROS and vehicle configs -->
         <arg name="ID" value="0"/>
         <arg name="fcu_url" default="udp://:14540@localhost:14580"/>
@@ -27,6 +28,7 @@
             <arg name="mavlink_tcp_port" value="4560"/>
             <arg name="ID" value="$(arg ID)"/>
         </include>
+
         <!-- MAVROS -->
         <include file="$(find mavros)/launch/px4.launch">
             <arg name="fcu_url" value="$(arg fcu_url)"/>
@@ -34,11 +36,58 @@
             <arg name="tgt_system" value="$(eval 1 + arg('ID'))"/>
             <arg name="tgt_component" value="1"/>
         </include>
-        <node name="zScan" pkg="quadnodes" type="zScan"/>
+
+        <!-- Xbox control -->
+        <!-- <param name="joy_node/dev" value="/dev/input/js0"/>
+        <node name="joy_node" pkg="joy" type="joy_node"/>
+        <node name="xboxVelControl" pkg="quadnodes" type="xboxVelControl"/> -->
+
+        <!-- Raster scan -->
+        <!-- <node name="zScanNoYaw" pkg="quadnodes" type="zScanNoYaw">
+          <param name="xmin" value="0"/>  # starting waypoint
+          <param name="xmax" value="40"/> # ending waypoint
+          <param name="Nx"   value="8"/>  # number of waypoints
+
+          <param name="ymin" value="0"/>
+          <param name="ymax" value="13.33"/>
+          <param name="Ny"   value="3"/>
+
+          <param name="zmin" value="2.5"/>
+          <param name="zmax" value="2.5"/>
+          <param name="Nz"   value="1"/>
+
+          <param name="stayTime"   value="1"/>
+        </node> -->
+
+        <node name="zScanNoYaw" pkg="quadnodes" type="zScanNoYaw">
+          <param name="xmin" value="0"/>  # starting waypoint
+          <param name="xmax" value="0"/> # ending waypoint
+          <param name="Nx"   value="1"/>  # number of waypoints
+
+          <param name="ymin" value="0"/>
+          <param name="ymax" value="0"/>
+          <param name="Ny"   value="1"/>
+
+          <param name="zmin" value="2.0"/>
+          <param name="zmax" value="2.0"/>
+          <param name="Nz"   value="1"/>
+
+          <param name="stayTime"   value="1"/>
+        </node>
+
+        <node name="tfWorldUAV" pkg="quadnodes" type="tfWorldUAV" output="screen">
+          <param name="x_offset" value="$(arg x)"/>
+          <param name="y_offset" value="$(arg y)"/>
+          <param name="z_offset" value="$(arg z)"/>
+          <param name="UAV_Name" value="$(arg UAV)"/>
+        </node>
 
         <node name="copter_visualization" pkg="mavros_extras" type="visualization">
             <param name="num_rotors" value="4"/>
             <param name="arm_len" value="0.22"/>
+            <!-- <param name="UAV_Name" value="$(arg UAV)"/> -->
+            <param name="fixed_frame_id" value="worldUAVs"/>
+            <param name="child_frame_id" value="$(arg UAV)"/>
         </node>
 
     </group>

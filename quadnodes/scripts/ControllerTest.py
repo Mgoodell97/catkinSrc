@@ -25,8 +25,6 @@ def initFunc():
 
 
 def main():
-    print("Python version")
-    print (sys.version)
     initFunc()
 
 
