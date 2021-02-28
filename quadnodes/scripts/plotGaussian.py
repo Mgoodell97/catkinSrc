@@ -12,7 +12,7 @@ from geometry_msgs.msg import PoseStamped
 ##################
 
 def gaussFunc(xFunc, yFunc, zFunc, QFunc, vFunc, DyFunc, DzFunc):
-    con = (QFunc/(4 * pi * xFunc * sqrt(DyFunc*DzFunc))) * exp( -vFunc/(4*xFunc) * ((yFunc**2)/DyFunc * (zFunc**2)/DzFunc))
+    con = (QFunc/(4 * pi * xFunc * sqrt(DyFunc*DzFunc))) * exp( -vFunc/(4*xFunc) * ((yFunc**2)/DyFunc + (zFunc**2)/DzFunc))
     return con
 
 
@@ -86,13 +86,13 @@ def main():
     rospy.init_node('plotGuassian')
     rate = rospy.Rate(5)
 
-    plotUAV1 = rospy.get_param("/plotGuassian/plotUAV1")
-    plotUAV2 = rospy.get_param("/plotGuassian/plotUAV2")
-    plotUAV3 = rospy.get_param("/plotGuassian/plotUAV3")
+    plotUAV1 = rospy.get_param("/plotGaussian/plotUAV1")
+    plotUAV2 = rospy.get_param("/plotGaussian/plotUAV2")
+    plotUAV3 = rospy.get_param("/plotGaussian/plotUAV3")
 
     # Map parameters
-    minLim = rospy.get_param("/plotGuassian/mapMin")
-    maxLim = rospy.get_param("/plotGuassian/mapMax")
+    minLim = rospy.get_param("/plotGaussian/mapMin")
+    maxLim = rospy.get_param("/plotGaussian/mapMax")
 
     # Plume parameters
     PPM_at_center = rospy.get_param("/PPM_at_center")       #  kg/s     release rate
@@ -102,7 +102,7 @@ def main():
     DiameterPlume = rospy.get_param("/DiameterPlume")       #  m        diameter of release valve
     releaseArea   = pi * pow((DiameterPlume/2),2)
     QPlume = releaseArea * vPlume * PPM_at_center/1000
-    
+
     # Plume orientation translation then rotation
     xPlume     = rospy.get_param("/xPlume")       #  m
     yPlume     = rospy.get_param("/yPlume")       #  m
@@ -125,7 +125,7 @@ def main():
 
     for xCurrentIndex in range(len(xPlumePlot)):
         for yCurrentIndex in range(len(yPlumePlot)):
-            conArray[xCurrentIndex,yCurrentIndex] = getReading(yPlumePlot[yCurrentIndex], xPlumePlot[xCurrentIndex], thetaPlume, xPlume, yPlume, 0.5, QPlume, vPlume, DyPlume, DzPlume)
+            conArray[xCurrentIndex,yCurrentIndex] = getReading(yPlumePlot[yCurrentIndex], xPlumePlot[xCurrentIndex], thetaPlume, xPlume, yPlume, 0.0, QPlume, vPlume, DyPlume, DzPlume)
 
     flat=conArray.flatten()
     flat.sort()
@@ -149,7 +149,7 @@ def main():
         # Plotting stuff
         plt.clf()
 
-        # Plot guassian
+        # Plot gaussian
         plt.contourf(xPlumePlot,yPlumePlot,conArray,25)
 
         # Plot UAV1

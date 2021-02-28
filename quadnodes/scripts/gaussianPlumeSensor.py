@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from math import cos, sin, pi, acos, sqrt, exp
 from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import Twist #include <geometry_msgs/Twist.h>
-from quadnodes.msg import guassian #include <geometry_msgs/Twist.h>
+from quadnodes.msg import gaussian #include <geometry_msgs/Twist.h>
 
 
 ##################
@@ -15,9 +15,8 @@ from quadnodes.msg import guassian #include <geometry_msgs/Twist.h>
 ##################
 
 def gaussFunc(xFunc, yFunc, zFunc, QFunc, vFunc, DyFunc, DzFunc):
-    con = (QFunc/(4 * pi * xFunc * sqrt(DyFunc*DzFunc))) * exp( -vFunc/(4*xFunc) * ((yFunc**2)/DyFunc * (zFunc**2)/DzFunc))
+    con = (QFunc/(4 * pi * xFunc * sqrt(DyFunc*DzFunc))) * exp( -vFunc/(4*xFunc) * ((yFunc**2)/DyFunc + (zFunc**2)/DzFunc))
     return con
-
 
 def getReading(xRobotDef, yRobotDef, thetaFunc, xPlumeFunc, yPlumeFunc, zFunc, QFunc, vFunc, DyFunc, DzFunc):
     # Rotate frame
@@ -60,7 +59,7 @@ def getReading(xRobotDef, yRobotDef, thetaFunc, xPlumeFunc, yPlumeFunc, zFunc, Q
 global UAV_pose
 
 UAV_pose = PoseStamped()
-tmpMsg = guassian()
+tmpMsg = gaussian()
 
 ##################
 # Callbacks
@@ -70,15 +69,13 @@ def UAV_cb(UAV_msg):
     global UAV_pose
     UAV_pose = UAV_msg
 
-
-
 ##################
 # Main function
 ##################
 
 def main():
 
-    rospy.init_node('guassianPlume')
+    rospy.init_node('gaussianPlume')
     rate = rospy.Rate(5)
 
     # Plume parameters
@@ -88,7 +85,7 @@ def main():
     DzPlume       = rospy.get_param("/DzPlume")             #  m        diffusion along z
     DiameterPlume = rospy.get_param("/DiameterPlume")       #  m        diameter of release valve
 
-    UAVofIntrest  = rospy.get_param("guassianPlumeSensor/UAVofIntrest")
+    UAVofIntrest  = rospy.get_param("gaussianPlumeSensor/UAVofIntrest")
 
     releaseArea   = pi * pow((DiameterPlume/2),2)
     QPlume = releaseArea * vPlume * PPM_at_center/1000
@@ -96,17 +93,18 @@ def main():
     # Plume orientation translation then rotation
     xPlume     = rospy.get_param("/xPlume")       #  m
     yPlume     = rospy.get_param("/yPlume")       #  m
+    zPlume     = rospy.get_param("/zPlume")       #  m
     thetaPlume = rospy.get_param("/thetaPlume")   #  degrees
 
     rospy.Subscriber("/" + UAVofIntrest  + "/" + "true_position", PoseStamped, UAV_cb)
-    pub = rospy.Publisher("guassianReading", guassian, queue_size=10)
+    pub = rospy.Publisher("gaussianReading", gaussian, queue_size=10)
 
     thetaPlume = thetaPlume * (pi/180) # convert to radians
 
     while not rospy.is_shutdown():
         # Get reading
         # kg/s
-        tmpMsg.kg_s = getReading(UAV_pose.pose.position.x, UAV_pose.pose.position.y, thetaPlume, xPlume, yPlume, 0, QPlume, vPlume, DyPlume, DzPlume)
+        tmpMsg.kg_s = getReading(UAV_pose.pose.position.x, UAV_pose.pose.position.y, thetaPlume, xPlume, yPlume, zPlume - UAV_pose.pose.position.z, QPlume, vPlume, DyPlume, DzPlume)
 
         # ppm
         tmpMsg.ppm = tmpMsg.kg_s * (1/vPlume) * (1/releaseArea) * 1000

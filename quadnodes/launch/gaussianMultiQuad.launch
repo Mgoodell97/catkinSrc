@@ -42,9 +42,10 @@
     <!-- Plume location -->
     <param name="xPlume"           type="double"  value="25" /> # m
     <param name="yPlume"           type="double"  value="45" /> # m
+    <param name="zPlume"           type="double"  value="2"  /> # m
     <param name="thetaPlume"       type="double"  value="-90"/> # degrees
 
-    <node name="plotGuassian" pkg="quadnodes" type="plotGuassian.py" output="screen">
+    <node name="plotGaussian" pkg="quadnodes" type="plotGaussian.py" output="screen">
         <!-- Plot UAVS -->
         <param name="plotUAV1" type="bool" value="True"/>
         <param name="plotUAV2" type="bool" value="True"/>
@@ -56,19 +57,19 @@
     </node>
 
     <group ns="UAV1">
-      <node name="guassianPlumeSensor" pkg="quadnodes" type="guassianPlumeSensor.py" output="screen">
+      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py" output="screen">
         <param name="UAVofIntrest" value="UAV1"/>
       </node>
     </group>
 
     <group ns="UAV2">
-      <node name="guassianPlumeSensor" pkg="quadnodes" type="guassianPlumeSensor.py" output="screen">
+      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py" output="screen">
         <param name="UAVofIntrest" value="UAV2"/>
       </node>
     </group>
 
     <group ns="UAV3">
-      <node name="guassianPlumeSensor" pkg="quadnodes" type="guassianPlumeSensor.py" output="screen">
+      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py" output="screen">
         <param name="UAVofIntrest" value="UAV3"/>
       </node>
     </group>
@@ -77,8 +78,8 @@
     <!-- Create tf transformations -->
     <node pkg="tf" type="static_transform_publisher" name="UAVs2World" args="0.0 0.0 0.0 0 0 0 world worldUAVs 100" />
 
-    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot"  args="/UAV1/guassianReading/ppm /UAV2/guassianReading/ppm /UAV3/guassianReading/ppm"/>
+    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot"  args="/UAV1/gaussianReading/ppm /UAV2/gaussianReading/ppm /UAV3/gaussianReading/ppm"/>
 
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/MultiQuadGuass.rviz"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/MultiQuadGauss.rviz"/>
 
 </launch>

@@ -12,21 +12,21 @@
 
     <!-- Spawn UAV1 -->
     <include file="$(find quadnodes)/launch/spawnUAV1_SDF.launch">
-      <arg name="x" default="5"/>
+      <arg name="x" default="25"/>
       <arg name="y" default="5"/>
       <arg name="z" default="0.0"/>
     </include>
 
     <!-- Spawn UAV2 -->
     <include file="$(find quadnodes)/launch/spawnUAV2_SDF.launch">
-      <arg name="x" default="5"/>
+      <arg name="x" default="25"/>
       <arg name="y" default="18.3333"/>
       <arg name="z" default="0.0"/>
     </include>
 
     <!-- Spawn UAV3 -->
     <include file="$(find quadnodes)/launch/spawnUAV3_SDF.launch">
-      <arg name="x" default="5"/>
+      <arg name="x" default="25"/>
       <arg name="y" default="31.6666"/>
       <arg name="z" default="0.0"/>
     </include>
@@ -43,24 +43,22 @@
       </node>
 
       <!-- Motion planner -->
-      <node name="zScanNoYaw" pkg="quadnodes" type="zScanNoYaw">
-        <param name="xmin" value="0"/>  # starting waypoint
-        <param name="xmax" value="40"/> # ending waypoint
-        <param name="Nx"   value="8"/>  # number of waypoints
-
-        <param name="ymin" value="0"/>
-        <param name="ymax" value="13.33"/>
-        <param name="Ny"   value="3"/>
-
-        <param name="zmin" value="2.0"/>
-        <param name="zmax" value="2.0"/>
-        <param name="Nz"   value="1"/>
-
-        <param name="stayTime"   value="1"/>
+      <node name="BRWQuad" pkg="quadnodes" type="BRWQuad.py" output="screen">
+        <param name="minLim"                 value="0.0"   />   # m
+        <param name="maxLim"                 value="50.0"  />   # m
+        <param name="zHeight"                value="2.0"   />   # m
+        <param name="biasRange"              value="75.0"  />   # degrees
+        <param name="stepSize"               value="5.0"   />   # m
+        <param name="waypointRadius"         value="0.25"  />   # m
+        <param name="stayTime"               value="1.0"   />   # seconds
+        <param name="maxVelocity"            value="3.0"   />   # seconds
+        <param name="GaussPlume" type="bool" value="False" />   # I'm not explaining this
+        <param name="GadenPlume" type="bool" value="True"  />   # I'm not explaining this
       </node>
     </group>
 
     <group ns="UAV2">
+      <!-- Gas sensor -->
       <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
           <param name="sensor_model" value="30" />
           <param name="sensor_frame" value="pid_frame2" />
@@ -68,24 +66,23 @@
           <param name="noise_std" value="20.1"/>
       </node>
 
-      <node name="zScanNoYaw" pkg="quadnodes" type="zScanNoYaw">
-        <param name="xmin" value="0"/>  # starting waypoint
-        <param name="xmax" value="40"/> # ending waypoint
-        <param name="Nx"   value="8"/>  # number of waypoints
-
-        <param name="ymin" value="0"/>
-        <param name="ymax" value="13.33"/>
-        <param name="Ny"   value="3"/>
-
-        <param name="zmin" value="2.0"/>
-        <param name="zmax" value="2.0"/>
-        <param name="Nz"   value="1"/>
-
-        <param name="stayTime"   value="1"/>
+      <!-- Motion planner -->
+      <node name="BRWQuad" pkg="quadnodes" type="BRWQuad.py" output="screen">
+        <param name="minLim"                 value="0.0"   />   # m
+        <param name="maxLim"                 value="50.0"  />   # m
+        <param name="zHeight"                value="2.0"   />   # m
+        <param name="biasRange"              value="75.0"  />   # degrees
+        <param name="stepSize"               value="5.0"   />   # m
+        <param name="waypointRadius"         value="0.25"  />   # m
+        <param name="stayTime"               value="1.0"   />   # seconds
+        <param name="maxVelocity"            value="3.0"   />   # seconds
+        <param name="GaussPlume" type="bool" value="False" />   # I'm not explaining this
+        <param name="GadenPlume" type="bool" value="True"  />   # I'm not explaining this
       </node>
     </group>
 
     <group ns="UAV3">
+      <!-- Gas sensor -->
       <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
           <param name="sensor_model" value="30" />
           <param name="sensor_frame" value="pid_frame3" />
@@ -93,20 +90,18 @@
           <param name="noise_std" value="20.1"/>
       </node>
 
-      <node name="zScanNoYaw" pkg="quadnodes" type="zScanNoYaw">
-        <param name="xmin" value="0"/>  # starting waypoint
-        <param name="xmax" value="40"/> # ending waypoint
-        <param name="Nx"   value="8"/>  # number of waypoints
-
-        <param name="ymin" value="0"/>
-        <param name="ymax" value="13.33"/>
-        <param name="Ny"   value="3"/>
-
-        <param name="zmin" value="2.0"/>
-        <param name="zmax" value="2.0"/>
-        <param name="Nz"   value="1"/>
-
-        <param name="stayTime"   value="1"/>
+      <!-- Motion planner -->
+      <node name="BRWQuad" pkg="quadnodes" type="BRWQuad.py" output="screen">
+        <param name="minLim"                 value="0.0"   />   # m
+        <param name="maxLim"                 value="50.0"  />   # m
+        <param name="zHeight"                value="2.0"   />   # m
+        <param name="biasRange"              value="75.0"  />   # degrees
+        <param name="stepSize"               value="5.0"   />   # m
+        <param name="waypointRadius"         value="0.25"  />   # m
+        <param name="stayTime"               value="1.0"   />   # seconds
+        <param name="maxVelocity"            value="3.0"   />   # seconds
+        <param name="GaussPlume" type="bool" value="False" />   # I'm not explaining this
+        <param name="GadenPlume" type="bool" value="True"  />   # I'm not explaining this
       </node>
     </group>
 

@@ -19,14 +19,6 @@
       # Plot CAD models (Collada format .dae)
       <param name="number_of_CAD" value="0"/>
       <rosparam subst_value="True">
-            <!-- CAD_0: package://test_env/$(arg scenario)/cad_models/walls.dae
-            CAD_0_color: [0.92, 0.96, 0.96] -->
-
-            <!-- CAD_1: package://test_env/$(arg scenario)/cad_models/10x6_door_left.dae
-            CAD_1_color: [0.96, 0.17, 0.3]
-
-            CAD_2: package://test_env/$(arg scenario)/cad_models/10x6_door_right.dae
-            CAD_2_color: [0.96, 0.17, 0.3] -->
         </rosparam>
 
       # Plot 3D OccupancyGridmap
@@ -48,7 +40,7 @@
     #-------------------
     <node pkg="gaden_player" type="gaden_player" name="gaden_player" output="screen">
         <param name="verbose" value="false" />
-      <param name="player_freq" value="2" />         ###(Hz) Freq for loading the simulation log_files
+      <param name="player_freq" value="1" />         ###(Hz) Freq for loading the simulation log_files
       <param name="initial_iteration" value="300" />
       <param name="num_simulators" value="1" />      ### Number of simulations to load [1-inf] (useful for multiple sources and gases)
 

@@ -54,7 +54,7 @@
 	    <param name="time_step" value="0.5" />                   ### [sec] Time increment between snapshots. Set aprox = cell_size/max_wind_speed.
 	    <param name="num_filaments_sec" value="40" />            ### Num of filaments released each second
 	    <param name="variable_rate" value="true" />              ### If true the number of released filaments would be random(0,numFilaments_sec)
-        <param name="ppm_filament_center" value="100000"/>           ### [ppm] Gas concentration at the center of the 3D gaussian (filament)
+        <param name="ppm_filament_center" value="50000"/>           ### [ppm] Gas concentration at the center of the 3D gaussian (filament)
         <param name="filament_initial_std" value="5"/>          ### [cm] Sigma of the filament at t=0-> 3DGaussian shape
         <param name="filament_growth_gamma" value="1"/>         ### [cm²/s] Growth ratio of the filament_std
         <param name="filament_noise_std" value="0.25"/>          ### [m] Range of the white noise added on each iteration
