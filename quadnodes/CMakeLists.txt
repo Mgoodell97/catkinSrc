@@ -45,7 +45,7 @@ find_package(catkin REQUIRED roscpp geometry_msgs mavros_msgs sensor_msgs nav_ms
 ## Generate messages in the 'msg' folder
 add_message_files(
     FILES
-    guassian.msg
+    gaussian.msg
 )
 
 ## Generate services in the 'srv' folder

@@ -42,39 +42,6 @@
         <node name="joy_node" pkg="joy" type="joy_node"/>
         <node name="xboxVelControl" pkg="quadnodes" type="xboxVelControl"/> -->
 
-        <!-- Raster scan -->
-        <!-- <node name="zScanNoYaw" pkg="quadnodes" type="zScanNoYaw">
-          <param name="xmin" value="0"/>  # starting waypoint
-          <param name="xmax" value="40"/> # ending waypoint
-          <param name="Nx"   value="8"/>  # number of waypoints
-
-          <param name="ymin" value="0"/>
-          <param name="ymax" value="13.33"/>
-          <param name="Ny"   value="3"/>
-
-          <param name="zmin" value="2.5"/>
-          <param name="zmax" value="2.5"/>
-          <param name="Nz"   value="1"/>
-
-          <param name="stayTime"   value="1"/>
-        </node> -->
-
-        <node name="zScanNoYaw" pkg="quadnodes" type="zScanNoYaw">
-          <param name="xmin" value="0"/>  # starting waypoint
-          <param name="xmax" value="0"/> # ending waypoint
-          <param name="Nx"   value="1"/>  # number of waypoints
-
-          <param name="ymin" value="0"/>
-          <param name="ymax" value="0"/>
-          <param name="Ny"   value="1"/>
-
-          <param name="zmin" value="2.0"/>
-          <param name="zmax" value="2.0"/>
-          <param name="Nz"   value="1"/>
-
-          <param name="stayTime"   value="1"/>
-        </node>
-
         <node name="tfWorldUAV" pkg="quadnodes" type="tfWorldUAV" output="screen">
           <param name="x_offset" value="$(arg x)"/>
           <param name="y_offset" value="$(arg y)"/>
