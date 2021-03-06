@@ -95,14 +95,13 @@ def main():
     waypointRadius     = rospy.get_param("SurgeCastQuad/waypointRadius")  #  m
     stayTime           = rospy.get_param("SurgeCastQuad/stayTime")        #  seconds
     maxVelocity        = rospy.get_param("SurgeCastQuad/maxVelocity")     #  m/s
-    GaussPlume         = rospy.get_param("SurgeCastQuad/GaussPlume")      #  I'm not explaining this
-    GadenPlume         = rospy.get_param("SurgeCastQuad/GadenPlume")      #  I'm not explaining this
+    PlumeType          = rospy.get_param("SurgeCastQuad/PlumeType")      #  I'm not explaining this
 
     thetaPlume = thetaPlume * pi/180
 
-    if GaussPlume:
+    if PlumeType == "gaussian":
         rospy.Subscriber("gaussianReading", gaussian, gaussSensor_cb)
-    if GadenPlume:
+    if PlumeType == "gaden":
         rospy.Subscriber("Sensor_reading", gas_sensor, gadenSensor_cb)
 
     # waypoint parameters
@@ -182,9 +181,9 @@ def main():
                     justHitWaypoint = True;
                 if(rospy.get_rostime() - waypointStartTime >= rospy.Duration(stayTime)):
                     # Get current reading
-                    if GaussPlume:
+                    if PlumeType == "gaussian":
                         currentReading = current_reading_full_data_gauss.ppm
-                    if GadenPlume:
+                    if PlumeType == "gaden":
                         currentReading = current_reading_full_data_gaden.raw
 
                     if currentReading < threshold: # below threshold do spinarony

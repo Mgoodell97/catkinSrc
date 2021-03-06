@@ -1,0 +1,188 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="PlumeType" default="gaussian"/>
+
+    <arg name="SpawnUAV1" default="True"/>
+    <arg name="x1" default="5.0"/>
+    <arg name="y1" default="5.0"/>
+    <arg name="z1" default="0.0"/>
+
+    <arg name="SpawnUAV2" default="False"/>
+    <arg name="x2" default="10.0"/>
+    <arg name="y2" default="5.0"/>
+    <arg name="z2" default="0.0"/>
+
+    <arg name="SpawnUAV3" default="False"/>
+    <arg name="x3" default="15.0"/>
+    <arg name="y3" default="5.0"/>
+    <arg name="z3" default="0.0"/>
+
+    <arg name="GazeboGUI" default="False"/>
+
+    <!-- Gazebo sim -->
+    <!-- Needed for quad -->
+    <include file="$(find quadnodes)/launch/gazeboOutdoor.launch">
+      <arg name="world" default="$(find quadnodes)/worlds/empty.world"/>
+      <arg name="gui" default="$(arg GazeboGUI)"/>
+    </include>
+
+    <!-- Spawn UAV1 -->
+    <include file="$(find quadnodes)/launch/spawnUAV1_SDF.launch" if="$(eval SpawnUAV1)">
+      <arg name="x" default="$(arg x1)"/>
+      <arg name="y" default="$(arg y1)"/>
+      <arg name="z" default="$(arg z1)"/>
+    </include>
+
+    <!-- Spawn UAV2 -->
+    <include file="$(find quadnodes)/launch/spawnUAV2_SDF.launch" if="$(eval SpawnUAV2)">
+      <arg name="x" default="$(arg x2)"/>
+      <arg name="y" default="$(arg y2)"/>
+      <arg name="z" default="$(arg z2)"/>
+    </include>
+
+    <!-- Spawn UAV3 -->
+    <include file="$(find quadnodes)/launch/spawnUAV3_SDF.launch" if="$(eval SpawnUAV3)">
+      <arg name="x" default="$(arg x3)"/>
+      <arg name="y" default="$(arg y3)"/>
+      <arg name="z" default="$(arg z3)"/>
+    </include>
+
+    <include file="$(find quadnodes)/launch/50x50.launch" if="$(eval PlumeType == 'gaden')"/>
+
+    <param name="PPM_at_center"    type="double"  value="50000" />               #  ppm     release rate
+    <param name="vPlume"           type="double"  value="1"     />               #  m/s      velocity
+    <param name="DyPlume"          type="double"  value="0.15"  />               #  m        diffusion along y
+    <param name="DzPlume"          type="double"  value="0.15"  />               #  m        diffusion along z
+    <param name="DiameterPlume"    type="double"  value="0.015" />               #  m        diameter of release valve
+
+    <!-- Plume location -->
+    <param name="xPlume"           type="double"  value="25"    /> # m
+    <param name="yPlume"           type="double"  value="45"    /> # m
+    <param name="zPlume"           type="double"  value="2"     /> # m
+    <param name="thetaPlume"       type="double"  value="-90"   /> # degrees (both methods need to know the wind direction)
+
+    <node name="plotGaussianwithPF" pkg="quadnodes" type="plotGaussianwithPF.py" output="screen">
+        <!-- Plot UAVS -->
+        <param name="plotUAV1" type="bool" value="$(arg SpawnUAV1)"/>
+        <param name="plotUAV2" type="bool" value="$(arg SpawnUAV2)"/>
+        <param name="plotUAV3" type="bool" value="$(arg SpawnUAV3)"/>
+
+        <!-- Map params -->
+        <param name="mapMin" value="0"/>
+        <param name="mapMax" value="50"/>
+    </node>
+
+    <group ns="UAV1" if="$(eval SpawnUAV1)">
+      <!-- Gas sensor -->
+      <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen" if="$(eval PlumeType == 'gaden')">
+          <param name="sensor_model" value="30" />
+          <param name="sensor_frame" value="pid_frame1" />
+          <param name="fixed_frame" value="map_gaden"/>
+          <param name="noise_std" value="20.1"/>
+      </node>
+
+      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py" output="screen" if="$(eval PlumeType == 'gaussian')">
+        <param name="UAVofIntrest" value="UAV1"/>
+      </node>
+
+      <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py">
+        <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
+      </node>
+
+      <!-- Motion planner -->
+      <node name="BRWpf" pkg="quadnodes" type="BRWpf.py" output="screen">
+        <param name="minLim"                 value="0.0"            />   # m
+        <param name="maxLim"                 value="50.0"           />   # m
+        <param name="zHeight"                value="2.0"            />   # m
+        <param name="biasRange"              value="60.0"           />   # m
+        <param name="stepSize"               value="2.0"            />   # m
+        <param name="waypointRadius"         value="0.25"           />   # m
+        <param name="stayTime"               value="0.05"           />   # seconds
+        <param name="maxVelocity"            value="3.0"            />   # m/seconds
+      </node>
+    </group>
+
+    <group ns="UAV2" if="$(eval SpawnUAV2)">
+      <!-- Gas sensor -->
+      <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen" if="$(eval PlumeType == 'gaden')">
+          <param name="sensor_model" value="30" />
+          <param name="sensor_frame" value="pid_frame2" />
+          <param name="fixed_frame" value="map_gaden"/>
+          <param name="noise_std" value="20.1"/>
+      </node>
+
+      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py" output="screen" if="$(eval PlumeType == 'gaussian')">
+        <param name="UAVofIntrest" value="UAV2"/>
+      </node>
+
+      <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py">
+        <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
+      </node>
+
+      <!-- Motion planner -->
+      <node name="BRWpf" pkg="quadnodes" type="BRWpf.py" output="screen">
+        <param name="minLim"                 value="0.0"            />   # m
+        <param name="maxLim"                 value="50.0"           />   # m
+        <param name="zHeight"                value="2.0"            />   # m
+        <param name="biasRange"              value="60.0"           />   # m
+        <param name="stepSize"               value="2.0"            />   # m
+        <param name="waypointRadius"         value="0.25"           />   # m
+        <param name="stayTime"               value="0.05"           />   # seconds
+        <param name="maxVelocity"            value="3.0"            />   # m/seconds
+      </node>
+    </group>
+
+    <group ns="UAV3" if="$(eval SpawnUAV3)">
+      <!-- Gas sensor -->
+      <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen" if="$(eval PlumeType == 'gaden')">
+          <param name="sensor_model" value="30" />
+          <param name="sensor_frame" value="pid_frame3" />
+          <param name="fixed_frame" value="map_gaden"/>
+          <param name="noise_std" value="20.1"/>
+      </node>
+
+      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py" output="screen" if="$(eval PlumeType == 'gaussian')">
+        <param name="UAVofIntrest" value="UAV3"/>
+      </node>
+
+      <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py">
+        <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
+      </node>
+
+      <!-- Motion planner -->
+      <node name="BRWpf" pkg="quadnodes" type="BRWpf.py" output="screen">
+        <param name="minLim"                 value="0.0"            />   # m
+        <param name="maxLim"                 value="50.0"           />   # m
+        <param name="zHeight"                value="2.0"            />   # m
+        <param name="biasRange"              value="60.0"           />   # m
+        <param name="stepSize"               value="2.0"            />   # m
+        <param name="waypointRadius"         value="0.25"           />   # m
+        <param name="stayTime"               value="0.05"           />   # seconds
+        <param name="maxVelocity"            value="3.0"            />   # m/seconds
+      </node>
+    </group>
+
+
+    <!-- Create tf transformations -->
+    <node pkg="tf" type="static_transform_publisher" name="UAVs2World" args="0.0 0.0 0.0 0 0 0 world worldUAVs 100" />
+    <node pkg="tf" type="static_transform_publisher" name="gaden2World" args="0.0 0.0 0.0 0 0 0 world map_gaden 100" if="$(eval PlumeType == 'gaden')"/>
+    <node pkg="tf" type="static_transform_publisher" name="pid1_broadcaster" args="0.0 0.0 0.01 0 0 0 UAV1 pid_frame1 100" if="$(eval PlumeType == 'gaden' and SpawnUAV1)"/>
+    <node pkg="tf" type="static_transform_publisher" name="pid2_broadcaster" args="0.0 0.0 0.01 0 0 0 UAV2 pid_frame2 100" if="$(eval PlumeType == 'gaden' and SpawnUAV2)"/>
+    <node pkg="tf" type="static_transform_publisher" name="pid3_broadcaster" args="0.0 0.0 0.01 0 0 0 UAV3 pid_frame3 100" if="$(eval PlumeType == 'gaden' and SpawnUAV3)"/>
+
+    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot2"  args="/UAV1/Sensor_reading/raw" if="$(eval PlumeType == 'gaden' and SpawnUAV1 and not SpawnUAV2 and not SpawnUAV3)"/>
+    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot2"  args="/UAV1/Sensor_reading/raw /UAV2/Sensor_reading/raw" if="$(eval PlumeType == 'gaden' and SpawnUAV1 and SpawnUAV2 and not SpawnUAV3)"/>
+    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot2"  args="/UAV1/Sensor_reading/raw /UAV2/Sensor_reading/raw /UAV3/Sensor_reading/raw" if="$(eval PlumeType == 'gaden' and SpawnUAV1 and SpawnUAV2 and SpawnUAV3)"/>
+
+    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot2"  args="/UAV1/gaussianReading/ppm" if="$(eval PlumeType == 'gaussian' and SpawnUAV1 and not SpawnUAV2 and not SpawnUAV3)"/>
+    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot2"  args="/UAV1/gaussianReading/ppm /UAV2/gaussianReading/ppm" if="$(eval PlumeType == 'gaussian' and SpawnUAV1 and SpawnUAV2 and not SpawnUAV3)"/>
+    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot2"  args="/UAV1/gaussianReading/ppm /UAV2/gaussianReading/ppm /UAV3/gaussianReading/ppm" if="$(eval PlumeType == 'gaussian' and SpawnUAV1 and SpawnUAV2 and SpawnUAV3)"/>
+
+    <!-- <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot"  args="/UAV1/gaussianReading/ppm /UAV2/gaussianReading/ppm /UAV3/gaussianReading/ppm" if="$(eval PlumeType == 'gaussian')"/> -->
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/gaden.rviz" if="$(eval PlumeType == 'gaden')"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/gauss.rviz"  if="$(eval PlumeType == 'gaussian')"/>
+
+    <!-- <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/Gaden/gadenRosbagFixedQuads/fixed120s /PID1/Sensor_reading /PID2/Sensor_reading /PID3/Sensor_reading /UAV1/true_position /UAV2/true_position /UAV3/true_position" name="rosbagRecord" /> -->
+
+</launch>
