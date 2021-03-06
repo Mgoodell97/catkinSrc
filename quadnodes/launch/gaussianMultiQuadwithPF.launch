@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="PlumeType" default="gaussian"/>
+
+    <!-- Gazebo sim -->
+    <!-- Needed for quad -->
+    <include file="$(find quadnodes)/launch/gazeboOutdoor.launch">
+      <arg name="world" default="$(find quadnodes)/worlds/empty.world"/>
+      <arg name="gui" default="false"/>
+    </include>
+
+
+    <!-- Spawn UAV1 -->
+    <include file="$(find quadnodes)/launch/spawnUAV1_SDF.launch">
+      <arg name="x" default="5"/>
+      <arg name="y" default="2"/>
+      <arg name="z" default="0.0"/>
+    </include>
+
+    <!-- Spawn UAV2 -->
+    <include file="$(find quadnodes)/launch/spawnUAV2_SDF.launch">
+      <arg name="x" default="5"/>
+      <arg name="y" default="10"/>
+      <arg name="z" default="0.0"/>
+    </include>
+
+    <!-- Spawn UAV3 -->
+    <include file="$(find quadnodes)/launch/spawnUAV3_SDF.launch">
+      <arg name="x" default="5"/>
+      <arg name="y" default="18"/>
+      <arg name="z" default="0.0"/>
+    </include>
+
+
+    Plume params
+    <param name="PPM_at_center"    type="double"  value="50000"/>             #  ppm     release rate
+    <param name="vPlume"           type="double"  value="1"   />               #  m/s      velocity
+    <param name="DyPlume"          type="double"  value="0.15"  />               #  m        diffusion along y
+    <param name="DzPlume"          type="double"  value="0.15"/>               #  m        diffusion along z
+    <param name="DiameterPlume"    type="double"  value="0.015"/>             #  m        diameter of release valve
+
+    <!-- <param name="PPM_at_center"    type="double"  value="100000"/>             #  ppm     release rate
+    <param name="vPlume"           type="double"  value="4"   />               #  m/s      velocity
+    <param name="DyPlume"          type="double"  value="40"  />               #  m        diffusion along y
+    <param name="DzPlume"          type="double"  value="0.01"/>               #  m        diffusion along z
+    <param name="DiameterPlume"    type="double"  value="0.01"/>               #  m        diameter of release valve -->
+
+    <!-- Plume location -->
+    <param name="xPlume"           type="double"  value="25" /> # m
+    <param name="yPlume"           type="double"  value="45" /> # m
+    <param name="zPlume"           type="double"  value="2"  /> # m
+    <param name="thetaPlume"       type="double"  value="-90"/> # degrees
+
+    <node name="plotGaussianwithPF" pkg="quadnodes" type="plotGaussianwithPF.py">
+        <!-- Plot UAVS -->
+        <param name="plotUAV1" type="bool" value="True"/>
+        <param name="plotUAV2" type="bool" value="True"/>
+        <param name="plotUAV3" type="bool" value="True"/>
+
+        <!-- Map params -->
+        <param name="mapMin" value="0"/>
+        <param name="mapMax" value="50"/>
+    </node>
+
+    <group ns="UAV1">
+      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py">
+        <param name="UAVofIntrest" value="UAV1"/>
+      </node>
+
+      <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py">
+        <param name="Color" value="Red"/>
+        <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
+      </node>
+
+      <node name="zScanNoYaw" pkg="quadnodes" type="zScanNoYaw">
+        <param name="xmin" value="0"/>  # starting waypoint
+        <param name="xmax" value="40"/> # ending waypoint
+        <param name="Nx"   value="8"/>  # number of waypoints
+
+        <param name="ymin" value="0"/>
+        <param name="ymax" value="45"/>
+        <param name="Ny"   value="8"/>
+
+        <param name="zmin" value="2"/>
+        <param name="zmax" value="2"/>
+        <param name="Nz"   value="1"/>
+
+        <param name="stayTime"   value="1"/>
+      </node>
+    </group>
+
+    <group ns="UAV2">
+      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py">
+        <param name="UAVofIntrest" value="UAV2"/>
+      </node>
+
+      <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py">
+        <param name="Color" value="Green"/>
+        <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
+      </node>
+
+      <node name="zScanNoYaw" pkg="quadnodes" type="zScanNoYaw">
+        <param name="xmin" value="0"/>  # starting waypoint
+        <param name="xmax" value="40"/> # ending waypoint
+        <param name="Nx"   value="8"/>  # number of waypoints
+
+        <param name="ymin" value="0"/>
+        <param name="ymax" value="45"/>
+        <param name="Ny"   value="8"/>
+
+        <param name="zmin" value="2"/>
+        <param name="zmax" value="2"/>
+        <param name="Nz"   value="1"/>
+
+        <param name="stayTime"   value="1"/>
+      </node>
+    </group>
+
+    <group ns="UAV3">
+      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py">
+        <param name="UAVofIntrest" value="UAV3"/>
+      </node>
+
+      <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py">
+        <param name="Color" value="Blue"/>
+        <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
+      </node>
+
+      <node name="zScanNoYaw" pkg="quadnodes" type="zScanNoYaw">
+        <param name="xmin" value="0"/>  # starting waypoint
+        <param name="xmax" value="40"/> # ending waypoint
+        <param name="Nx"   value="8"/>  # number of waypoints
+
+        <param name="ymin" value="0"/>
+        <param name="ymax" value="45"/>
+        <param name="Ny"   value="8"/>
+
+        <param name="zmin" value="2"/>
+        <param name="zmax" value="2"/>
+        <param name="Nz"   value="1"/>
+
+        <param name="stayTime"   value="1"/>
+      </node>
+    </group>
+
+
+    <!-- Create tf transformations -->
+    <node pkg="tf" type="static_transform_publisher" name="UAVs2World" args="0.0 0.0 0.0 0 0 0 world worldUAVs 100" />
+
+    <!-- <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot"  args="/UAV1/gaussianReading/ppm /UAV2/gaussianReading/ppm /UAV3/gaussianReading/ppm"/> -->
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/gauss.rviz"/>
+
+</launch>

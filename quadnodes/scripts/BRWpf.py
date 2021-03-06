@@ -8,9 +8,10 @@ from mavros_msgs.msg import State #include <mavros_msgs/State.h>
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import PoseStamped
 from quadnodes.msg import gaussian
+from particle_filter.msg import estimatedGaussian
 from olfaction_msgs.msg import gas_sensor
 
-from math import sqrt, pi
+from math import cos, sin, pi, acos, sqrt, exp
 import numpy as np
 
 from BRW_functions import biasedRandomWalk, moveRobot
@@ -23,10 +24,12 @@ global current_state
 global current_pose
 global current_reading_full_data_gauss
 global current_reading_full_data_gaden
+global plumeEstimation
 current_pose = PoseStamped()
 current_state = State()
 current_reading_full_data_gauss = gaussian()
 current_reading_full_data_gaden = gas_sensor()
+plumeEstimation = estimatedGaussian()
 
 state_cb_flag = False;
 pose_cb_flag = False;
@@ -41,6 +44,46 @@ def capVel(currentVelocity, minVel = 3,  maxVel = 3):
     if currentVelocity < minVel:
         return minVel
     return currentVelocity
+
+def gaussFunc(xFunc, yFunc, zFunc, QFunc, vFunc, DyFunc, DzFunc):
+    con = (QFunc/(4 * pi * xFunc * sqrt(DyFunc*DzFunc))) * exp( -vFunc/(4*xFunc) * ((yFunc**2)/DyFunc + (zFunc**2)/DzFunc))
+    return con
+
+
+def getReading(xRobotDef, yRobotDef, thetaFunc, xPlumeFunc, yPlumeFunc, zFunc, QFunc, vFunc, DyFunc, DzFunc):
+    # Rotate frame
+
+    Xw_r = np.array([xRobotDef, yRobotDef, 1])
+
+    R = np.array([[cos(thetaFunc), -sin(thetaFunc)], [sin(thetaFunc), cos(thetaFunc)]])
+    P = np.array([[xPlumeFunc, yPlumeFunc]]).T;
+
+    bottomArray = np.array([[0, 0 , 1]]);
+    Tw_plumeFrame = np.concatenate((R, P), axis=1)
+
+    # Transfer matrix from plumeframe to w
+    Tw_plumeFrame = np.concatenate((Tw_plumeFrame, bottomArray), axis=0)
+
+    Rinv = np.linalg.inv(R)
+    Pinv = np.array([np.matmul(-Rinv, np.squeeze(P))]).T
+
+    TplumeFrame_w = np.concatenate((Rinv, Pinv), axis=1)
+
+    # Transfer matrix from w to plumeframe
+    TplumeFrame_w = np.concatenate((TplumeFrame_w, bottomArray), axis=0)
+
+    XplumeFrame = np.matmul(TplumeFrame_w, Xw_r)
+
+    xRobotRotated = XplumeFrame[0]
+    yRobotRotated = XplumeFrame[1]
+
+
+    if xRobotRotated <= 0:
+        reading = 0
+    else:
+        reading = gaussFunc(xRobotRotated,yRobotRotated,zFunc,QFunc,vFunc,DyFunc,DzFunc)
+
+    return reading
 
 ##################
 # Callbacks
@@ -66,6 +109,10 @@ def gadenSensor_cb(gadenMsg):
     global current_reading_full_data_gaden
     current_reading_full_data_gaden = gadenMsg
 
+def pf_cb(pfMsg):
+    global plumeEstimation
+    plumeEstimation = pfMsg
+
 ##################
 # Main
 ##################
@@ -76,6 +123,7 @@ def main():
     #We instantiate a publisher to publish the commanded local position and the appropriate clients to request arming and mode change
     rospy.Subscriber("mavros/state", State, state_cb)
     rospy.Subscriber("true_position", PoseStamped, pose_cb)
+    rospy.Subscriber("gaussianEstimation", estimatedGaussian, pf_cb) # Sub to particle filter
 
     local_vel_pub = rospy.Publisher('mavros/setpoint_velocity/cmd_vel', TwistStamped, queue_size=100)
 
@@ -86,32 +134,18 @@ def main():
     arming_client = rospy.ServiceProxy("mavros/cmd/arming", CommandBool)
     set_mode_client = rospy.ServiceProxy("mavros/set_mode", SetMode)
 
-    minLim             = rospy.get_param("BRWQuad/minLim")          #  m
-    maxLim             = rospy.get_param("BRWQuad/maxLim")          #  m
-    zHeight            = rospy.get_param("BRWQuad/zHeight")         #  m
-    biasRange          = rospy.get_param("BRWQuad/biasRange")       #  degrees
-    stepSize           = rospy.get_param("BRWQuad/stepSize")        #  m
-    waypointRadius     = rospy.get_param("BRWQuad/waypointRadius")  #  m
-    stayTime           = rospy.get_param("BRWQuad/stayTime")        #  seconds
-    maxVelocity        = rospy.get_param("BRWQuad/maxVelocity")     #  m/s
-    PlumeType          = rospy.get_param("BRWQuad/PlumeType")      #  I'm not explaining this
+    minLim             = rospy.get_param("BRWpf/minLim")          #  m
+    maxLim             = rospy.get_param("BRWpf/maxLim")          #  m
+    zHeight            = rospy.get_param("BRWpf/zHeight")         #  m
+    biasRange          = rospy.get_param("BRWpf/biasRange")       #  degrees
+    stepSize           = rospy.get_param("BRWpf/stepSize")        #  m
+    waypointRadius     = rospy.get_param("BRWpf/waypointRadius")  #  m
+    stayTime           = rospy.get_param("BRWpf/stayTime")        #  seconds
+    maxVelocity        = rospy.get_param("BRWpf/maxVelocity")     #  m/s
 
-    if PlumeType == "gaussian":
-        rospy.Subscriber("gaussianReading", gaussian, gaussSensor_cb)
-    if PlumeType == "gaden":
-        rospy.Subscriber("Sensor_reading", gas_sensor, gadenSensor_cb)
-
-
-    # minLim = 0
-    # maxLim = 50
     biasRange = biasRange * pi/180 # converts to radians
-    # stepSize = 5
-    xyzWaypointIndex = 0
     kp = 1
-    # waypointRadius = 0.1
-    # stayTime = 0.5;
     xyzError = [0, 0, 0]
-    yawError = 0
     justHitWaypoint = False
     firstWaypointFlag = False
 
@@ -173,10 +207,8 @@ def main():
                 if(rospy.get_rostime() - waypointStartTime >= rospy.Duration(stayTime)):
                     if not firstWaypointFlag:
                         # Get first reading
-                        if PlumeType == "gaussian":
-                            previousReading = current_reading_full_data_gauss.ppm
-                        if PlumeType == "gaden":
-                            previousReading = current_reading_full_data_gaden.raw
+                        previousReading = getReading(current_pose.pose.position.x, current_pose.pose.position.y, plumeEstimation.Theta, plumeEstimation.X, plumeEstimation.Y, plumeEstimation.Z - current_pose.pose.position.z, plumeEstimation.Q, plumeEstimation.V, plumeEstimation.Dy, plumeEstimation.Dz)
+
                         xRobotDesired, yRobotDesired = moveRobot(current_pose.pose.position.x, current_pose.pose.position.y, stepSize, minLim, maxLim)
                         xWaypointList = xRobotDesired
                         yWaypointList = yRobotDesired
@@ -184,10 +216,7 @@ def main():
                         #Only move randomly once
                         firstWaypointFlag = True
                     else: # Start bias random walk
-                        if PlumeType == "gaussian":
-                            currentReading = current_reading_full_data_gauss.ppm
-                        if PlumeType == "gaden":
-                            currentReading = current_reading_full_data_gaden.raw
+                        currentReading = getReading(current_pose.pose.position.x, current_pose.pose.position.y, plumeEstimation.Theta, plumeEstimation.X, plumeEstimation.Y, plumeEstimation.Z - current_pose.pose.position.z, plumeEstimation.Q, plumeEstimation.V, plumeEstimation.Dy, plumeEstimation.Dz)
                         xRobotDesired, yRobotDesired, slope, bias = biasedRandomWalk(current_pose.pose.position.x, current_pose.pose.position.y, previousReading, currentReading, biasRange, previousBias, stepSize, minLim, maxLim)
                         xWaypointList = xRobotDesired
                         yWaypointList = yRobotDesired

@@ -38,12 +38,13 @@ def biasedRandomWalk(xRobotNewFunc, yRobotNewFunc, previousReading, currentReadi
 
     if slope == 0: # no slope found go in random direction
         xNew, yNew = moveRobot(xRobotNewFunc, yRobotNewFunc, stepSize, minBound, maxBound)
+        # print("Moved randomly")
         return xNew, yNew, slope, randomNumAtoB(-2*pi,2*pi)
 
     else: # if there is a slope bias towards the slope
         if slope > 0:
             biasDirection = previousBias + randomNumAtoB(-biasRange,biasRange) # add random noise
-
+            # print("Moved forward")
             xStep = stepSize * np.cos(biasDirection)
             yStep = stepSize * np.sin(biasDirection)
 
@@ -67,6 +68,7 @@ def biasedRandomWalk(xRobotNewFunc, yRobotNewFunc, previousReading, currentReadi
 
         else:
             # biasDirection = biasDirection + pi
+            # print("Moved backward")
             biasDirection = previousBias + randomNumAtoB(-biasRange,biasRange) + pi # add random noise
 
             xStep = stepSize * np.cos(biasDirection)

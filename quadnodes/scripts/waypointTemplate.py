@@ -52,9 +52,9 @@ def state_cb(stateMsg):
     current_state = stateMsg
     state_cb_flag = True
 
-
-
-
+##################
+# Main
+##################
 
 def main():
     rospy.init_node('zScanNoYaw')
