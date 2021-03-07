@@ -110,10 +110,16 @@ def main():
 
     if plotUAV1:
         rospy.Subscriber("UAV1/true_position", PoseStamped, UAV1_cb)
+        xPltUAV1 = []
+        yPltUAV1 = []
     if plotUAV2:
         rospy.Subscriber("UAV2/true_position", PoseStamped, UAV2_cb)
+        xPltUAV2 = []
+        yPltUAV2 = []
     if plotUAV3:
         rospy.Subscriber("UAV3/true_position", PoseStamped, UAV3_cb)
+        xPltUAV3 = []
+        yPltUAV3 = []
 
 
 
@@ -133,18 +139,6 @@ def main():
     ind = np.unravel_index(np.argmax(conArray, axis=None), conArray.shape)
     conArray[ind[0]][ind[1]] = secondHighestValue * 1.03
 
-    if plotUAV1:
-        xPltUAV1 = []
-        yPltUAV1 = []
-
-    if plotUAV2:
-        xPltUAV2 = []
-        yPltUAV2 = []
-
-    if plotUAV3:
-        xPltUAV3 = []
-        yPltUAV3 = []
-
     while not rospy.is_shutdown():
         # Plotting stuff
         plt.clf()
@@ -154,22 +148,25 @@ def main():
 
         # Plot UAV1
         if plotUAV1:
-            xPltUAV1.append(UAV1_pose.pose.position.x)
-            yPltUAV1.append(UAV1_pose.pose.position.y)
+            if UAV1_pose.pose.position.x != 0.0:
+                xPltUAV1.append(UAV1_pose.pose.position.x)
+                yPltUAV1.append(UAV1_pose.pose.position.y)
             plt.plot(xPltUAV1, yPltUAV1,"r")
             plt.plot(UAV1_pose.pose.position.x,UAV1_pose.pose.position.y,'ro',  markersize=6)
 
         # Plot UAV2
         if plotUAV2:
-            xPltUAV2.append(UAV2_pose.pose.position.x)
-            yPltUAV2.append(UAV2_pose.pose.position.y)
+            if UAV2_pose.pose.position.x != 0.0:
+                xPltUAV2.append(UAV2_pose.pose.position.x)
+                yPltUAV2.append(UAV2_pose.pose.position.y)
             plt.plot(xPltUAV2, yPltUAV2,"g")
             plt.plot(UAV2_pose.pose.position.x,UAV2_pose.pose.position.y,'go', markersize=6)
 
         # Plot UAV3
         if plotUAV3:
-            xPltUAV3.append(UAV3_pose.pose.position.x)
-            yPltUAV3.append(UAV3_pose.pose.position.y)
+            if UAV3_pose.pose.position.x != 0.0:
+                xPltUAV3.append(UAV3_pose.pose.position.x)
+                yPltUAV3.append(UAV3_pose.pose.position.y)
             plt.plot(xPltUAV3, yPltUAV3,'b')
             plt.plot(UAV3_pose.pose.position.x,UAV3_pose.pose.position.y,'bo', markersize=6)
 

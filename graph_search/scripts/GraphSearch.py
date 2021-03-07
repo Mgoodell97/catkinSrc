@@ -14,6 +14,8 @@ from mavros_msgs.msg import State #include <mavros_msgs/State.h>
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import PoseStamped
 from particle_filter.msg import particles
+from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import MultiArrayDimension
 
 ##################
 # Global variables
@@ -27,7 +29,6 @@ current_state = State()
 particlesEstimation = particles()
 state_cb_flag = False;
 pose_cb_flag = False;
-_ACTIONS_2 = ['u','d','l','r','ne','nw','sw','se']
 
 ##################
 # Functions
@@ -92,14 +93,13 @@ def main():
     waypointRadius     = rospy.get_param("GraphSearch/waypointRadius")  #  m
     stayTime           = rospy.get_param("GraphSearch/stayTime")        #  seconds
     maxVelocity        = rospy.get_param("GraphSearch/maxVelocity")     #  m/s
+    rowSteps           = rospy.get_param("rowSteps")
+    colSteps           = rospy.get_param("colSteps")
+    xMinMap            = rospy.get_param("xMinMap")
+    yMinMap            = rospy.get_param("yMinMap")
+    xMaxMap            = rospy.get_param("xMaxMap")
+    yMaxMap            = rospy.get_param("yMaxMap")
 
-
-    rowSteps = 10;
-    colSteps = 10;
-    xMinMap = 0
-    yMinMap = 0
-    xMaxMap = 50
-    yMaxMap = 50
     xRange = [xMinMap, xMaxMap]
     yRange = [yMinMap, yMaxMap]
 
@@ -198,6 +198,7 @@ def main():
                         print(yBins)
                         print(path)
                         print(patriclesArray)
+
                     else: # move to next waypoint
                         xWaypoint = path[xyzWaypointIndex,_X]
                         yWaypoint = path[xyzWaypointIndex,_Y]
@@ -216,6 +217,7 @@ def main():
         DesiredVel.twist.linear.x = capVel(kp * xyzError[0],-maxVelocity,maxVelocity)
         DesiredVel.twist.linear.y = capVel(kp * xyzError[1],-maxVelocity,maxVelocity)
         DesiredVel.twist.linear.z = capVel(kp * xyzError[2],-maxVelocity,maxVelocity)
+
 
         local_vel_pub.publish(DesiredVel);
 
