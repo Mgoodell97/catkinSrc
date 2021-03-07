@@ -18,6 +18,7 @@
     <arg name="z3" default="0.0"/>
 
     <arg name="GazeboGUI" default="False"/>
+    <arg name="RVIZGUI" default="True"/>
 
     <!-- Gazebo sim -->
     <!-- Needed for quad -->
@@ -89,12 +90,23 @@
         <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
       </node>
 
+      <param name="rowSteps" value="10"/>
+      <param name="colSteps" value="10"/>
+      <param name="xMinMap" value="0"/>
+      <param name="yMinMap" value="0"/>
+      <param name="xMaxMap" value="50"/>
+      <param name="yMaxMap" value="50"/>
+
       <!-- Motion planner -->
       <node name="GraphSearch" pkg="graph_search" type="GraphSearch.py" output="screen">
         <param name="zHeight"                value="2.0"            />   # m
         <param name="waypointRadius"         value="0.25"           />   # m
         <param name="stayTime"               value="0.05"            />   # seconds
         <param name="maxVelocity"            value="3.0"            />   # m/seconds
+      </node>
+
+      <node name="graphSearchPlots" pkg="graph_search" type="graphSearchPlots.py">
+        <param name="particleColor" value="red"/>
       </node>
     </group>
 
@@ -111,10 +123,16 @@
         <param name="UAVofIntrest" value="UAV2"/>
       </node>
 
-      <!-- Motion planner -->
       <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py">
         <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
       </node>
+
+      <param name="rowSteps" value="10"/>
+      <param name="colSteps" value="10"/>
+      <param name="xMinMap" value="0"/>
+      <param name="yMinMap" value="0"/>
+      <param name="xMaxMap" value="50"/>
+      <param name="yMaxMap" value="50"/>
 
       <!-- Motion planner -->
       <node name="GraphSearch" pkg="graph_search" type="GraphSearch.py" output="screen">
@@ -122,6 +140,10 @@
         <param name="waypointRadius"         value="0.25"           />   # m
         <param name="stayTime"               value="0.05"            />   # seconds
         <param name="maxVelocity"            value="3.0"            />   # m/seconds
+      </node>
+
+      <node name="graphSearchPlots" pkg="graph_search" type="graphSearchPlots.py">
+        <param name="particleColor" value="green"/>
       </node>
     </group>
 
@@ -138,10 +160,16 @@
         <param name="UAVofIntrest" value="UAV3"/>
       </node>
 
-      <!-- Motion planner -->
       <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py">
         <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
       </node>
+
+      <param name="rowSteps" value="10"/>
+      <param name="colSteps" value="10"/>
+      <param name="xMinMap" value="0"/>
+      <param name="yMinMap" value="0"/>
+      <param name="xMaxMap" value="50"/>
+      <param name="yMaxMap" value="50"/>
 
       <!-- Motion planner -->
       <node name="GraphSearch" pkg="graph_search" type="GraphSearch.py" output="screen">
@@ -149,6 +177,10 @@
         <param name="waypointRadius"         value="0.25"           />   # m
         <param name="stayTime"               value="0.05"            />   # seconds
         <param name="maxVelocity"            value="3.0"            />   # m/seconds
+      </node>
+
+      <node name="graphSearchPlots" pkg="graph_search" type="graphSearchPlots.py">
+        <param name="particleColor" value="blue"/>
       </node>
     </group>
 
@@ -170,8 +202,8 @@
 
     <!-- <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot"  args="/UAV1/gaussianReading/ppm /UAV2/gaussianReading/ppm /UAV3/gaussianReading/ppm" if="$(eval PlumeType == 'gaussian')"/> -->
 
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/gaden.rviz" if="$(eval PlumeType == 'gaden')"/>
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/gauss.rviz"  if="$(eval PlumeType == 'gaussian')"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/gaden.rviz" if="$(eval PlumeType == 'gaden' and RVIZGUI)"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/gauss.rviz"  if="$(eval PlumeType == 'gaussian' and RVIZGUI)"/>
 
     <!-- <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/Gaden/gadenRosbagFixedQuads/fixed120s /PID1/Sensor_reading /PID2/Sensor_reading /PID3/Sensor_reading /UAV1/true_position /UAV2/true_position /UAV3/true_position" name="rosbagRecord" /> -->
 
