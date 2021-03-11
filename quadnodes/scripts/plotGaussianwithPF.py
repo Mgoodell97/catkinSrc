@@ -183,7 +183,7 @@ def main():
 
     for xCurrentIndex in range(len(xPlumePlot)):
         for yCurrentIndex in range(len(yPlumePlot)):
-            conArray[xCurrentIndex,yCurrentIndex] = getReading(yPlumePlot[yCurrentIndex], xPlumePlot[xCurrentIndex], thetaPlume, xPlume, yPlume, 0.0, QPlume, vPlume, DyPlume, DzPlume)
+            conArray[xCurrentIndex,yCurrentIndex] = getReading(yPlumePlot[yCurrentIndex], xPlumePlot[xCurrentIndex], thetaPlume, xPlume, yPlume, 0.0, QPlume, vPlume, DyPlume, DzPlume)* (1/vPlume) * (1/releaseArea) * 1000
 
 
     flat=conArray.flatten()
@@ -277,7 +277,7 @@ def main():
         for xCurrentIndex in range(len(xPlumePlot)):
             for yCurrentIndex in range(len(yPlumePlot)):
                 if (DzPlume_estimated != 0) and (DyPlume_estimated !=0):
-                    conArray_estimated[xCurrentIndex,yCurrentIndex] = getReading(yPlumePlot[yCurrentIndex], xPlumePlot[xCurrentIndex], ThetaPlume_estimated, xPlume_estimated, yPlume_estimated, 0.0, QPlume_estimated, VPlume_estimated, DyPlume_estimated, DzPlume_estimated)
+                    conArray_estimated[xCurrentIndex,yCurrentIndex] = getReading(yPlumePlot[yCurrentIndex], xPlumePlot[xCurrentIndex], ThetaPlume_estimated, xPlume_estimated, yPlume_estimated, 0, QPlume_estimated, VPlume_estimated, DyPlume_estimated, DzPlume_estimated)
 
         # Plot gaussian
         plt.subplot(plumeSubplot)
@@ -314,9 +314,8 @@ def main():
 
         plt.xlim(minLim, maxLim)
         plt.ylim(minLim, maxLim)
+        plt.pause(0.01)
         rate.sleep()
-        plt.pause(0.05)
-
 
 if __name__ == '__main__':
     try:

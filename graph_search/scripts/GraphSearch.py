@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy #include <ros/ros.h> cpp equivalent
-from discritizationPF import DiscretizeMap, FindBestGoal
+from discritizationPF import DiscretizeMap, FindBestGoal, DiscretizeRobotPose
 from math import cos, sin, pi, acos, sqrt, exp
 import numpy as np
 import MP_project_gs
@@ -44,9 +44,18 @@ def capVel(currentVelocity, minVel = 3,  maxVel = 3):
 # This code finds the path for graphSearch
 def run_IG(start,goal,map_path,actions=MP_project_gs._ACTIONS_2):
     g = MP_project_gs.GridMap(start, goal, map_path)
+    # g.display_map()
     res = MP_project_gs.IG_search(g.init_pos, g.transition, g.is_goal, actions)
-    path = res[0][0]
-    return path
+    pathIndex = res[0][0]
+    # print("Start : ", start)
+    # print("Goal : ", goal)
+    # print("pathIndex : ", pathIndex)
+    # print()
+    # print("---------------------")
+    # print(res)
+    # g.display_map(res[0][0],res[1])
+    # g.display_map(path)
+    return pathIndex
 
 ##################
 # Callbacks
@@ -182,26 +191,36 @@ def main():
                             BestGoal = (xBestGoalIndex[0],yBestGoalIndex[0])
                         else:
                             BestGoal = (xBestGoalIndex,yBestGoalIndex)
+
                         xBestGoal = np.array([xBestGoal])
                         yBestGoal = np.array([yBestGoal])
-                        start = tuple((9-(int((xyPoseRobot[1]-5)/rowSteps)),int((xyPoseRobot[0]-1)/2)))
+
+                        # start = tuple((9-(int((xyPoseRobot[1]-5)/rowSteps)),int((xyPoseRobot[0]-1)/2)))
+                        _, xIndex, yIndex = DiscretizeRobotPose([current_pose.pose.position.x, current_pose.pose.position.y], xBins, yBins)
+                        start = (yIndex, xIndex)
+
                         if start == BestGoal:
                             BestGoal = (np.random.randint(rowSteps),np.random.randint(colSteps))
 
-                        path = run_IG(start,BestGoal,patriclesArray,actions=MP_project_gs._ACTIONS_2)
 
-                        xWaypoint = path[xyzWaypointIndex,_X]
-                        yWaypoint = path[xyzWaypointIndex,_Y]
-                        print(start)
-                        print(BestGoal)
-                        print(xBins)
-                        print(yBins)
-                        print(path)
-                        print(patriclesArray)
+                        pathIndex = run_IG(start,BestGoal,patriclesArray,actions=MP_project_gs._ACTIONS_2)
+                        path = []
+                        for pathIndexCurrent in range(len(pathIndex)):
+                            path.append((xBins[pathIndex[pathIndexCurrent][1]],yBins[pathIndex[pathIndexCurrent][0]]))
+                        # path = run_IG(start,BestGoal,patriclesArray,actions=MP_project_gs._ACTIONS_2)
+
+                        xWaypoint = path[xyzWaypointIndex][_X]
+                        yWaypoint = path[xyzWaypointIndex][_Y]
+                        # print(start)
+                        # print(BestGoal)
+                        # print(xBins)
+                        # print(yBins)
+                        # print(path)
+                        # print(patriclesArray)
 
                     else: # move to next waypoint
-                        xWaypoint = path[xyzWaypointIndex,_X]
-                        yWaypoint = path[xyzWaypointIndex,_Y]
+                        xWaypoint = path[xyzWaypointIndex][_X]
+                        yWaypoint = path[xyzWaypointIndex][_Y]
 
                     # print("")
                     # print("Moving to next waypoint")

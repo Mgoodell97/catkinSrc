@@ -73,6 +73,13 @@
         <param name="mapMax" value="50"/>
     </node>
 
+    <node name="hivemind" pkg="quadnodes" type="hivemind.py" output="screen">
+        <!-- Plot UAVS -->
+        <param name="UAV1" type="bool" value="$(arg SpawnUAV1)"/>
+        <param name="UAV2" type="bool" value="$(arg SpawnUAV2)"/>
+        <param name="UAV3" type="bool" value="$(arg SpawnUAV3)"/>
+    </node>
+
     <group ns="UAV1" if="$(eval SpawnUAV1)">
       <!-- Gas sensor -->
       <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen" if="$(eval PlumeType == 'gaden')">
@@ -90,8 +97,8 @@
         <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
       </node>
 
-      <param name="rowSteps" value="10"/>
-      <param name="colSteps" value="10"/>
+      <param name="rowSteps" value="20"/>
+      <param name="colSteps" value="20"/>
       <param name="xMinMap" value="0"/>
       <param name="yMinMap" value="0"/>
       <param name="xMaxMap" value="50"/>
