@@ -98,9 +98,9 @@ class Sensor():
             print('need same number of movements as sensor')
             return
 
-        self.x = x
-        self.y = y
-        self.z = z
+        self.x = x[0][0]
+        self.y = y[0][0]
+        self.z = z[0][0]
 
 class GaussianPlume(): # not needed in ROS I already have this from matthews simulation
     def __init__(self, Dy=66.1059, Dx=0.1372, V=2.4559, Q=66.7853):
@@ -163,52 +163,26 @@ class Particle_Gen():
         Dz = self.particles[7]
 
         particle_likelihoods = np.zeros((self.num_of_parti))
-        #print(particle_likelihoods)
+        concentrations = np.zeros((self.num_of_parti))        #print(particle_likelihoods)
 
         # function for pdf threshold
         pdf_std = pdf_thresh_function(actual_sensor_reading)
 
-        # x_world[0] = 25
-        # y_world[0] = 45
-        # z_world[0] = 2
-        # theta[0] = (6*np.pi)/4
-        # Q[0] = 100000
-        # V[0] = 4
-        # Dy[0] = 40
-        # Dz[0] = .01
-        # print('sensor x')
-        # print(sensor_x)
-        # print('sensor y')
-        # print(sensor_y)
-        # print('sensor z')
-        # print(sensor_z)
+        Xp = np.cos(theta)*sensor_x + np.sin(theta)*sensor_y + (-np.cos(theta)*x_world - np.sin(theta)*y_world)
+        Yp = -np.sin(theta)*sensor_x + np.cos(theta)*sensor_y + (np.sin(theta)*x_world - np.cos(theta)*y_world)
+        Zp = sensor_z - z_world
 
-        #print(pdf_std)
-        # converts quad to particle plume space and calculate the would be concentration at that point
-        for d in range(0,self.num_of_parti):
-            Xp = np.cos(theta[d])*sensor_x + np.sin(theta[d])*sensor_y + (-np.cos(theta[d])*x_world[d] - np.sin(theta[d])*y_world[d])
-            Yp = -np.sin(theta[d])*sensor_x + np.cos(theta[d])*sensor_y + (np.sin(theta[d])*x_world[d] - np.cos(theta[d])*y_world[d])
-            Zp = sensor_z - z_world[d]
+        xp_bad = np.where(Xp<=0)
+        xp_good = np.where(Xp>0)
 
-            if Xp<=0:
-                conc = 0
-            else:
-                conc = (Q[d]/((4*np.pi*Xp)*np.sqrt(Dy[d]*Dz[d])))*(np.exp((-V[d]/(4*Xp))*((Yp**2/Dy[d])+(Zp**2/Dz[d]))))
-                # if d == 0:
-                #     print('real center value conc:')
-                #     print(conc)
-                #     print('xp:')
-                #     print(Xp)
-                #     print('yp:')
-                #     print(Yp)
+        xp_bad = xp_bad[0]
+        xp_good = xp_good[0]
 
+        concentrations[xp_bad] = 0
+        concentrations[xp_good] = (Q[xp_good]/((4*np.pi*Xp[xp_good])*np.sqrt(Dy[xp_good]*Dz[xp_good])))*(np.exp((-V[xp_good]/(4*Xp[xp_good]))*((Yp[xp_good]**2/Dy[xp_good])+(Zp[xp_good]**2/Dz[xp_good]))))
 
-
-
-            particle_likelihood = norm.pdf(conc, actual_sensor_reading, pdf_std)
-            particle_likelihood = particle_likelihood/(norm.pdf(0,0, pdf_std))
-            #print(particle_likelihood[0])
-            particle_likelihoods[d] = particle_likelihood
+        particle_likelihoods = norm.pdf(concentrations,actual_sensor_reading,pdf_std)
+        particle_likelihoods = particle_likelihoods/(norm.pdf(0,0,pdf_std))
 
 
         # finds out what particles have been placed outside vineyard and makes them unlikely
@@ -218,16 +192,33 @@ class Particle_Gen():
         particle_likelihoods = particle_likelihoods*out_area_particles_y
         #print(particle_likelihoods)
 
-        prob_df = particle_likelihoods/sum(particle_likelihoods)
-        prob_df = prob_df*self.prior
-        prob_df = prob_df/sum(prob_df)
-        self.prob_df = prob_df
+        if sum(particle_likelihoods) == 0:
+            pass
+            #print('NaN Error!')
+            #print(actual_sensor_reading)
+            # error = actual_sensor_reading-concentrations
+            # mpl.ion()
+            # mpl.show()
+            # mpl.clf()
+            # mpl.hist(concentrations,bins=100)
+            # mpl.draw()
+            # mpl.pause(.5)
 
-        # find particles that have rectangle spaces outside of field and make them unlikely....
-        #sense_likehood = sense_likehood*((self.particles[0]+rect_width_particles) < self.estimated_parameters['x_particles'][1]+5)
-        #sense_likehood = sense_likehood*((self.particles[0]-rect_width_particles) > self.estimated_parameters['x_particles'][0]-5)
-        #sense_likehood = sense_likehood*((self.particles[1]+rect_height_particles) < self.estimated_parameters['y_particles'][1]+5)
-        #sense_likehood = sense_likehood*((self.particles[1]-rect_height_particles) > self.estimated_parameters['y_particles'][0]-5
+        else:
+            error = actual_sensor_reading-concentrations
+            # mpl.ion()
+            # mpl.show()
+            # mpl.clf()
+            # mpl.hist(error,range=(-10000,10000),bins=100)
+            # mpl.draw()
+            # mpl.pause(.5)
+            # print('TESTING:')
+            # print(actual_sensor_reading)
+            prob_df = particle_likelihoods/sum(particle_likelihoods)
+            prob_df = prob_df*self.prior
+            prob_df = prob_df/sum(prob_df)
+            self.prob_df = prob_df
+
         return
 
     def resamp_and_noise(self, noise_std_params=_NOISE_STD_PARAMS, num_of_parti=_NUM_OF_PARTICLES, impov_particles = _IMP_PARTICLES):
@@ -258,57 +249,3 @@ class Particle_Gen():
 
     def __str__(self):
         return str(self.particles)
-
-
-
-
-# sensors = Sensor() # initilize sensors (starts at random location)
-# particle_filter = Particle_Gen() # initializes particles
-
-# for w in range(_NUM_OF_STEPS):
-#     x = np.random.uniform(0,_VINYARD_SIZE[_X],1) # selects random x value for sensor
-#     y = np.random.uniform(0,_VINYARD_SIZE[_Y],1) # selects random y value for sensor
-#     sensors.move(x,y) # moves sensor to new location
-#     particle_filter.likelihood(plume_params, sensors.reading(), sensors.x , sensors.y) # gets likelihod of each particle
-
-
-#     # time.sleep(1)
-#     particle_filter.resamp_and_noise() # resamples likely particles and adds noise to them
-#     mpl.plot(particle_filter.particles[_X],particle_filter.particles[_Y],'.')
-#     mpl.plot(sensors.x[0][0],sensors.y[0][0],'bo')
-#     mpl.plot(sensors.history[0],sensors.history[1],'r.')
-#     mpl.vlines(range(1,_VINYARD_SIZE[_X],_ROW_SPACEING),0,_VINYARD_SIZE[_Y],colors='g')
-#     mpl.title('Sensor Reading ' + str(w+1))
-#     #mpl.xlim(0,_VINYARD_SIZE[_X])
-#     #mpl.ylim(0,_VINYARD_SIZE[_Y])
-#     mpl.show()
-
-
-# rect_parameters = np.mean(particle_filter.particles,axis=1)
-# TL_X = rect_parameters[0]-(rect_parameters[2]/2)
-# TL_Y = rect_parameters[1]-(rect_parameters[3]/2)
-
-# fig, ax = mpl.subplots()
-# ax.plot(Bugs_X_Locations,Bugs_Y_Locations,'g.')
-# # ax.xlim(0,_VINYARD_SIZE[_X])
-# # ax.ylim(0,_VINYARD_SIZE[_Y])
-# rect = patch.Rectangle((TL_X,TL_Y),rect_parameters[2],rect_parameters[3],edgecolor='r', facecolor="none")
-# ax.add_patch(rect)
-
-# mpl.show()
-
-
-
-
-
-
-#r = particles.hypothetical_readings(plume_params, sensors.x , sensors.y)
-
-
-# while w[0]==0:
-#     sensors = Sensor()
-#     w = sensors.reading()
-#     print(sensors.reading())
-#     print(sensors.x)
-#     print(sensors.y)
-#     r = r+1
