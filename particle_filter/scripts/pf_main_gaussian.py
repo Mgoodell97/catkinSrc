@@ -19,10 +19,14 @@ from particle_filter.msg import particles
 # import sys
 
 global chem_reading
-_NUM_OF_PARTICLES = 1000
+_NUM_OF_PARTICLES_GAUS = 1000
+_NUM_OF_PARTICLES_GADEN = 1000
+
 _IMP_PARTICLES = 200
-_PARTICLE_PARAMETERS = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[50000, 50000],[1, 1],[.15,.15],[.15,.15]] #x,y,z,theta,Q,V,Dy,Dz
-#_PARTICLE_PARAMETERS = [[0, 50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[6000, 6000],[2, 2],[1.5,1.5],[1.5,1.5]] #x,y,z,theta,Q,V,Dy,Dz
+_PARTICLE_PARAMETERS_GAUS = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[50000, 50000],[1, 1],[.15,.15],[.15,.15]] #x,y,z,theta,Q,V,Dy,Dz
+_PARTICLE_PARAMETERS_GADEN = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[50000, 50000],[1, 1],[.15,.15],[.15,.15]] #x,y,z,theta,Q,V,Dy,Dz
+
+#_PARTICLE_PARAMETERS = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[50000, 50000],[1, 1],[.15,.15],[.15,.15]] #x,y,z,theta,Q,V,Dy,Dz
 #_PARTICLE_PARAMETERS = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[0, 3000],[0, 2.5],[0,1.5],[0,1.5]] #x,y,z,theta,Q,V,Dy,Dz
 
 # _PARTICLE_PARAMETERS = [[0, 50],[0, 50],[0,4],[0,6*np.pi/4],[90000, 110000],[0, 8],[20,60],[.005, .025]]
@@ -97,14 +101,17 @@ def main():
 
     if PlumeType == "gaussian":
         rospy.Subscriber("gaussianReading", gaussian, gaussSensor_cb)
+        particle_filter = Particle_Gen(_PARTICLE_PARAMETERS_GAUS,_NUM_OF_PARTICLES_GAUS,_NUM_OF_ROBOTS,_VINYARD_SIZE) # initializes particles
     if PlumeType == "gaden":
         rospy.Subscriber("Sensor_reading", gas_sensor, gadenSensor_cb)
+        particle_filter = Particle_Gen(_PARTICLE_PARAMETERS_GADEN,_NUM_OF_PARTICLES_GADEN,_NUM_OF_ROBOTS,_VINYARD_SIZE) # initializes particles
+
 
     particlesMsg = particles()
     particlesPublisher = rospy.Publisher('particles', particles, queue_size=5)
     pub = rospy.Publisher("gaussianEstimation", estimatedGaussian, queue_size=10)
 
-    particle_filter = Particle_Gen(_PARTICLE_PARAMETERS,_NUM_OF_PARTICLES,_NUM_OF_ROBOTS,_VINYARD_SIZE) # initializes particles
+
 
     X = 1
     Y = 1
@@ -129,46 +136,54 @@ def main():
         if PlumeType == "gaussian":
             sensors.reading(current_reading_full_data_gauss.ppm)
             chem_reading = current_reading_full_data_gauss.ppm
+            if chem_reading >= 0:
+                particle_filter.likelihood(chem_reading, sensors.x , sensors.y, sensors.z) # gets likelihod of each particle
+                particle_probabilities = particle_filter.prob_df
+                X_ps = particle_filter.particles[0]
+                Y_ps = particle_filter.particles[1]
+                Z_ps = particle_filter.particles[2]
+                Theta_ps = particle_filter.particles[3]
+                Q_ps = particle_filter.particles[4]
+                V_ps = particle_filter.particles[5]
+                Dy_ps = particle_filter.particles[6]
+                Dz_ps = particle_filter.particles[7]
+
+                X = sum(X_ps*particle_probabilities)
+                Y = sum(Y_ps*particle_probabilities)
+                Z = sum(Z_ps*particle_probabilities)
+                Theta = sum(Theta_ps*particle_probabilities)
+                Q = sum(Q_ps*particle_probabilities)
+                V = sum(V_ps*particle_probabilities)
+                Dy = sum(Dy_ps*particle_probabilities)
+                Dz = sum(Dz_ps*particle_probabilities)
+
+                particle_filter.resamp_and_noise(_NOISE_STD_PARAMS,_NUM_OF_PARTICLES_GAUS, _IMP_PARTICLES) # resamples likely particles and adds noise to them
+
         if PlumeType == "gaden":
             sensors.reading(current_reading_full_data_gaden.raw)
             chem_reading = current_reading_full_data_gaden.raw
+            if chem_reading > 0:
+                particle_filter.likelihood(chem_reading, sensors.x , sensors.y, sensors.z) # gets likelihod of each particle
+                particle_probabilities = particle_filter.prob_df
+                X_ps = particle_filter.particles[0]
+                Y_ps = particle_filter.particles[1]
+                Z_ps = particle_filter.particles[2]
+                Theta_ps = particle_filter.particles[3]
+                Q_ps = particle_filter.particles[4]
+                V_ps = particle_filter.particles[5]
+                Dy_ps = particle_filter.particles[6]
+                Dz_ps = particle_filter.particles[7]
 
-        #print(chem_reading)
-        #chem_multiplier = abs(1-(abs(45-location_reading.pose.position.y)/45))
+                X = sum(X_ps*particle_probabilities)
+                Y = sum(Y_ps*particle_probabilities)
+                Z = sum(Z_ps*particle_probabilities)
+                Theta = sum(Theta_ps*particle_probabilities)
+                Q = sum(Q_ps*particle_probabilities)
+                V = sum(V_ps*particle_probabilities)
+                Dy = sum(Dy_ps*particle_probabilities)
+                Dz = sum(Dz_ps*particle_probabilities)
 
-        #chem_reading = chem_reading+(50*chem_multiplier)
-
-        if chem_reading >= 0:
-            particle_filter.likelihood(chem_reading, sensors.x , sensors.y, sensors.z) # gets likelihod of each particle
-            particle_probabilities = particle_filter.prob_df
-            X_ps = particle_filter.particles[0]
-            Y_ps = particle_filter.particles[1]
-            Z_ps = particle_filter.particles[2]
-            Theta_ps = particle_filter.particles[3]
-            Q_ps = particle_filter.particles[4]
-            V_ps = particle_filter.particles[5]
-            Dy_ps = particle_filter.particles[6]
-            Dz_ps = particle_filter.particles[7]
-
-            X = sum(X_ps*particle_probabilities)
-            Y = sum(Y_ps*particle_probabilities)
-            Z = sum(Z_ps*particle_probabilities)
-            Theta = sum(Theta_ps*particle_probabilities)
-            Q = sum(Q_ps*particle_probabilities)
-            V = sum(V_ps*particle_probabilities)
-            Dy = sum(Dy_ps*particle_probabilities)
-            Dz = sum(Dz_ps*particle_probabilities)
-
-            particle_filter.resamp_and_noise(_NOISE_STD_PARAMS,_NUM_OF_PARTICLES, _IMP_PARTICLES) # resamples likely particles and adds noise to them
-
-        # print('X: ' + str(X))
-        # print('Y: ' + str(Y))
-        # print('Z: ' + str(Z))
-        # print('Theta: ' + str(Theta))
-        # print('Q: ' + str(Q))
-        # print('V: ' + str(V))
-        # print('Dy: ' + str(Dy))
-        # print('Dz: ' + str(Dz))
+                particle_filter.resamp_and_noise(_NOISE_STD_PARAMS,_NUM_OF_PARTICLES_GADEN, _IMP_PARTICLES)
 
         plumeMsg.X = X
         plumeMsg.Y = Y
@@ -179,15 +194,12 @@ def main():
         plumeMsg.Dy = Dy
         plumeMsg.Dz = Dz
 
-        #print(plumeMsg)
-
         particlesMsg.X = particle_filter.particles[0]
         particlesMsg.Y = particle_filter.particles[1]
         particlesMsg.Z = particle_filter.particles[2]
 
         particlesPublisher.publish(particlesMsg)
         pub.publish(plumeMsg)
-
 
         # assume x and y is known later we will subscribe to topic matthew made
 

@@ -50,7 +50,7 @@ int main(int argc, char **argv){
   ros::Subscriber quadPose_sub = nh.subscribe<nav_msgs::Odometry>("mavros/global_position/local",1000, quadPose_cb);
   ros::Publisher pubPose = nh.advertise<geometry_msgs::PoseStamped>("true_position",1000);
 
-  ros::Rate rate(50.0);
+  ros::Rate rate(40.0);
 
   // Get parameters
   ros::param::get("tfWorldUAV/x_offset", xOffset);
