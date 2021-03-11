@@ -47,18 +47,18 @@ class GridMap:
         if type(map_path) == np.ndarray:
             #print('yes!')
             self.rows = len(map_path)
-            self.cols = len(map_path[0])
+            self.cols = len(map_path[0]) 
             self.IG_grid = np.zeros((self.rows,self.cols))
             for r in range(self.rows):
                 for c in range(self.cols):
                     self.IG_grid[r][c] = 1/(float(map_path[r][c])+1) #cost
                     #self.IG_grid[r][c] = float(lines[r][c]) #avg_cost
-
+            
             #print(self.IG_grid)
         elif type(map_path) == str:
             self.read_map(map_path)
-
-
+            
+        
 
     def read_map(self, map_path):
         '''
@@ -75,16 +75,16 @@ class GridMap:
         self.rows = len(lines)
         self.cols = max([len(l) for l in lines])
         self.IG_grid = np.zeros((self.rows,self.cols))
-
+        
         if _DEBUG:
             print('rows', self.rows)
             print('cols', self.cols)
             print(lines)
-
-
-
+        
+       
+        
         #create grid
-
+        
         #read the map as a numpy table
         for r in range(self.rows):
             for c in range(self.cols):
@@ -95,9 +95,9 @@ class GridMap:
         self.init_pos = (r,c,0)
         #print(self.IG_grid)
         #print(type(self.IG_grid[1][1]))
-
+        
         #Find goal function
-        self.goal = (1,1)
+        self.goal = (1,1) 
 
     def is_goal(self,s):
         '''
@@ -123,7 +123,7 @@ class GridMap:
         '''
         new_pos = list(s[:])
         # Ensure action stays on the board
-
+        
         if a == 'u':
             if s[_Y] > 0:
                 new_pos[_Y] -= 1
@@ -152,20 +152,20 @@ class GridMap:
             if s[_Y] >  0 and s[_X] > 0:
                 new_pos[_Y] -=1
                 new_pos[_X] -=1
-
+        
         else:
             print('Unknown action:', str(a))
-
+            
 
         s_prime = tuple(new_pos)
         #print(len(self.IG_grid))
         #print(len(self.IG_grid[0]))
-
+        
         #print('x',new_pos[_X])
         #print('y',new_pos[_Y])
 
         IG = self.IG_grid[new_pos[_Y],new_pos[_X]]
-
+        
         return s_prime, IG
 
     def display_map(self, path=[], visited={}, filename=None):
@@ -177,18 +177,21 @@ class GridMap:
         filename - relative path to file where image will be saved
         '''
         display_grid = np.array(self.IG_grid, dtype=np.float32)
+        # print(display_grid)
         if path is None:
             print('There is no Path!')
-
+        
         if path is not None:
             # Color all visited nodes if requested
             for v in visited:
                 display_grid[v[0],v[1]] = _VISITED_COLOR
             # Color path in increasing color from init to goal
             for i, p in enumerate(path):
+                # print(i,p)
                 disp_col = _INIT_COLOR + _PATH_COLOR_RANGE*(i+1)/len(path)
-                display_grid[p[1],p[0]] = disp_col
-
+                # display_grid[p[1],p[0]] = disp_col
+                # display_grid[p[0],p[1]] = disp_col
+        
         display_grid[self.init_pos[0],self.init_pos[1]] = _INIT_COLOR
         display_grid[self.goal] = _GOAL_COLOR
 
@@ -201,7 +204,7 @@ class GridMap:
         if filename is not None:
             plotter.savefig(filename)
         plotter.show()
-
+        
     def manhatten_heuristic(self, s):
         '''
         Example of how a heuristic may be provided. This one is admissable, but dumb.
@@ -211,15 +214,15 @@ class GridMap:
         returns - floating point estimate of the cost to the goal from state s
         '''
         goal = self.goal
-
-        dist = manhat_dist(goal, s)
-
+        
+        dist = manhat_dist(goal, s) 
+        
         return dist
     def euclidean_heuristic(self, s):
         goal = self.goal
-
-        dist = eucl_dist(goal, s)
-
+        
+        dist = eucl_dist(goal, s) 
+        
         return dist
 
 
@@ -276,7 +279,7 @@ class PriorityQ:
                         return self.replace(x, cost)
                         #return self.replace(x, i[0]) #do nothing
                     #else:
-
+                        
         if x.state not in self.s:
             heapq.heappush(self.l, (cost, x))
             self.s.add(x.state)
@@ -285,7 +288,7 @@ class PriorityQ:
         '''
         Get the value and remove the lowest cost element from the queue
         '''
-
+        
         if idx != None:
             x = self.l.pop(idx)
             self.s.remove(x[1].state)
@@ -338,7 +341,7 @@ def RRT_search(current_state, IG_map):
     The idea is to for every step, load the map and step in the direction with highest information gain.
     Then update particle filter, then make a new step.
     '''
-
+    
 
 
 def IG_search(init_state, f, is_goal, actions):
@@ -362,32 +365,32 @@ def IG_search(init_state, f, is_goal, actions):
     visited = {} #Initializing list of visited nodes
     frontier.push(n0,cummulative_cost)
     while len(frontier) > 0:
-
+        
         #print('queue')
-
+        
         #for node in frontier.l:
             #print(node[1].state, node[0])
         cost,n_i = frontier.pop()
         #cost = cost
-
+        
         #print('\n',n_i.state, 'got popped with cost',cost)
-
+       
         if n_i.state in visited.keys():
             if visited[n_i.state] < cost:
-
+               
                 continue
-
+    
         if n_i.state not in visited:
-            visited[n_i.state] = cost
-
-
+            visited[n_i.state] = cost 
+  
+                
         if is_goal(n_i.state):
                 #Backtrack to find the shortest path
-
+                
             return (backpath(n_i), visited.keys())
-        else:
+        else:    
             for a in actions:
-
+                
                 s_prime,IG = f(n_i.state,a)
                 #print('IGS',IG)
                 n_prime = SearchNode(s_prime,actions,n_i,a,0,IG)
@@ -396,10 +399,70 @@ def IG_search(init_state, f, is_goal, actions):
                     continue
                 frontier.push(n_prime,costfunction(cost, n_prime)) #function not defined
 
-
+        
     return ((None,None),None)
 
 
+    '''
+def a_star_search(init_state, f, is_goal, actions, h):
+    '''
+    
+    '''
+    init_state - value of the initial state
+    f - transition function takes input state (s), action (a), returns s_prime = f(s, a)
+        returns s if action is not valid
+    is_goal - takes state as input returns true if it is a goal state
+        actions - list of actions available
+    h - heuristic function, takes input s and returns estimated cost to goal
+        (note h will also need access to the map, so should be a member function of GridMap)
+    '''
+    '''
+    frontier = PriorityQ()
+    #action_path = []
+    cummulative_cost = 0.0
+    n0 = SearchNode(init_state, actions)
+    visited = {} #Initializing list of visited nodes
+    frontier.push(n0,cummulative_cost+h(n0.state))
+    while len(frontier) > 0:
+
+        cost,n_i = frontier.pop()
+   
+        if n_i.state in visited.keys():
+            if visited[n_i.state] < cost:
+                continue
+        
+        if n_i.state not in visited:
+            visited[n_i.state] = cost 
+ 
+                
+        if is_goal(n_i.state):
+                #Backtrack to find the shortest path
+                
+            return (backpath(n_i), visited.keys())
+        else:
+            
+            for a in actions:
+                
+                
+                s_prime = f(n_i.state,a)
+                n_prime = SearchNode(s_prime,actions,n_i,a)
+                if n_prime.state in visited.keys():
+                    
+                    continue
+                if len(a) == 2:
+                    frontier.push(n_prime,(cost + 1.5 + h(n_prime.state)-h(n_i.state)))
+                if len(a) == 1:
+                    frontier.push(n_prime,(cost + 1 + h(n_prime.state)-h(n_i.state)))
+                if len(a) == 3:
+                    if a == '2df': 
+                        if n_i.state[2]%2 == 0:
+                            frontier.push(n_prime,(cost + 1 + h(n_prime.state)-h(n_i.state)))
+                        else:
+                            frontier.push(n_prime,(cost + 1.5 + h(n_prime.state)-h(n_i.state)))
+                    else:
+                        frontier.push(n_prime,(cost+0.25+h(n_prime.state)-h(n_i.state)))
+    return ((None,None),None)
+'''
 def backpath(node):
     '''
     Function to determine the path that lead to the specified search node
@@ -409,31 +472,58 @@ def backpath(node):
     returns - a tuple containing (path, action_path) which are lists respectively of the states
     visited from init to goal (inclusive) and the actions taken to make those transitions.
     '''
+    
     path = []
-    path.append(node.state)
     action_path = []
-    while node.parent != None:
-        path.append(node.parent.state)
+
+    while (node.parent != None):
+        path.append(node.state)
         action_path.append(node.parent_action)
+        # action_path = node.parent_action + action_path
         node = node.parent
 
-    path = list(reversed(path))
-    action_path = list(reversed(action_path))
+    path.append(node.state)
+    action_path.append(node.parent_action)
+    # print(action_path)
+    path.reverse()
+    action_path.reverse()
+    # print(action_path)
+    # print(node,ACTIONS)
 
-    #print('path',path)
-    path2 = []
-    for i in path:
+    return (path, action_path)
+    # '''
+    # Function to determine the path that lead to the specified search node
 
-        step = np.array([i[1]*2+1,(10-i[0])*10-5])
-        path2.append(step)
+    # node - the SearchNode that is the end of the path
 
-    path2 = np.asarray(path2)
-    #print('path2',path2)
-    #print(type(path2[0]))
-
-
-
-    return (path2, action_path)
+    # returns - a tuple containing (path, action_path) which are lists respectively of the states
+    # visited from init to goal (inclusive) and the actions taken to make those transitions.
+    # '''
+    # path = []
+    # path.append(node.state)
+    # action_path = []
+    # while node.parent != None:
+    #     path.append(node.parent.state)
+    #     action_path.append(node.parent_action)
+    #     node = node.parent
+    
+    # path = list(reversed(path))
+    # action_path = list(reversed(action_path))
+        
+    # #print('path',path)
+    # path2 = []
+    # for i in path:
+        
+    #     step = np.array([i[1]*2+1,(10-i[0])*10-5])
+    #     path2.append(step)
+        
+    # path2 = np.asarray(path2)
+    # #print('path2',path2)
+    # #print(type(path2[0]))
+    
+    
+    
+    # return (path2, action_path)
 
 
 def manhat_dist(tuple1,tuple2):
@@ -442,25 +532,26 @@ def manhat_dist(tuple1,tuple2):
 
 def eucl_dist(tuple1,tuple2):
     #Finding the eucleadian distance between two positions.
-
+    
     return sqrt((tuple1[0]-tuple2[0])**2 + (tuple1[1]-tuple2[1])**2)
 
 def costfunction(old_cost, new_node):
     #print('cf',new_node.IG)
-    cost = old_cost + new_node.IG
-
+    cost = old_cost + new_node.IG 
+    
     return cost
 def avg_costfunction(old_cost, new_node):
     #print('cf',new_node.IG)
     i=0
     cummulative_cost = new_node.IG
-    parent = new_node.parent
+    parent = new_node.parent 
     while parent is not None:
         cummulative_cost = cummulative_cost + parent.IG
         parent = parent.parent
 
         i = i+1
-
-    cost = -(cummulative_cost/i)
-
+        
+    cost = -(cummulative_cost/i) 
+    
     return cost
+    

@@ -40,6 +40,7 @@
     #-------------------
     <node pkg="gaden_player" type="gaden_player" name="gaden_player" output="screen">
         <param name="verbose" value="false" />
+        <param name="particleDivider" value="100" />
       <param name="player_freq" value="1" />         ###(Hz) Freq for loading the simulation log_files
       <param name="initial_iteration" value="300" />
       <param name="num_simulators" value="1" />      ### Number of simulations to load [1-inf] (useful for multiple sources and gases)

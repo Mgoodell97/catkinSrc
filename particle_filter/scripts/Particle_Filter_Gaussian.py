@@ -149,7 +149,7 @@ class Particle_Gen():
             #     return 20
             # else:
             #     return 200
-            return 30
+            return 500
 
 
 

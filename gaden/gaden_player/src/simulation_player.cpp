@@ -8,6 +8,8 @@
 #include <boost/format.hpp>
 #include "simulation_player.h"
 
+int particleDivider = 2;
+
 //--------------- SERVICES CALLBACKS----------------------//
 bool get_gas_value_srv(gaden_player::GasPosition::Request  &req, gaden_player::GasPosition::Response &res)
 {
@@ -55,11 +57,13 @@ bool get_wind_value_srv(gaden_player::WindPosition::Request  &req, gaden_player:
 int main( int argc, char** argv )
 {
     ros::init(argc, argv, "simulation_player");
-	ros::NodeHandle n;
+	  ros::NodeHandle n;
     ros::NodeHandle pn("~");
 
     //Read Node Parameters
     loadNodeParameters(pn);
+
+    ros::param::get("gaden_player/particleDivider", particleDivider);
 
     //Publishers
     marker_pub = n.advertise<visualization_msgs::Marker>("Gas_Distribution", 1);
@@ -79,7 +83,7 @@ int main( int argc, char** argv )
     mkr_gas_points.ns = "Gas_Dispersion";
     mkr_gas_points.action = visualization_msgs::Marker::ADD;
     mkr_gas_points.type = visualization_msgs::Marker::POINTS;   //Marker type
-    mkr_gas_points.id = 0;                                      //One marker with multiple points.
+    mkr_gas_points.id = 1;                                      //One marker with multiple points.
     mkr_gas_points.scale.x = 0.025;
     mkr_gas_points.scale.y = 0.025;
     mkr_gas_points.scale.z = 0.025;
@@ -478,8 +482,8 @@ void sim_obj::get_concentration_as_markers(visualization_msgs::Marker &mkr_point
                 std_msgs::ColorRGBA color;  //Color of point
 
                 double gas_value = C[i][j][k]*1;
-
-                for (int N=0;N<(int)round(gas_value/2);N++)
+                // for (int N=0;N<10;N++)
+                for (int N=0;N<(int)round(gas_value/particleDivider);N++)
                 {
                     //Set point position (corner of the cell + random)
                     p.x = env_min_x + (i+0.5)*environment_cell_size + ((rand()%100)/100.0f)*environment_cell_size;
