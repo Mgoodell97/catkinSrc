@@ -8,6 +8,21 @@
     <arg name="z1" default="0.0"/>
 
     <arg name="SpawnUAV2" default="False"/>
+    <arg name="x2" default="5.0"/>
+    <arg name="y2" default="18.33"/>
+    <arg name="z2" default="0.0"/>
+
+    <arg name="SpawnUAV3" default="False"/>
+    <arg name="x3" default="5.0"/>
+    <arg name="y3" default="31.66"/>
+    <arg name="z3" default="0.0"/>
+
+    <!-- <arg name="SpawnUAV1" default="True"/>
+    <arg name="x1" default="5.0"/>
+    <arg name="y1" default="5.0"/>
+    <arg name="z1" default="0.0"/>
+
+    <arg name="SpawnUAV2" default="False"/>
     <arg name="x2" default="10.0"/>
     <arg name="y2" default="5.0"/>
     <arg name="z2" default="0.0"/>
@@ -15,7 +30,7 @@
     <arg name="SpawnUAV3" default="False"/>
     <arg name="x3" default="15.0"/>
     <arg name="y3" default="5.0"/>
-    <arg name="z3" default="0.0"/>
+    <arg name="z3" default="0.0"/> -->
 
     <arg name="GazeboGUI" default="False"/>
     <arg name="RVIZGUI" default="True"/>
@@ -212,7 +227,7 @@
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/gauss.rviz"  if="$(eval PlumeType == 'gaussian' and RVIZGUI)"/>
 
     <!-- Bag recording -->
-    <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/rosbags/graphSearch/graphSearch /UAV1/Sensor_reading /UAV2/Sensor_reading /UAV3/Sensor_reading /UAV1/true_position /UAV2/true_position /UAV3/true_position /UAV1/gaussianEstimation /UAV2/gaussianEstimation /UAV3/gaussianEstimation /hivemindEstimate" name="rosbagRecord"  if="$(eval PlumeType == 'gaden' and rosbag)"/>
-    <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/rosbags/graphSearch/graphSearch /UAV1/gaussianReading /UAV2/gaussianReading /UAV3/gaussianReading /UAV1/true_position /UAV2/true_position /UAV3/true_position /UAV1/gaussianEstimation /UAV2/gaussianEstimation /UAV3/gaussianEstimation /hivemindEstimate" name="rosbagRecord"  if="$(eval PlumeType == 'gaussian' and rosbag)"/>
+    <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/rosbags/graphGaden/graphGaden /UAV1/Sensor_reading /UAV2/Sensor_reading /UAV3/Sensor_reading /UAV1/true_position /UAV2/true_position /UAV3/true_position /UAV1/gaussianEstimation /UAV2/gaussianEstimation /UAV3/gaussianEstimation /hivemindEstimate" name="rosbagRecord"  if="$(eval PlumeType == 'gaden' and rosbag)"/>
+    <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/rosbags/graphSearchNew/graphSearch /UAV1/gaussianReading /UAV2/gaussianReading /UAV3/gaussianReading /UAV1/true_position /UAV2/true_position /UAV3/true_position /UAV1/gaussianEstimation /UAV2/gaussianEstimation /UAV3/gaussianEstimation /hivemindEstimate" name="rosbagRecord"  if="$(eval PlumeType == 'gaussian' and rosbag)"/>
 
 </launch>

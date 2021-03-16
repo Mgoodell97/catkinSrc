@@ -209,28 +209,28 @@ def main():
             VPlume_estimated = (UAV1_predict_gauss.V+UAV2_predict_gauss.V+UAV3_predict_gauss.V)/3
             DyPlume_estimated = (UAV1_predict_gauss.Dy+UAV2_predict_gauss.Dy+UAV3_predict_gauss.Dy)/3
             DzPlume_estimated = (UAV1_predict_gauss.Dz+UAV2_predict_gauss.Dz+UAV3_predict_gauss.Dz)/3
-            plt.subplot(221)
+            plt.subplot(222)
             plt.plot(UAV1_particles.X[0:5000],UAV1_particles.Y[0:5000],'r.')
             plt.xlabel("x [m]")
             plt.ylabel("y [m]")
             plt.grid()
             plt.xlim(minLim, maxLim)
             plt.ylim(minLim, maxLim)
-            plt.subplot(222)
+            plt.subplot(223)
             plt.plot(UAV2_particles.X[0:5000],UAV2_particles.Y[0:5000],'g.')
             plt.xlabel("x [m]")
             plt.ylabel("y [m]")
             plt.grid()
             plt.xlim(minLim, maxLim)
             plt.ylim(minLim, maxLim)
-            plt.subplot(223)
+            plt.subplot(224)
             plt.plot(UAV3_particles.X[0:5000],UAV3_particles.Y[0:5000],'b.')
             plt.xlabel("x [m]")
             plt.ylabel("y [m]")
             plt.grid()
             plt.xlim(minLim, maxLim)
             plt.ylim(minLim, maxLim)
-            plumeSubplot = "224"
+            plumeSubplot = "221"
         elif plotUAV2:
             xPlume_estimated = (UAV1_predict_gauss.X+UAV2_predict_gauss.X)/2
             yPlume_estimated = (UAV1_predict_gauss.Y+UAV2_predict_gauss.Y)/2
@@ -240,21 +240,21 @@ def main():
             VPlume_estimated = (UAV1_predict_gauss.V+UAV2_predict_gauss.V)/2
             DyPlume_estimated = (UAV1_predict_gauss.Dy+UAV2_predict_gauss.Dy)/2
             DzPlume_estimated = (UAV1_predict_gauss.Dz+UAV2_predict_gauss.Dz)/2
-            plt.subplot(131)
+            plt.subplot(132)
             plt.plot(UAV1_particles.X[0:5000],UAV1_particles.Y[0:5000],'r.')
             plt.xlabel("x [m]")
             plt.ylabel("y [m]")
             plt.grid()
             plt.xlim(minLim, maxLim)
             plt.ylim(minLim, maxLim)
-            plt.subplot(132)
+            plt.subplot(133)
             plt.plot(UAV2_particles.X[0:5000],UAV2_particles.Y[0:5000],'g.')
             plt.xlabel("x [m]")
             plt.ylabel("y [m]")
             plt.grid()
             plt.xlim(minLim, maxLim)
             plt.ylim(minLim, maxLim)
-            plumeSubplot = "133"
+            plumeSubplot = "131"
         elif plotUAV1:
             xPlume_estimated = UAV1_predict_gauss.X
             yPlume_estimated = UAV1_predict_gauss.Y
@@ -264,14 +264,14 @@ def main():
             VPlume_estimated = UAV1_predict_gauss.V
             DyPlume_estimated = UAV1_predict_gauss.Dy
             DzPlume_estimated = UAV1_predict_gauss.Dz
-            plt.subplot(121)
+            plt.subplot(122)
             plt.plot(UAV1_particles.X[0:5000],UAV1_particles.Y[0:5000],'r.')
             plt.xlabel("x [m]")
             plt.ylabel("y [m]")
             plt.grid()
             plt.xlim(minLim, maxLim)
             plt.ylim(minLim, maxLim)
-            plumeSubplot = "122"
+            plumeSubplot = "121"
 
 
         for xCurrentIndex in range(len(xPlumePlot)):
