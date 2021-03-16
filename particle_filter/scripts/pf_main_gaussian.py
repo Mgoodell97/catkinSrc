@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 from quadnodes.msg import gaussian
 from olfaction_msgs.msg import gas_sensor
 from geometry_msgs.msg import PoseStamped
+from visualization_msgs.msg import Marker
+
 from particle_filter.msg import estimatedGaussian
 from particle_filter.msg import particles
 
@@ -24,25 +26,16 @@ _NUM_OF_PARTICLES_GADEN = 1000
 
 _IMP_PARTICLES = 200
 _PARTICLE_PARAMETERS_GAUS = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[50000, 50000],[1, 1],[.15,.15],[.15,.15]] #x,y,z,theta,Q,V,Dy,Dz
-_PARTICLE_PARAMETERS_GADEN = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[50000, 50000],[1, 1],[.15,.15],[.15,.15]] #x,y,z,theta,Q,V,Dy,Dz
+_PARTICLE_PARAMETERS_GADEN = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[43659, 43659],[.828, .828],[1.03697,1.03697],[.00007265,.00007265]] #x,y,z,theta,Q,V,Dy,Dz
 
 #_PARTICLE_PARAMETERS = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[50000, 50000],[1, 1],[.15,.15],[.15,.15]] #x,y,z,theta,Q,V,Dy,Dz
-#_PARTICLE_PARAMETERS = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[0, 3000],[0, 2.5],[0,1.5],[0,1.5]] #x,y,z,theta,Q,V,Dy,Dz
+# _PARTICLE_PARAMETERS_GADEN = [[25,25],[45,45],[2,2],[3*np.pi/2,3*np.pi/2],[0, 50000],[0, 2.5],[0,1.5],[0,1.5]] #x,y,z,theta,Q,V,Dy,Dz
 
 # _PARTICLE_PARAMETERS = [[0, 50],[0, 50],[0,4],[0,6*np.pi/4],[90000, 110000],[0, 8],[20,60],[.005, .025]]
 
 _NUM_OF_ROBOTS = 1
 _VINYARD_SIZE = [50, 50]
 #_PDF_STD_DIST = 75
-
-# x_noise = 1
-# y_noise = 1
-# z_noise = .02
-# theta_noise = .1
-# Q_noise = 400
-# V_noise = .1
-# Dy_noise = 0.005
-# Dz_noise = 0.005
 
 x_noise = 1
 y_noise = 1
@@ -52,6 +45,15 @@ Q_noise = 0
 V_noise = 0
 Dy_noise = 0
 Dz_noise = 0
+
+# x_noise = .25
+# y_noise = .25
+# z_noise = 0
+# theta_noise = 0
+# Q_noise = 0
+# V_noise = 0
+# Dy_noise = 0
+# Dz_noise = 0
 
 # x_noise = 0
 # y_noise = 0
@@ -66,7 +68,8 @@ _NOISE_STD_PARAMS = np.array((x_noise,y_noise,z_noise,theta_noise,Q_noise,V_nois
 
 
 # chem_reading = gaussian()
-location_reading = PoseStamped()
+location_gauss = PoseStamped()
+location_gaden = Marker()
 plumeMsg = estimatedGaussian()
 current_reading_full_data_gauss = gaussian()
 current_reading_full_data_gaden = gas_sensor()
@@ -85,9 +88,13 @@ def gadenSensor_cb(gadenMsg):
     global current_reading_full_data_gaden
     current_reading_full_data_gaden = gadenMsg
 
-def location_sub(loc_read_all): # function(variable to store message data)
-    global location_reading
-    location_reading = loc_read_all
+def location_gauss_get(loc_read_all): # function(variable to store message data)
+    global location_gauss
+    location_gauss = loc_read_all
+
+def location_gaden_get(loc_read_gaden):
+    global location_gaden
+    location_gaden = loc_read_gaden
 
 def main():
     rospy.init_node('Particle_Filter') # name your node
@@ -97,13 +104,16 @@ def main():
 
     PlumeType = rospy.get_param("particleFilter/PlumeType")      #  I'm not explaining this
 
-    rospy.Subscriber("true_position", PoseStamped, location_sub)
 
     if PlumeType == "gaussian":
         rospy.Subscriber("gaussianReading", gaussian, gaussSensor_cb)
+        rospy.Subscriber("true_position", PoseStamped, location_gauss_get)
+
         particle_filter = Particle_Gen(_PARTICLE_PARAMETERS_GAUS,_NUM_OF_PARTICLES_GAUS,_NUM_OF_ROBOTS,_VINYARD_SIZE) # initializes particles
     if PlumeType == "gaden":
         rospy.Subscriber("Sensor_reading", gas_sensor, gadenSensor_cb)
+        rospy.Subscriber("Sensor_display", Marker, location_gaden_get)
+
         particle_filter = Particle_Gen(_PARTICLE_PARAMETERS_GADEN,_NUM_OF_PARTICLES_GADEN,_NUM_OF_ROBOTS,_VINYARD_SIZE) # initializes particles
 
 
@@ -126,18 +136,20 @@ def main():
     robotZLoc = 0
     sensors = Sensor(_NUM_OF_ROBOTS,_VINYARD_SIZE,robotXLoc,robotYLoc,robotZLoc) # initilize sensors (starts at random location)
 
+    time.sleep(25)
+
     # print('Initializing...')
     while not rospy.is_shutdown(): # while roscore is running do this. if not, stop... Executes Function
         #rospy.loginfo("Throttle: %f     Roll: %f        Pitch: %f",controllerValues.axes[1],-controllerValues.axes[3],controllerValues.axes[4])
         global location_reading
-
-        sensors.move(location_reading.pose.position.x,location_reading.pose.position.y,location_reading.pose.position.z)
-
         if PlumeType == "gaussian":
-            sensors.reading(current_reading_full_data_gauss.ppm)
             chem_reading = current_reading_full_data_gauss.ppm
+            x_location = location_gauss.pose.position.x
+            y_location = location_gauss.pose.position.y
+            z_location = location_gauss.pose.position.z
+            sensors.reading(chem_reading,x_location,y_location,z_location)
             if chem_reading >= 0:
-                particle_filter.likelihood(chem_reading, sensors.x , sensors.y, sensors.z) # gets likelihod of each particle
+                particle_filter.likelihood(chem_reading, x_location , y_location, z_location) # gets likelihod of each particle
                 particle_probabilities = particle_filter.prob_df
                 X_ps = particle_filter.particles[0]
                 Y_ps = particle_filter.particles[1]
@@ -160,10 +172,14 @@ def main():
                 particle_filter.resamp_and_noise(_NOISE_STD_PARAMS,_NUM_OF_PARTICLES_GAUS, _IMP_PARTICLES) # resamples likely particles and adds noise to them
 
         if PlumeType == "gaden":
-            sensors.reading(current_reading_full_data_gaden.raw)
             chem_reading = current_reading_full_data_gaden.raw
-            if chem_reading > 0:
-                particle_filter.likelihood(chem_reading, sensors.x , sensors.y, sensors.z) # gets likelihod of each particle
+            x_location = location_gaden.pose.position.x
+            y_location = location_gaden.pose.position.y
+            z_location = location_gaden.pose.position.z*2
+            sensors.reading(chem_reading,x_location,y_location,z_location)
+
+            if chem_reading > 500:
+                particle_filter.likelihood(chem_reading, x_location , y_location, z_location) # gets likelihod of each particle
                 particle_probabilities = particle_filter.prob_df
                 X_ps = particle_filter.particles[0]
                 Y_ps = particle_filter.particles[1]
@@ -183,7 +199,18 @@ def main():
                 Dy = sum(Dy_ps*particle_probabilities)
                 Dz = sum(Dz_ps*particle_probabilities)
 
+                print('Q:')
+                print(Q)
+                print('V:')
+
+                print(V)
+                print('Dy:')
+                print(Dy)
+                print('Dz:')
+                print(Dz)
+
                 particle_filter.resamp_and_noise(_NOISE_STD_PARAMS,_NUM_OF_PARTICLES_GADEN, _IMP_PARTICLES)
+
 
         plumeMsg.X = X
         plumeMsg.Y = Y
