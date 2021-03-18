@@ -7,5 +7,3 @@
     local-name: mavros
     uri: https://github.com/mavlink/mavros.git
     version: 1.5.1
-
-2
