@@ -56,6 +56,7 @@
         <param name="zmax" value="2.0"/>
         <param name="Nz"   value="1"/>
 
+        <param name="maxVelocity"   value="3"/>
         <param name="stayTime"   value="1"/>
       </node>
     </group>
@@ -81,6 +82,7 @@
         <param name="zmax" value="2.0"/>
         <param name="Nz"   value="1"/>
 
+        <param name="maxVelocity"   value="3"/>
         <param name="stayTime"   value="1"/>
       </node>
     </group>
@@ -106,6 +108,7 @@
         <param name="zmax" value="2.0"/>
         <param name="Nz"   value="1"/>
 
+        <param name="maxVelocity"   value="3"/>
         <param name="stayTime"   value="1"/>
       </node>
     </group>

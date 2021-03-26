@@ -215,6 +215,7 @@ int main(int argc, char **argv){
 
   double prop = 1;
   double xyzError[3];
+  double velocityCaps[3] = {1, 1, 1};
   double yawError;
   double withinWaypoint;
   double withinWaypointYaw;
@@ -222,6 +223,8 @@ int main(int argc, char **argv){
   double stayTime;
   double waypointRadiusYaw = 0.1;
   double stayTimeYaw = 1;
+  double denom = 1;
+  double maxVelocity = 1;
 
   double xmin;
   double xmax;
@@ -262,7 +265,7 @@ int main(int argc, char **argv){
   ros::param::get("zScanNoYaw/zmin", zmin);
   ros::param::get("zScanNoYaw/zmax", zmax);
   ros::param::get("zScanNoYaw/Nz", Nz);
-
+  ros::param::get("zScanNoYaw/maxVelocity", maxVelocity);
   ros::param::get("zScanNoYaw/stayTime", stayTime);
 
   //the setpoint publishing rate MUST be faster than 2Hz
@@ -379,9 +382,21 @@ int main(int argc, char **argv){
       // }
 
       //capFunc( currentValue,  newMin,  newMax)
-      DesiredVel.twist.linear.x = capFunc( prop * xyzError[0],  -1,  1);
-      DesiredVel.twist.linear.y = capFunc( prop * xyzError[1],  -1,  1);
-      DesiredVel.twist.linear.z = capFunc( prop * xyzError[2],  -1,  1);
+
+      denom = sqrt( pow(xyzError[0],2) + pow(xyzError[1],2) + pow(xyzError[2],2)); // only compute denominator once per loop
+      if (denom == 0){
+          velocityCaps[0] = 1;
+          velocityCaps[1] = 1;
+          velocityCaps[2] = 1;
+      }
+      else{
+          velocityCaps[0] = abs((xyzError[0]/denom) *maxVelocity);
+          velocityCaps[1] = abs((xyzError[1]/denom) *maxVelocity);
+          velocityCaps[2] = abs((xyzError[2]/denom) *maxVelocity);
+      }
+      DesiredVel.twist.linear.x = capFunc( prop * xyzError[0],  -velocityCaps[0],  velocityCaps[0]);
+      DesiredVel.twist.linear.y = capFunc( prop * xyzError[1],  -velocityCaps[1],  velocityCaps[1]);
+      DesiredVel.twist.linear.z = capFunc( prop * xyzError[2],  -velocityCaps[2],  velocityCaps[2]);
       DesiredVel.twist.angular.z = capFunc( prop * yawError,  -1,  1);
 
     }

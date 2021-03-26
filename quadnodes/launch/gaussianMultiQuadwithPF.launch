@@ -3,17 +3,17 @@
   <arg name="PlumeType" default="gaussian"/>
 
   <arg name="SpawnUAV1" default="True"/>
-  <arg name="x1" default="25.0"/>
+  <arg name="x1" default="5.0"/>
   <arg name="y1" default="5.0"/>
   <arg name="z1" default="0.0"/>
 
   <arg name="SpawnUAV2" default="False"/>
-  <arg name="x2" default="25.0"/>
+  <arg name="x2" default="5.0"/>
   <arg name="y2" default="18.33"/>
   <arg name="z2" default="0.0"/>
 
   <arg name="SpawnUAV3" default="False"/>
-  <arg name="x3" default="25.0"/>
+  <arg name="x3" default="5.0"/>
   <arg name="y3" default="31.66"/>
   <arg name="z3" default="0.0"/>
 
@@ -104,29 +104,18 @@
 
       <node name="zScanNoYaw" pkg="quadnodes" type="zScanNoYaw">
         <param name="xmin" value="0"/>  # starting waypoint
-        <param name="xmax" value="0"/> # ending waypoint
-        <param name="Nx"   value="1"/>  # number of waypoints
+        <param name="xmax" value="40"/> # ending waypoint
+        <param name="Nx"   value="2"/>  # number of waypoints
 
         <param name="ymin" value="0"/>
-        <param name="ymax" value="0"/>
-        <param name="Ny"   value="1"/>
+        <param name="ymax" value="13.333"/>
+        <param name="Ny"   value="3"/>
 
         <param name="zmin" value="2"/>
         <param name="zmax" value="2"/>
         <param name="Nz"   value="1"/>
 
-        <!-- <param name="xmin" value="0"/>  # starting waypoint
-        <param name="xmax" value="40"/> # ending waypoint
-        <param name="Nx"   value="2"/>  # number of waypoints
-
-        <param name="ymin" value="0"/>
-        <param name="ymax" value="39"/>
-        <param name="Ny"   value="19"/>
-
-        <param name="zmin" value="2"/>
-        <param name="zmax" value="2"/>
-        <param name="Nz"   value="1"/> -->
-
+        <param name="maxVelocity"   value="3"/>
         <param name="stayTime"   value="0.25"/>
       </node>
     </group>
@@ -150,17 +139,18 @@
 
       <node name="zScanNoYaw" pkg="quadnodes" type="zScanNoYaw">
         <param name="xmin" value="0"/>  # starting waypoint
-        <param name="xmax" value="0"/> # ending waypoint
-        <param name="Nx"   value="1"/>  # number of waypoints
+        <param name="xmax" value="40"/> # ending waypoint
+        <param name="Nx"   value="2"/>  # number of waypoints
 
         <param name="ymin" value="0"/>
-        <param name="ymax" value="0"/>
-        <param name="Ny"   value="1"/>
+        <param name="ymax" value="13.333"/>
+        <param name="Ny"   value="3"/>
 
         <param name="zmin" value="2"/>
         <param name="zmax" value="2"/>
         <param name="Nz"   value="1"/>
 
+        <param name="maxVelocity"   value="3"/>
         <param name="stayTime"   value="0.25"/>
       </node>
     </group>
@@ -184,18 +174,19 @@
 
       <node name="zScanNoYaw" pkg="quadnodes" type="zScanNoYaw">
         <param name="xmin" value="0"/>  # starting waypoint
-        <param name="xmax" value="0"/> # ending waypoint
-        <param name="Nx"   value="1"/>  # number of waypoints
+        <param name="xmax" value="40"/> # ending waypoint
+        <param name="Nx"   value="2"/>  # number of waypoints
 
         <param name="ymin" value="0"/>
-        <param name="ymax" value="0"/>
-        <param name="Ny"   value="1"/>
+        <param name="ymax" value="13.333"/>
+        <param name="Ny"   value="3"/>
 
         <param name="zmin" value="2"/>
         <param name="zmax" value="2"/>
         <param name="Nz"   value="1"/>
 
-        <param name="stayTime"   value="1"/>
+        <param name="maxVelocity"   value="3"/>
+        <param name="stayTime"   value="0.25"/>
       </node>
     </group>
 
