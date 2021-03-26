@@ -107,6 +107,7 @@ def main():
     # waypoint parameters
     kp = 1
     xyzError = [0, 0, 0]
+    velocityCaps = [1,1,1]
     justHitWaypoint = False
     firstWaypointFlag = False
 
@@ -219,9 +220,19 @@ def main():
         else:
             justHitWaypoint = False
 
-        DesiredVel.twist.linear.x = capVel(kp * xyzError[0],-maxVelocity,maxVelocity)
-        DesiredVel.twist.linear.y = capVel(kp * xyzError[1],-maxVelocity,maxVelocity)
-        DesiredVel.twist.linear.z = capVel(kp * xyzError[2],-maxVelocity,maxVelocity)
+        denom = sqrt( pow(xyzError[0],2) + pow(xyzError[1],2) + pow(xyzError[2],2)) # only compute denominator once per loop
+        if denom == 0:
+            velocityCaps[0] = 1
+            velocityCaps[1] = 1
+            velocityCaps[2] = 1
+        else:
+            velocityCaps[0] = abs((xyzError[0]/denom) *maxVelocity)
+            velocityCaps[1] = abs((xyzError[1]/denom) *maxVelocity)
+            velocityCaps[2] = abs((xyzError[2]/denom) *maxVelocity)
+
+        DesiredVel.twist.linear.x = capVel(kp * xyzError[0],-velocityCaps[0],velocityCaps[0])
+        DesiredVel.twist.linear.y = capVel(kp * xyzError[1],-velocityCaps[1],velocityCaps[1])
+        DesiredVel.twist.linear.z = capVel(kp * xyzError[2],-velocityCaps[2],velocityCaps[2])
 
         local_vel_pub.publish(DesiredVel);
 
