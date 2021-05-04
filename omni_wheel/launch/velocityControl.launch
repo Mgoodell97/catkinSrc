@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node name="velocityControlDynamixel" pkg="omni_wheel" type="velocityControlDynamixel"/>
+
+</launch>
