@@ -2,6 +2,7 @@
 
 import rospy #include <ros/ros.h> cpp equivalent
 from sensor_msgs.msg import Joy
+from geometry_msgs.msg import Twist
 
 desiredLocalPositionsKgains = [0.5,0.5,0.5]
 
@@ -16,18 +17,25 @@ def controller_cb(controller_sub):
     controllerValues = controller_sub
     # controllerValues.axes[3] = -controllerValues.axes[3] # Flip roll values
 
-def initFunc():
+
+def main():
     # Initalize node
     rospy.init_node('OmniWheelMainNode')
 
     # Set up subscriptions
     rospy.Subscriber("joy", Joy, controller_cb)
+
+    # Set up publishers
+    local_vel_pub = rospy.Publisher('omniWheelDesiredVelocity', Twist, queue_size=100)
+
     global rate
     rate = rospy.Rate(20)
 
-
-def main():
-    initFunc()
+    DesiredVel = Twist()
+    DesiredVel.linear.x = 0
+    DesiredVel.linear.y = 0
+    DesiredVel.linear.z = 0
+    DesiredVel.angular.z = 0
 
     # Main loop after Initalization
     while not rospy.is_shutdown():
@@ -69,10 +77,33 @@ def main():
                     print("In velocity control mode")
                     printOnceBool = False
 
+                scalingFactor = 460
+
                 desiredLocalVelocities = [-controllerValues.axes[3], controllerValues.axes[4], controllerValues.axes[0]] # roll = x, pitch = y, yaw = angular
 
-                print "Desired velocities X: ", desiredLocalVelocities[0] , "Y: " , desiredLocalVelocities[1], "w: " , desiredLocalVelocities[2]
-                
+
+                # Controller frame
+                #      +y
+                #      ^
+                #      |
+                #      0 --> +x
+                # Z is upward
+
+
+                # Robot frame
+                #      +x
+                #      ^
+                #      |
+                #      0 --> +y
+                # Z is downward
+
+                DesiredVel.linear.x = -controllerValues.axes[3] * scalingFactor
+                DesiredVel.linear.y = controllerValues.axes[4] * scalingFactor
+                DesiredVel.angular.z = controllerValues.axes[0] * scalingFactor
+
+                local_vel_pub.publish(DesiredVel)
+                print "Desired velocities X: ", desiredLocalVelocities[0] * scalingFactor , "Y: " , desiredLocalVelocities[1] * scalingFactor, "w: " , desiredLocalVelocities[2] * scalingFactor
+
                 rate.sleep()
 
 

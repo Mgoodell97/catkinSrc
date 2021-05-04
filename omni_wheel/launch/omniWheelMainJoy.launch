@@ -1,5 +1,13 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="joy" type="joy_node" name="joy_node"/>
-    <node pkg="omniWheel" type="omniWheelMainV1Joy.py" name="omniWheelMain" output="screen"/>
+  <!-- Xbox control launch -->
+  <param name="joy_node/dev"  value="/dev/input/js0"/>
+  <node pkg="joy" type="joy_node" name="joy_node"/>
+
+  <!-- Controller main hub -->
+  <node pkg="omni_wheel" type="omniWheelMainV1Joy.py" name="omniWheelMain" output="screen"/>
+
+  <!-- Controlling velocity of the motors -->
+  <node name="velocityControlDynamixel" pkg="omni_wheel" type="velocityControlDynamixel"/>
+  
 </launch>
