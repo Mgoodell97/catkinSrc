@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="PlumeType" default="gaussian"/>
+
+  <arg name="SpawnUAV1" default="True"/>
+  <arg name="x1" default="5.0"/>
+  <arg name="y1" default="5.0"/>
+  <arg name="z1" default="0.0"/>
+
+  <arg name="SpawnUAV2" default="False"/>
+  <arg name="x2" default="5.0"/>
+  <arg name="y2" default="18.33"/>
+  <arg name="z2" default="0.0"/>
+
+  <arg name="SpawnUAV3" default="False"/>
+  <arg name="x3" default="5.0"/>
+  <arg name="y3" default="31.66"/>
+  <arg name="z3" default="0.0"/>
+
+  <arg name="GazeboGUI" default="True"/>
+  <arg name="RVIZGUI" default="True"/>
+  <arg name="rosbag" default="False"/>
+
+  <!-- Gazebo sim -->
+  <!-- Needed for quad -->
+  <include file="$(find quadnodes)/launch/gazeboOutdoor.launch">
+    <arg name="world" default="$(find quadnodes)/worlds/empty.world"/>
+    <arg name="gui" default="$(arg GazeboGUI)"/>
+  </include>
+
+  <!-- Spawn UAV1 -->
+  <include file="$(find quadnodes)/launch/spawnUAV1_SDF.launch" if="$(eval SpawnUAV1)">
+    <arg name="x" default="$(arg x1)"/>
+    <arg name="y" default="$(arg y1)"/>
+    <arg name="z" default="$(arg z1)"/>
+  </include>
+
+  <!-- Spawn UAV2 -->
+  <include file="$(find quadnodes)/launch/spawnUAV2_SDF.launch" if="$(eval SpawnUAV2)">
+    <arg name="x" default="$(arg x2)"/>
+    <arg name="y" default="$(arg y2)"/>
+    <arg name="z" default="$(arg z2)"/>
+  </include>
+
+  <!-- Spawn UAV3 -->
+  <include file="$(find quadnodes)/launch/spawnUAV3_SDF.launch" if="$(eval SpawnUAV3)">
+    <arg name="x" default="$(arg x3)"/>
+    <arg name="y" default="$(arg y3)"/>
+    <arg name="z" default="$(arg z3)"/>
+  </include>
+
+
+    <group ns="UAV1">
+      <!-- Position Controller -->
+      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
+        <param name="maxVelocity"            value="2.0"   />   # m/s
+      </node>
+    </group>
+
+    <group ns="UAV2">
+      <!-- Position Controller -->
+      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
+        <param name="maxVelocity"            value="2.0"   />   # m/s
+      </node>
+    </group>
+
+    <group ns="UAV3">
+      <!-- Position Controller -->
+      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
+        <param name="maxVelocity"            value="2.0"   />   # m/s
+      </node>
+    </group>
+
+    <!-- Create tf transformations -->
+    <node pkg="tf" type="static_transform_publisher" name="UAVs2World" args="0.0 0.0 0.0 0 0 0 world worldUAVs 100" />
+
+    <!-- <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/Gaden/gadenRosbagFixedQuads/fixed120s /PID1/Sensor_reading /PID2/Sensor_reading /PID3/Sensor_reading /UAV1/true_position /UAV2/true_position /UAV3/true_position" name="rosbagRecord" /> -->
+
+</launch>

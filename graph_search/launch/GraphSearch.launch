@@ -127,8 +127,12 @@
       <node name="GraphSearch" pkg="graph_search" type="GraphSearch.py" output="screen">
         <param name="zHeight"                value="2.0"            />   # m
         <param name="waypointRadius"         value="0.25"           />   # m
-        <param name="stayTime"               value="0.05"            />   # seconds
-        <param name="maxVelocity"            value="3.0"            />   # m/seconds
+        <param name="stayTime"               value="0.05"           />   # seconds
+      </node>
+
+      <!-- Position Controller -->
+      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
+        <param name="maxVelocity"            value="2.0"   />   # m/s
       </node>
 
       <node name="graphSearchPlots" pkg="graph_search" type="graphSearchPlots.py" if="$(eval plotGraphSearch)">
@@ -164,8 +168,12 @@
       <node name="GraphSearch" pkg="graph_search" type="GraphSearch.py" output="screen">
         <param name="zHeight"                value="2.0"            />   # m
         <param name="waypointRadius"         value="0.25"           />   # m
-        <param name="stayTime"               value="0.05"            />   # seconds
-        <param name="maxVelocity"            value="3.0"            />   # m/seconds
+        <param name="stayTime"               value="0.05"           />   # seconds
+      </node>
+
+      <!-- Position Controller -->
+      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
+        <param name="maxVelocity"            value="2.0"   />   # m/s
       </node>
 
       <node name="graphSearchPlots" pkg="graph_search" type="graphSearchPlots.py" if="$(eval plotGraphSearch)">
@@ -201,8 +209,12 @@
       <node name="GraphSearch" pkg="graph_search" type="GraphSearch.py" output="screen">
         <param name="zHeight"                value="2.0"            />   # m
         <param name="waypointRadius"         value="0.25"           />   # m
-        <param name="stayTime"               value="0.05"            />   # seconds
-        <param name="maxVelocity"            value="3.0"            />   # m/seconds
+        <param name="stayTime"               value="0.05"           />   # seconds
+      </node>
+
+      <!-- Position Controller -->
+      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
+        <param name="maxVelocity"            value="2.0"   />   # m/s
       </node>
 
       <node name="graphSearchPlots" pkg="graph_search" type="graphSearchPlots.py" if="$(eval plotGraphSearch)">

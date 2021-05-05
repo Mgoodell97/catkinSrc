@@ -100,8 +100,12 @@
         <param name="stepSize"               value="2.0"   />   # m
         <param name="waypointRadius"         value="0.25"  />   # m
         <param name="stayTime"               value="1.0"   />   # seconds
-        <param name="maxVelocity"            value="3.0"   />   # seconds
         <param name="PlumeType"              value="$(arg PlumeType)"/>   # String for plume sim
+      </node>
+
+      <!-- Position Controller -->
+      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
+        <param name="maxVelocity"            value="2.0"   />   # m/s
       </node>
     </group>
 
@@ -127,8 +131,12 @@
         <param name="stepSize"               value="2.0"   />   # m
         <param name="waypointRadius"         value="0.25"  />   # m
         <param name="stayTime"               value="1.0"   />   # seconds
-        <param name="maxVelocity"            value="3.0"   />   # seconds
         <param name="PlumeType"              value="$(arg PlumeType)"/>   # String for plume sim
+      </node>
+
+      <!-- Position Controller -->
+      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
+        <param name="maxVelocity"            value="2.0"   />   # m/s
       </node>
     </group>
 
@@ -154,8 +162,12 @@
         <param name="stepSize"               value="2.0"   />   # m
         <param name="waypointRadius"         value="0.25"  />   # m
         <param name="stayTime"               value="1.0"   />   # seconds
-        <param name="maxVelocity"            value="3.0"   />   # seconds
         <param name="PlumeType"              value="$(arg PlumeType)"/>   # String for plume sim
+      </node>
+
+      <!-- Position Controller -->
+      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
+        <param name="maxVelocity"            value="2.0"   />   # m/s
       </node>
     </group>
 
