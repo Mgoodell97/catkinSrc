@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy #include <ros/ros.h> cpp equivalent
-#import numpy
+import numpy as np
 from Particle_Filter_Gaussian import *
 import matplotlib.pyplot as plt
 # from sensor_msgs.msg import Joy
@@ -22,14 +22,16 @@ from particle_filter.msg import particles
 
 global chem_reading
 _NUM_OF_PARTICLES_GAUS = 1000
-_NUM_OF_PARTICLES_GADEN = 1000
+_NUM_OF_PARTICLES_GADEN = _NUM_OF_PARTICLES_GAUS
 
-_IMP_PARTICLES = 200
-_PARTICLE_PARAMETERS_GAUS = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[50000, 50000],[1, 1],[.15,.15],[.15,.15]] #x,y,z,theta,Q,V,Dy,Dz
-_PARTICLE_PARAMETERS_GADEN = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[43659, 43659],[.828, .828],[1.03697,1.03697],[.00007265,.00007265]] #x,y,z,theta,Q,V,Dy,Dz
+_IMP_PARTICLES = 100
+_PARTICLE_PARAMETERS_GAUS = [[0,50],[0, 50],[2,2],[0,-2*np.pi],[50000, 50000],[1, 1],[.15,.15],[.15,.15]] #x,y,z,theta,Q,V,Dy,Dz
+# _PARTICLE_PARAMETERS_GADEN = [[0,50],[0, 50],[2,2],[0,-2*np.pi],[25000, 75000],[.75, 1.25],[1.03697,1.03697],[.00007265,.00007265]] #x,y,z,theta,Q,V,Dy,Dz
 
 #_PARTICLE_PARAMETERS = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[50000, 50000],[1, 1],[.15,.15],[.15,.15]] #x,y,z,theta,Q,V,Dy,Dz
 # _PARTICLE_PARAMETERS_GADEN = [[25,25],[45,45],[2,2],[3*np.pi/2,3*np.pi/2],[0, 50000],[0, 2.5],[0,1.5],[0,1.5]] #x,y,z,theta,Q,V,Dy,Dz
+
+_PARTICLE_PARAMETERS_GADEN = [[0,50],[0,50],[2,2],[3*np.pi/2,3*np.pi/2],[0.01, 25],[25000, 75000],[0.1,5],[0.1,10]] #x,y,z,theta,Q,V,Dy,Dz
 
 # _PARTICLE_PARAMETERS = [[0, 50],[0, 50],[0,4],[0,6*np.pi/4],[90000, 110000],[0, 8],[20,60],[.005, .025]]
 
@@ -41,10 +43,10 @@ x_noise = 1
 y_noise = 1
 z_noise = 0
 theta_noise = 0
-Q_noise = 0
-V_noise = 0
-Dy_noise = 0
-Dz_noise = 0
+Q_noise = 1000
+V_noise = 0.02
+Dy_noise = 0.025
+Dz_noise = 0.025
 
 # x_noise = .25
 # y_noise = .25
@@ -100,7 +102,7 @@ def main():
     rospy.init_node('Particle_Filter') # name your node
     ## Initialization of Particles and Sensor ##
 
-    rate = rospy.Rate(20)
+    rate = rospy.Rate(5)
 
     PlumeType = rospy.get_param("particleFilter/PlumeType")      #  I'm not explaining this
 
@@ -136,7 +138,7 @@ def main():
     robotZLoc = 0
     sensors = Sensor(_NUM_OF_ROBOTS,_VINYARD_SIZE,robotXLoc,robotYLoc,robotZLoc) # initilize sensors (starts at random location)
 
-    time.sleep(25)
+    time.sleep(5)
 
     # print('Initializing...')
     while not rospy.is_shutdown(): # while roscore is running do this. if not, stop... Executes Function
@@ -169,6 +171,18 @@ def main():
                 Dy = sum(Dy_ps*particle_probabilities)
                 Dz = sum(Dz_ps*particle_probabilities)
 
+                particlesMsg.X = particle_filter.particles[0]
+                particlesMsg.Y = particle_filter.particles[1]
+                particlesMsg.Z = particle_filter.particles[2]
+                particlesMsg.theta = particle_filter.particles[3]
+                particlesMsg.Q = particle_filter.particles[4]
+                particlesMsg.v = particle_filter.particles[5]
+                particlesMsg.Dy = particle_filter.particles[6]
+                particlesMsg.Dz = particle_filter.particles[7]
+                particlesMsg.weights = particle_probabilities
+
+                particlesPublisher.publish(particlesMsg)
+
                 particle_filter.resamp_and_noise(_NOISE_STD_PARAMS,_NUM_OF_PARTICLES_GAUS, _IMP_PARTICLES) # resamples likely particles and adds noise to them
 
         if PlumeType == "gaden":
@@ -178,7 +192,7 @@ def main():
             z_location = location_gaden.pose.position.z*2
             sensors.reading(chem_reading,x_location,y_location,z_location)
 
-            if chem_reading > 500:
+            if chem_reading > 10:
                 particle_filter.likelihood(chem_reading, x_location , y_location, z_location) # gets likelihod of each particle
                 particle_probabilities = particle_filter.prob_df
                 X_ps = particle_filter.particles[0]
@@ -209,8 +223,25 @@ def main():
                 print('Dz:')
                 print(Dz)
 
-                particle_filter.resamp_and_noise(_NOISE_STD_PARAMS,_NUM_OF_PARTICLES_GADEN, _IMP_PARTICLES)
 
+            # tab down
+            particlesMsg.X = particle_filter.particles[0]
+            particlesMsg.Y = particle_filter.particles[1]
+            particlesMsg.Z = particle_filter.particles[2]
+            particlesMsg.theta = particle_filter.particles[3]
+            particlesMsg.Q = particle_filter.particles[4]
+            particlesMsg.v = particle_filter.particles[5]
+            particlesMsg.Dy = particle_filter.particles[6]
+            particlesMsg.Dz = particle_filter.particles[7]
+            try:
+                particlesMsg.weights = particle_probabilities
+            except:
+                particlesMsg.weights = np.ones(_NUM_OF_PARTICLES_GAUS)/_NUM_OF_PARTICLES_GAUS
+
+            particlesPublisher.publish(particlesMsg)
+
+            if chem_reading > 10:
+                particle_filter.resamp_and_noise(_NOISE_STD_PARAMS,_NUM_OF_PARTICLES_GADEN, _IMP_PARTICLES)
 
         plumeMsg.X = X
         plumeMsg.Y = Y
@@ -221,11 +252,6 @@ def main():
         plumeMsg.Dy = Dy
         plumeMsg.Dz = Dz
 
-        particlesMsg.X = particle_filter.particles[0]
-        particlesMsg.Y = particle_filter.particles[1]
-        particlesMsg.Z = particle_filter.particles[2]
-
-        particlesPublisher.publish(particlesMsg)
         pub.publish(plumeMsg)
 
         # assume x and y is known later we will subscribe to topic matthew made

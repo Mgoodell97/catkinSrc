@@ -192,7 +192,7 @@ class Particle_Gen():
         #         return 500
 
         def pdf_thresh_function(sensorval):
-            return 500
+            return 2000
 
         pdf_std = pdf_thresh_function(actual_sensor_reading)
 
