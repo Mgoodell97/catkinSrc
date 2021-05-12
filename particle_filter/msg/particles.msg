@@ -1,3 +1,9 @@
 float32[] X
 float32[] Y
 float32[] Z
+float32[] theta
+float32[] Q
+float32[] v
+float32[] Dy
+float32[] Dz
+float32[] weights
