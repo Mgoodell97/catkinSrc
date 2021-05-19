@@ -36,7 +36,8 @@ int main( int argc, char** argv )
 
     //Publishers
     ros::Publisher sensor_read_pub = n.advertise<olfaction_msgs::gas_sensor>("Sensor_reading", 500);
-	  ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("Sensor_display", 100);
+	  ros::Publisher marker_pub_old = n.advertise<visualization_msgs::Marker>("Sensor_display_old", 100);
+    ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("Sensor_display", 100);
 
     //Service to request gas concentration
     ros::ServiceClient client = n.serviceClient<gaden_player::GasPosition>("/odor_value");
@@ -245,12 +246,20 @@ int main( int argc, char** argv )
             sensor.pose.position.x = x_pos;
             sensor.pose.position.y = y_pos;
             sensor.pose.position.z = z_pos;
-            marker_pub.publish(sensor);
+            marker_pub_old.publish(sensor);
             connector.header.stamp = ros::Time::now();
             connector.scale.z = z_pos;
             connector.pose.position.x = x_pos;
             connector.pose.position.y = y_pos;
             connector.pose.position.z = float(z_pos)/2;
+            marker_pub_old.publish(connector);
+
+
+            connector.header.stamp = ros::Time::now();
+            connector.scale.z = z_pos;
+            connector.pose.position.x = x_pos;
+            connector.pose.position.y = y_pos;
+            connector.pose.position.z = z_pos;
             marker_pub.publish(connector);
         }
 

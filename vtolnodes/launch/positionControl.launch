@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="quadID" default="1"/>
+
+  <arg name="maxVelocity"    default="2.0"/>
+  <arg name="enableObsAvoid" default="True"/>
+
+  <arg name="SpawnUAV1" default="True"/>
+  <arg name="SpawnUAV2" default="False"/>
+  <arg name="SpawnUAV3" default="False"/>
+
+  <!-- Position Controller -->
+  <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="log">
+    <param name="maxVelocity"              value="$(arg maxVelocity)"    />   # m/s
+    <param name="enableObsAvoid"           value="$(arg enableObsAvoid)" />   # [-]
+    <param name="potentialFeild"           value="5"                     />   # m
+    <param name="emergancyFeild"           value="1.5"                   />   # m
+    <param name="potentialFeildScalor"     value="0.3"                   />   #
+    <param name="quadID"                   value="$(arg quadID)"         />   # [-]
+    <param name="subToUAV1Pose"            value="$(arg SpawnUAV1)"      />   # [-]
+    <param name="subToUAV2Pose"            value="$(arg SpawnUAV2)"      />   # [-]
+    <param name="subToUAV3Pose"            value="$(arg SpawnUAV3)"      />   # [-]
+  </node>
+
+</launch>
