@@ -38,6 +38,8 @@
     <arg name="plotGaussian" default="False"/>
     <arg name="plotGraphSearch" default="False"/>
     <arg name="rosbag" default="False"/>
+    <arg name="enableObsAvoid" default="True"/>
+    <arg name="maxVelocity"    default="2.0"/> # m/s
 
     <!-- Gazebo sim -->
     <!-- Needed for quad -->
@@ -81,7 +83,7 @@
     <param name="zPlume"           type="double"  value="2"     /> # m
     <param name="thetaPlume"       type="double"  value="-90"   /> # degrees (both methods need to know the wind direction)
 
-    <node name="plotGaussianwithPF" pkg="quadnodes" type="plotGaussianwithPF.py" output="screen" if="$(eval plotGaussian)">
+    <node name="plotGaussianwithPF" pkg="quadnodes" type="plotGaussianwithPF.py" output="log" if="$(eval plotGaussian)">
         <!-- Plot UAVS -->
         <param name="plotUAV1" type="bool" value="$(arg SpawnUAV1)"/>
         <param name="plotUAV2" type="bool" value="$(arg SpawnUAV2)"/>
@@ -92,7 +94,7 @@
         <param name="mapMax" value="50"/>
     </node>
 
-    <node name="hivemind" pkg="quadnodes" type="hivemind.py" output="screen">
+    <node name="hivemind" pkg="quadnodes" type="hivemind.py" output="log">
         <!-- Plot UAVS -->
         <param name="UAV1" type="bool" value="$(arg SpawnUAV1)"/>
         <param name="UAV2" type="bool" value="$(arg SpawnUAV2)"/>
@@ -101,14 +103,14 @@
 
     <group ns="UAV1" if="$(eval SpawnUAV1)">
       <!-- Gas sensor -->
-      <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen" if="$(eval PlumeType == 'gaden')">
+      <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log" if="$(eval PlumeType == 'gaden')">
           <param name="sensor_model" value="30" />
           <param name="sensor_frame" value="pid_frame1" />
           <param name="fixed_frame" value="map_gaden"/>
           <param name="noise_std" value="20.1"/>
       </node>
 
-      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py" output="screen" if="$(eval PlumeType == 'gaussian')">
+      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py" output="log" if="$(eval PlumeType == 'gaussian')">
         <param name="UAVofIntrest" value="UAV1"/>
       </node>
 
@@ -126,31 +128,33 @@
 
       <!-- Motion planner -->
       <node name="MutualInformation" pkg="quadnodes" type="MutualInformation.py" output="screen">
-        <param name="zHeight"                value="2.0"            />   # m
-        <param name="stepSize"               value="6.5"            />   # m
-        <param name="waypointRadius"         value="2"           />   # m
-        <param name="stayTime"               value="0.01"           />   # seconds
+        <param name="maxVelocity"              value="$(arg maxVelocity)"    />   # m/s
+        <param name="zHeight"                value="2.0"                     />   # m
+        <param name="stepSize"               value="6.5"                     />   # m
+        <param name="waypointRadius"         value="2"                       />   # m
+        <param name="stayTime"               value="0.01"                    />   # seconds
       </node>
 
       <!-- Position Controller -->
-      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
-        <param name="maxVelocity"            value="2.0"   />   # m/s
-      </node>
-
-      <!-- Motion planner plot -->
-      <!-- <node name="MutualInformationSurface" pkg="quadnodes" type="MutualInformationSurface.py" output="screen"/> -->
+      <include file="$(find quadnodes)/launch/positionControl.launch">
+        <arg name="quadID"         default="1"/>
+        <arg name="enableObsAvoid" default="$(arg enableObsAvoid)"/>
+        <arg name="SpawnUAV1"      default="$(arg SpawnUAV1)"/>
+        <arg name="SpawnUAV2"      default="$(arg SpawnUAV2)"/>
+        <arg name="SpawnUAV3"      default="$(arg SpawnUAV3)"/>
+      </include>
     </group>
 
     <group ns="UAV2" if="$(eval SpawnUAV2)">
       <!-- Gas sensor -->
-      <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen" if="$(eval PlumeType == 'gaden')">
+      <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log" if="$(eval PlumeType == 'gaden')">
           <param name="sensor_model" value="30" />
           <param name="sensor_frame" value="pid_frame2" />
           <param name="fixed_frame" value="map_gaden"/>
           <param name="noise_std" value="20.1"/>
       </node>
 
-      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py" output="screen" if="$(eval PlumeType == 'gaussian')">
+      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py" output="log" if="$(eval PlumeType == 'gaussian')">
         <param name="UAVofIntrest" value="UAV2"/>
       </node>
 
@@ -167,29 +171,34 @@
       <param name="ztMaxMain" type="double" value="125000"/>
 
       <!-- Motion planner -->
-      <node name="MutualInformation" pkg="quadnodes" type="MutualInformation.py" output="screen">
-        <param name="zHeight"                value="2.0"            />   # m
-        <param name="stepSize"               value="6.5"            />   # m
-        <param name="waypointRadius"         value="2"           />   # m
-        <param name="stayTime"               value="0.01"           />   # seconds
+      <node name="MutualInformation" pkg="quadnodes" type="MutualInformation.py" output="log">
+        <param name="maxVelocity"              value="$(arg maxVelocity)"    />   # m/s
+        <param name="zHeight"                value="2.0"                     />   # m
+        <param name="stepSize"               value="6.5"                     />   # m
+        <param name="waypointRadius"         value="2"                       />   # m
+        <param name="stayTime"               value="0.01"                    />   # seconds
       </node>
 
       <!-- Position Controller -->
-      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
-        <param name="maxVelocity"            value="2.0"   />   # m/s
-      </node>
+      <include file="$(find quadnodes)/launch/positionControl.launch">
+        <arg name="quadID"         default="2"/>
+        <arg name="enableObsAvoid" default="$(arg enableObsAvoid)"/>
+        <arg name="SpawnUAV1"      default="$(arg SpawnUAV1)"/>
+        <arg name="SpawnUAV2"      default="$(arg SpawnUAV2)"/>
+        <arg name="SpawnUAV3"      default="$(arg SpawnUAV3)"/>
+      </include>
     </group>
 
     <group ns="UAV3" if="$(eval SpawnUAV3)">
       <!-- Gas sensor -->
-      <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen" if="$(eval PlumeType == 'gaden')">
+      <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log" if="$(eval PlumeType == 'gaden')">
           <param name="sensor_model" value="30" />
           <param name="sensor_frame" value="pid_frame3" />
           <param name="fixed_frame" value="map_gaden"/>
           <param name="noise_std" value="20.1"/>
       </node>
 
-      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py" output="screen" if="$(eval PlumeType == 'gaussian')">
+      <node name="gaussianPlumeSensor" pkg="quadnodes" type="gaussianPlumeSensor.py" output="log" if="$(eval PlumeType == 'gaussian')">
         <param name="UAVofIntrest" value="UAV3"/>
       </node>
 
@@ -206,17 +215,22 @@
       <param name="ztMaxMain" type="double" value="125000"/>
 
       <!-- Motion planner -->
-      <node name="MutualInformation" pkg="quadnodes" type="MutualInformation.py" output="screen">
-        <param name="zHeight"                value="2.0"            />   # m
-        <param name="stepSize"               value="6.5"            />   # m
-        <param name="waypointRadius"         value="2"           />   # m
-        <param name="stayTime"               value="0.01"           />   # seconds
+      <node name="MutualInformation" pkg="quadnodes" type="MutualInformation.py" output="log">
+        <param name="maxVelocity"              value="$(arg maxVelocity)"    />   # m/s
+        <param name="zHeight"                value="2.0"                     />   # m
+        <param name="stepSize"               value="6.5"                     />   # m
+        <param name="waypointRadius"         value="2"                       />   # m
+        <param name="stayTime"               value="0.01"                    />   # seconds
       </node>
 
       <!-- Position Controller -->
-      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
-        <param name="maxVelocity"            value="2.0"   />   # m/s
-      </node>
+      <include file="$(find quadnodes)/launch/positionControl.launch">
+        <arg name="quadID"         default="3"/>
+        <arg name="enableObsAvoid" default="$(arg enableObsAvoid)"/>
+        <arg name="SpawnUAV1"      default="$(arg SpawnUAV1)"/>
+        <arg name="SpawnUAV2"      default="$(arg SpawnUAV2)"/>
+        <arg name="SpawnUAV3"      default="$(arg SpawnUAV3)"/>
+      </include>
     </group>
 
 

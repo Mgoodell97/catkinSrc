@@ -172,6 +172,7 @@ def main():
 
     global_waypoint_pub = rospy.Publisher('desired_waypoint', PoseStamped, queue_size=100)
 
+    maxVelocity        = rospy.get_param("MutualInformation/maxVelocity")     #  m/s
     zHeight            = rospy.get_param("MutualInformation/zHeight")         #  m
     stepSize           = rospy.get_param("MutualInformation/stepSize")        #  m
     waypointRadius     = rospy.get_param("MutualInformation/waypointRadius")  #  m
@@ -187,10 +188,12 @@ def main():
     xyzError = [0, 0, 0]
     justHitWaypoint = False
     pickleFlag = True
+    optimalTimeToWaypoint = 100
 
     DesiredWaypoint = PoseStamped()
 
     waypointStartTime = rospy.get_rostime()
+    optimalTimeToWaypointTimer = rospy.get_rostime()
 
     rate = rospy.Rate(1)
 
@@ -269,6 +272,10 @@ def main():
                 yWaypoint = waypoint[1]
                 zWaypoint = waypoint[2]
 
+                waypointDistance = sqrt( (xWaypoint - current_pose.pose.position.x)**2 + (yWaypoint - current_pose.pose.position.y)**2 )
+                optimalTimeToWaypoint = waypointDistance/maxVelocity
+                optimalTimeToWaypointTimer = rospy.get_rostime() # reset timer
+
                 print("")
                 print("Moving to next waypoint")
                 print(waypoint)
@@ -276,6 +283,57 @@ def main():
                 print("=======================")
 
                 justHitWaypoint = False
+        elif(rospy.get_rostime() - optimalTimeToWaypointTimer >= rospy.Duration(optimalTimeToWaypoint*1.5)):
+            zTestsHeightsSize = 1
+
+            # zRange = 0.1
+            # zTestsHeights = np.linspace(-zRange, zRange, num=zTestsHeightsSize) + current_pose.pose.position.z
+
+            zTestsHeights = np.array([2])
+            desiredInfoVec = []
+            infoVec = []
+
+            for z in range(zTestsHeightsSize):
+                for i in range(thetaVecSize):
+                    desiredInfoVec.append([current_pose.pose.position.x + stepSize*cos(thetaVec[i]), current_pose.pose.position.y + stepSize*sin(thetaVec[i]), zTestsHeights[z]])
+
+            desiredInfoVec = np.array(desiredInfoVec)
+
+            global condensedParticleArray
+
+            xp = condensedParticleArray[:,0:8]
+            wp = condensedParticleArray[:,8]
+
+
+            for i in range(len(desiredInfoVec)):
+                xInfoDes = desiredInfoVec[i,:]
+                infoVec.append(informationAtXNew(xInfoDes,xp,wp,sigma,ztMinMain, ztMaxMain, xGuass, wGuass))
+
+            infoVec = np.array(infoVec)
+
+            waypoint = desiredInfoVec[np.argmax(infoVec),:]
+
+            # print(desiredInfoVec)
+
+            xWaypoint = waypoint[0]
+            yWaypoint = waypoint[1]
+            zWaypoint = waypoint[2]
+
+            waypointDistance = sqrt( (xWaypoint - current_pose.pose.position.x)**2 + (yWaypoint - current_pose.pose.position.y)**2 )
+            optimalTimeToWaypoint = waypointDistance/maxVelocity
+            optimalTimeToWaypointTimer = rospy.get_rostime() # reset timer
+
+            print("")
+            print("Could not reach waypoint moving to next waypoint")
+            print("waypointDistance      : ", waypointDistance)
+            print("optimalTimeToWaypoint : ", optimalTimeToWaypoint)
+            print("")
+            print("=======================")
+
+            justHitWaypoint = False
+
+
+
         else:
             justHitWaypoint = False
 

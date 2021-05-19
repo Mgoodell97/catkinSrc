@@ -22,6 +22,7 @@
   <arg name="ReadingPlot" default="False"/>
   <arg name="plotGaussian" default="False"/>
   <arg name="rosbag" default="False"/>
+  <arg name="enableObsAvoid" default="True"/>
 
   <!-- Gazebo sim -->
   <!-- Needed for quad -->
@@ -104,9 +105,13 @@
       </node>
 
       <!-- Position Controller -->
-      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
-        <param name="maxVelocity"            value="2.0"   />   # m/s
-      </node>
+      <include file="$(find quadnodes)/launch/positionControl.launch">
+        <arg name="quadID"         default="1"/>
+        <arg name="enableObsAvoid" default="$(arg enableObsAvoid)"/>
+        <arg name="SpawnUAV1"      default="$(arg SpawnUAV1)"/>
+        <arg name="SpawnUAV2"      default="$(arg SpawnUAV2)"/>
+        <arg name="SpawnUAV3"      default="$(arg SpawnUAV3)"/>
+      </include>
     </group>
 
     <group ns="UAV2">
@@ -135,9 +140,13 @@
       </node>
 
       <!-- Position Controller -->
-      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
-        <param name="maxVelocity"            value="2.0"   />   # m/s
-      </node>
+      <include file="$(find quadnodes)/launch/positionControl.launch">
+        <arg name="quadID"         default="2"/>
+        <arg name="enableObsAvoid" default="$(arg enableObsAvoid)"/>
+        <arg name="SpawnUAV1"      default="$(arg SpawnUAV1)"/>
+        <arg name="SpawnUAV2"      default="$(arg SpawnUAV2)"/>
+        <arg name="SpawnUAV3"      default="$(arg SpawnUAV3)"/>
+      </include>
     </group>
 
     <group ns="UAV3">
@@ -166,9 +175,13 @@
       </node>
 
       <!-- Position Controller -->
-      <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="screen">
-        <param name="maxVelocity"            value="2.0"   />   # m/s
-      </node>
+      <include file="$(find quadnodes)/launch/positionControl.launch">
+        <arg name="quadID"         default="3"/>
+        <arg name="enableObsAvoid" default="$(arg enableObsAvoid)"/>
+        <arg name="SpawnUAV1"      default="$(arg SpawnUAV1)"/>
+        <arg name="SpawnUAV2"      default="$(arg SpawnUAV2)"/>
+        <arg name="SpawnUAV3"      default="$(arg SpawnUAV3)"/>
+      </include>
     </group>
 
     <!-- Create tf transformations -->

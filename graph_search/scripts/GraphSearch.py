@@ -91,6 +91,7 @@ def main():
     arming_client = rospy.ServiceProxy("mavros/cmd/arming", CommandBool)
     set_mode_client = rospy.ServiceProxy("mavros/set_mode", SetMode)
 
+    maxVelocity        = rospy.get_param("GraphSearch/maxVelocity")     #  m/s
     zHeight            = rospy.get_param("GraphSearch/zHeight")         #  m
     waypointRadius     = rospy.get_param("GraphSearch/waypointRadius")  #  m
     stayTime           = rospy.get_param("GraphSearch/stayTime")        #  seconds
@@ -113,10 +114,12 @@ def main():
     firstWaypointFlag = False
     path = []
     xyzWaypointIndex = 0
+    optimalTimeToWaypoint = 100
 
     DesiredWaypoint = PoseStamped()
 
     waypointStartTime = rospy.get_rostime()
+    optimalTimeToWaypointTimer = rospy.get_rostime()
 
     rate = rospy.Rate(50)
 
@@ -177,19 +180,84 @@ def main():
 
                     xWaypoint = path[xyzWaypointIndex][_X]
                     yWaypoint = path[xyzWaypointIndex][_Y]
-
+                    optimalTimeToWaypointTimer = rospy.get_rostime()
 
                 else: # move to next waypoint
                     xWaypoint = path[xyzWaypointIndex][_X]
                     yWaypoint = path[xyzWaypointIndex][_Y]
+                    optimalTimeToWaypointTimer = rospy.get_rostime()
 
                 # print("")
                 # print("Moving to next waypoint")
                 # print(xWaypoint, yWaypoint)
                 # print("")
                 # print("=======================")
+                waypointDistance = sqrt( (xWaypoint - current_pose.pose.position.x)**2 + (yWaypoint - current_pose.pose.position.y)**2 )
+                optimalTimeToWaypoint = waypointDistance/maxVelocity
+
+                print("")
+                print("waypointDistance      : ", waypointDistance)
+                print("optimalTimeToWaypoint : ", optimalTimeToWaypoint)
+                print("")
+                print("=======================")
+
                 xyzWaypointIndex +=1
                 justHitWaypoint = False
+
+        elif(rospy.get_rostime() - optimalTimeToWaypointTimer >= rospy.Duration(optimalTimeToWaypoint*1.5)):
+            xyzWaypointIndex +=1
+            if (xyzWaypointIndex >= len(path)): #generate new waypoints
+                xyzWaypointIndex = 0
+                particleGraph,xBins,yBins,patriclesArray = DiscretizeMap(particlesEstimation.X, particlesEstimation.Y, colSteps, rowSteps, xRange, yRange)
+                xBestGoal,yBestGoal,xBestGoalIndex,yBestGoalIndex = FindBestGoal(particleGraph, patriclesArray, xyPoseRobot, xBins, yBins)#Find area of highest info
+
+                if type(xBestGoalIndex) != np.int64:
+                    BestGoal = (xBestGoalIndex[0],yBestGoalIndex[0])
+                else:
+                    BestGoal = (xBestGoalIndex,yBestGoalIndex)
+
+                xBestGoal = np.array([xBestGoal])
+                yBestGoal = np.array([yBestGoal])
+
+                # start = tuple((9-(int((xyPoseRobot[1]-5)/rowSteps)),int((xyPoseRobot[0]-1)/2)))
+                _, xIndex, yIndex = DiscretizeRobotPose([current_pose.pose.position.x, current_pose.pose.position.y], xBins, yBins)
+                start = (yIndex, xIndex)
+
+                if start == BestGoal:
+                    BestGoal = (np.random.randint(rowSteps),np.random.randint(colSteps))
+
+
+                pathIndex = run_IG(start,BestGoal,patriclesArray,actions=MP_project_gs._ACTIONS_2)
+                path = []
+                for pathIndexCurrent in range(len(pathIndex)):
+                    path.append((xBins[pathIndex[pathIndexCurrent][1]],yBins[pathIndex[pathIndexCurrent][0]]))
+                # path = run_IG(start,BestGoal,patriclesArray,actions=MP_project_gs._ACTIONS_2)
+
+                xWaypoint = path[xyzWaypointIndex][_X]
+                yWaypoint = path[xyzWaypointIndex][_Y]
+                optimalTimeToWaypointTimer = rospy.get_rostime()
+
+            else: # move to next waypoint
+                xWaypoint = path[xyzWaypointIndex][_X]
+                yWaypoint = path[xyzWaypointIndex][_Y]
+                optimalTimeToWaypointTimer = rospy.get_rostime()
+
+            # print("")
+            # print("Could not reach waypoint moving to next waypoint")
+            # print(xWaypoint, yWaypoint)
+            # print("")
+            # print("=======================")
+            waypointDistance = sqrt( (xWaypoint - current_pose.pose.position.x)**2 + (yWaypoint - current_pose.pose.position.y)**2 )
+            optimalTimeToWaypoint = waypointDistance/maxVelocity
+
+            print("")
+            print("Could not reach waypoint moving to next waypoint")
+            print("waypointDistance      : ", waypointDistance)
+            print("optimalTimeToWaypoint : ", optimalTimeToWaypoint)
+            print("")
+            print("=======================")
+            justHitWaypoint = False
+
         else:
             justHitWaypoint = False
 
