@@ -23,6 +23,7 @@
   <arg name="plotGaussian" default="False"/>
   <arg name="plotGraphSearch" default="False"/>
   <arg name="rosbag" default="False"/>
+  <arg name="enableObsAvoid" default="True"/>
 
 
   <!-- Gazebo sim -->

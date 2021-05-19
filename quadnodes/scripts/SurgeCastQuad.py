@@ -2,8 +2,6 @@
 
 import rospy #include <ros/ros.h> cpp equivalent
 from geometry_msgs.msg import PoseStamped #include <geometry_msgs/PoseStamped.h>
-from mavros_msgs.srv import CommandBool #include <mavros_msgs/CommandBool.h>
-from mavros_msgs.srv import SetMode #include <mavros_msgs/SetMode.h>
 from mavros_msgs.msg import State #include <mavros_msgs/State.h>
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import PoseStamped
@@ -73,11 +71,6 @@ def main():
     global_waypoint_pub = rospy.Publisher('desired_waypoint', PoseStamped, queue_size=100)
 
     service_timeout = 30
-
-    rospy.wait_for_service('mavros/cmd/arming', service_timeout)
-    rospy.wait_for_service("mavros/set_mode", service_timeout)
-    arming_client = rospy.ServiceProxy("mavros/cmd/arming", CommandBool)
-    set_mode_client = rospy.ServiceProxy("mavros/set_mode", SetMode)
 
     minLim             = rospy.get_param("SurgeCastQuad/minLim")          #  m
     maxLim             = rospy.get_param("SurgeCastQuad/maxLim")          #  m

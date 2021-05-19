@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="PlumeType" default="gaussian"/>
+
+  <arg name="SpawnUAV1" default="True"/>
+  <arg name="x1" default="0.0"/>
+  <arg name="y1" default="0.0"/>
+  <arg name="z1" default="0.0"/>
+
+  <arg name="SpawnUAV2" default="False"/>
+  <arg name="x2" default="10.0"/>
+  <arg name="y2" default="10.0"/>
+  <arg name="z2" default="0.0"/>
+
+  <arg name="SpawnUAV3" default="False"/>
+  <arg name="x3" default="0.0"/>
+  <arg name="y3" default="10.0"/>
+  <arg name="z3" default="0.0"/>
+
+  <arg name="GazeboGUI" default="True"/>
+  <arg name="RVIZGUI" default="True"/>
+  <arg name="rosbag" default="False"/>
+
+  <arg name="enableObsAvoid" default="True"/>
+
+  <!-- Gazebo sim -->
+  <!-- Needed for quad -->
+  <include file="$(find quadnodes)/launch/gazeboOutdoor.launch">
+    <arg name="world" default="$(find quadnodes)/worlds/empty.world"/>
+    <arg name="gui" default="$(arg GazeboGUI)"/>
+  </include>
+
+  <!-- Spawn UAV1 -->
+  <include file="$(find quadnodes)/launch/spawnUAV1_SDF.launch" if="$(eval SpawnUAV1)">
+    <arg name="x" default="$(arg x1)"/>
+    <arg name="y" default="$(arg y1)"/>
+    <arg name="z" default="$(arg z1)"/>
+  </include>
+
+  <!-- Spawn UAV2 -->
+  <include file="$(find quadnodes)/launch/spawnUAV2_SDF.launch" if="$(eval SpawnUAV2)">
+    <arg name="x" default="$(arg x2)"/>
+    <arg name="y" default="$(arg y2)"/>
+    <arg name="z" default="$(arg z2)"/>
+  </include>
+
+  <!-- Spawn UAV3 -->
+  <include file="$(find quadnodes)/launch/spawnUAV3_SDF.launch" if="$(eval SpawnUAV3)">
+    <arg name="x" default="$(arg x3)"/>
+    <arg name="y" default="$(arg y3)"/>
+    <arg name="z" default="$(arg z3)"/>
+  </include>
+
+
+    <group ns="UAV1" if="$(eval SpawnUAV1)">
+      <!-- Motion Planner -->
+      <node name="waypointListNode" pkg="quadnodes" type="waypointTemplateNew.py" output="screen">
+        <rosparam param="xWaypointList"> [0, 10]</rosparam>
+        <rosparam param="yWaypointList"> [0, 10]</rosparam>
+        <rosparam param="zWaypointList"> [2, 2]</rosparam>
+        <param name="waypointIndex"          value="0"   />   # [-]
+        <param name="waypointRadius"         value="1"   />   # m
+        <param name="stayTime"               value="2.0" />   # s
+      </node>
+
+      <!-- Position Controller -->
+      <include file="$(find quadnodes)/launch/positionControl.launch">
+        <arg name="quadID"         default="1"/>
+        <arg name="enableObsAvoid" default="$(arg enableObsAvoid)"/>
+        <arg name="SpawnUAV1"      default="$(arg SpawnUAV1)"/>
+        <arg name="SpawnUAV2"      default="$(arg SpawnUAV2)"/>
+        <arg name="SpawnUAV3"      default="$(arg SpawnUAV3)"/>
+      </include>
+    </group>
+
+    <group ns="UAV2" if="$(eval SpawnUAV2)">
+      <!-- Motion Planner -->
+      <node name="waypointListNode" pkg="quadnodes" type="waypointTemplateNew.py" output="log">
+        <rosparam param="xWaypointList"> [0, 10]</rosparam>
+        <rosparam param="yWaypointList"> [0, 10]</rosparam>
+        <rosparam param="zWaypointList"> [2, 2]</rosparam>
+        <param name="waypointIndex"          value="1"   />   # [-]
+        <param name="waypointRadius"         value="1"   />   # m
+        <param name="stayTime"               value="2.0" />   # s
+      </node>
+
+      <!-- Position Controller -->
+      <include file="$(find quadnodes)/launch/positionControl.launch">
+        <arg name="quadID"         default="2"/>
+        <arg name="enableObsAvoid" default="$(arg enableObsAvoid)"/>
+        <arg name="SpawnUAV1"      default="$(arg SpawnUAV1)"/>
+        <arg name="SpawnUAV2"      default="$(arg SpawnUAV2)"/>
+        <arg name="SpawnUAV3"      default="$(arg SpawnUAV3)"/>
+      </include>
+    </group>
+
+    <group ns="UAV3" if="$(eval SpawnUAV3)">
+      <!-- Motion Planner -->
+      <node name="waypointListNode" pkg="quadnodes" type="waypointTemplateNew.py" output="log">
+        <rosparam param="xWaypointList"> [0, 10]</rosparam>
+        <rosparam param="yWaypointList"> [10, 0]</rosparam>
+        <rosparam param="zWaypointList"> [2, 2]</rosparam>
+        <param name="waypointIndex"          value="0"   />   # [-]
+        <param name="waypointRadius"         value="1"   />   # m
+        <param name="stayTime"               value="2.0" />   # s
+      </node>
+
+      <!-- Position Controller -->
+      <include file="$(find quadnodes)/launch/positionControl.launch">
+        <arg name="quadID"         default="3"/>
+        <arg name="enableObsAvoid" default="$(arg enableObsAvoid)"/>
+        <arg name="SpawnUAV1"      default="$(arg SpawnUAV1)"/>
+        <arg name="SpawnUAV2"      default="$(arg SpawnUAV2)"/>
+        <arg name="SpawnUAV3"      default="$(arg SpawnUAV3)"/>
+      </include>
+    </group>
+
+    <!-- Create tf transformations -->
+    <node pkg="tf" type="static_transform_publisher" name="UAVs2World" args="0.0 0.0 0.0 0 0 0 world worldUAVs 100" />
+
+</launch>
