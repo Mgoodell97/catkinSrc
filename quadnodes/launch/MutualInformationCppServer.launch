@@ -71,7 +71,7 @@
 
     <include file="$(find quadnodes)/launch/50x50.launch" if="$(eval PlumeType == 'gaden')"/>
 
-    <param name="PPM_at_center"    type="double"  value="50000" />               #  ppm     release rate
+    <param name="PPM_at_center"    type="double"  value="50000" />               #  kg/s     release rate
     <param name="vPlume"           type="double"  value="1"     />               #  m/s      velocity
     <param name="DyPlume"          type="double"  value="0.15"  />               #  m        diffusion along y
     <param name="DzPlume"          type="double"  value="0.15"  />               #  m        diffusion along z
@@ -83,7 +83,7 @@
     <param name="zPlume"           type="double"  value="2"     /> # m
     <param name="thetaPlume"       type="double"  value="-90"   /> # degrees (both methods need to know the wind direction)
 
-    <node name="plotGaussianwithPF" pkg="quadnodes" type="plotGaussianwithPF.py" output="screen" if="$(eval plotGaussian)">
+    <node name="plotGaussianwithPF" pkg="quadnodes" type="plotGaussianwithPF.py" output="log" if="$(eval plotGaussian)">
         <!-- Plot UAVS -->
         <param name="plotUAV1" type="bool" value="$(arg SpawnUAV1)"/>
         <param name="plotUAV2" type="bool" value="$(arg SpawnUAV2)"/>
@@ -103,7 +103,7 @@
 
     <group ns="UAV1" if="$(eval SpawnUAV1)">
       <!-- Gas sensor -->
-      <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen" if="$(eval PlumeType == 'gaden')">
+      <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log" if="$(eval PlumeType == 'gaden')">
           <param name="sensor_model" value="30" />
           <param name="sensor_frame" value="pid_frame1" />
           <param name="fixed_frame" value="map_gaden"/>
@@ -118,34 +118,26 @@
         <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
       </node>
 
-      <param name="rowSteps" value="20"/>
-      <param name="colSteps" value="20"/>
-      <param name="xMinMap" value="0"/>
-      <param name="yMinMap" value="0"/>
-      <param name="xMaxMap" value="50"/>
-      <param name="yMaxMap" value="50"/>
+      <param name="xMinMap"   value="0"/>
+      <param name="xMaxMap"   value="50"/>
+      <param name="yMinMap"   value="0"/>
+      <param name="yMaxMap"   value="50"/>
+      <param name="zMinMap"   value="1.5"/>
+      <param name="zMaxMap"   value="2.5"/>
 
-      <!-- Motion planner -->
-      <node name="GraphSearch" pkg="graph_search" type="GraphSearch.py" output="screen">
-        <param name="maxVelocity"              value="$(arg maxVelocity)"    />   # m/s
-        <param name="zHeight"                value="2.0"                     />   # m
-        <param name="waypointRadius"         value="0.25"                    />   # m
-        <param name="stayTime"               value="0.05"                    />   # seconds
-      </node>
+      <!-- Mutual Info Node/Server -->
+      <include file="$(find quadnodes)/launch/MutualInfoMotionPlanner.launch">
+        <arg name="infoPlot"       default="True"/>
+      </include>
 
       <!-- Position Controller -->
       <include file="$(find quadnodes)/launch/positionControl.launch">
         <arg name="quadID"         default="1"/>
-        <arg name="maxVelocity"    default="$(arg maxVelocity)"/>
         <arg name="enableObsAvoid" default="$(arg enableObsAvoid)"/>
         <arg name="SpawnUAV1"      default="$(arg SpawnUAV1)"/>
         <arg name="SpawnUAV2"      default="$(arg SpawnUAV2)"/>
         <arg name="SpawnUAV3"      default="$(arg SpawnUAV3)"/>
       </include>
-
-      <node name="graphSearchPlots" pkg="graph_search" type="graphSearchPlots.py" if="$(eval plotGraphSearch)">
-        <param name="particleColor" value="red"/>
-      </node>
     </group>
 
     <group ns="UAV2" if="$(eval SpawnUAV2)">
@@ -165,34 +157,24 @@
         <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
       </node>
 
-      <param name="rowSteps" value="10"/>
-      <param name="colSteps" value="10"/>
-      <param name="xMinMap" value="0"/>
-      <param name="yMinMap" value="0"/>
-      <param name="xMaxMap" value="50"/>
-      <param name="yMaxMap" value="50"/>
+      <param name="xMinMap"   value="0"/>
+      <param name="xMaxMap"   value="50"/>
+      <param name="yMinMap"   value="0"/>
+      <param name="yMaxMap"   value="50"/>
+      <param name="zMinMap"   value="1.5"/>
+      <param name="zMaxMap"   value="2.5"/>
 
-      <!-- Motion planner -->
-      <node name="GraphSearch" pkg="graph_search" type="GraphSearch.py" output="log">
-        <param name="maxVelocity"              value="$(arg maxVelocity)"    />   # m/s
-        <param name="zHeight"                value="2.0"                     />   # m
-        <param name="waypointRadius"         value="0.25"                    />   # m
-        <param name="stayTime"               value="0.05"                    />   # seconds
-      </node>
+      <!-- Mutual Info Node/Server -->
+      <include file="$(find quadnodes)/launch/MutualInfoMotionPlanner.launch"/>
 
       <!-- Position Controller -->
       <include file="$(find quadnodes)/launch/positionControl.launch">
         <arg name="quadID"         default="2"/>
-        <arg name="maxVelocity"    default="$(arg maxVelocity)"/>
         <arg name="enableObsAvoid" default="$(arg enableObsAvoid)"/>
         <arg name="SpawnUAV1"      default="$(arg SpawnUAV1)"/>
         <arg name="SpawnUAV2"      default="$(arg SpawnUAV2)"/>
         <arg name="SpawnUAV3"      default="$(arg SpawnUAV3)"/>
       </include>
-
-      <node name="graphSearchPlots" pkg="graph_search" type="graphSearchPlots.py" if="$(eval plotGraphSearch)">
-        <param name="particleColor" value="green"/>
-      </node>
     </group>
 
     <group ns="UAV3" if="$(eval SpawnUAV3)">
@@ -212,34 +194,24 @@
         <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
       </node>
 
-      <param name="rowSteps" value="10"/>
-      <param name="colSteps" value="10"/>
-      <param name="xMinMap" value="0"/>
-      <param name="yMinMap" value="0"/>
-      <param name="xMaxMap" value="50"/>
-      <param name="yMaxMap" value="50"/>
+      <param name="xMinMap"   value="0"/>
+      <param name="xMaxMap"   value="50"/>
+      <param name="yMinMap"   value="0"/>
+      <param name="yMaxMap"   value="50"/>
+      <param name="zMinMap"   value="1.5"/>
+      <param name="zMaxMap"   value="2.5"/>
 
-      <!-- Motion planner -->
-      <node name="GraphSearch" pkg="graph_search" type="GraphSearch.py" output="log">
-        <param name="maxVelocity"            value="$(arg maxVelocity)"    />   # m/s
-        <param name="zHeight"                value="2.0"                   />   # m
-        <param name="waypointRadius"         value="0.25"                  />   # m
-        <param name="stayTime"               value="0.05"                  />   # seconds
-      </node>
+      <!-- Mutual Info Node/Server -->
+      <include file="$(find quadnodes)/launch/MutualInfoMotionPlanner.launch"/>
 
       <!-- Position Controller -->
       <include file="$(find quadnodes)/launch/positionControl.launch">
         <arg name="quadID"         default="3"/>
-        <arg name="maxVelocity"    default="$(arg maxVelocity)"/>
         <arg name="enableObsAvoid" default="$(arg enableObsAvoid)"/>
         <arg name="SpawnUAV1"      default="$(arg SpawnUAV1)"/>
         <arg name="SpawnUAV2"      default="$(arg SpawnUAV2)"/>
         <arg name="SpawnUAV3"      default="$(arg SpawnUAV3)"/>
       </include>
-
-      <node name="graphSearchPlots" pkg="graph_search" type="graphSearchPlots.py" if="$(eval plotGraphSearch)">
-        <param name="particleColor" value="blue"/>
-      </node>
     </group>
 
 
@@ -259,7 +231,7 @@
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/gauss.rviz"  if="$(eval PlumeType == 'gaussian' and RVIZGUI)"/>
 
     <!-- Bag recording -->
-    <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/rosbags/graphGaden/graphGaden /UAV1/Sensor_reading /UAV2/Sensor_reading /UAV3/Sensor_reading /UAV1/true_position /UAV2/true_position /UAV3/true_position /UAV1/gaussianEstimation /UAV2/gaussianEstimation /UAV3/gaussianEstimation /hivemindEstimate" name="rosbagRecord"  if="$(eval PlumeType == 'gaden' and rosbag)"/>
-    <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/rosbags/graphSearchNew/graphSearch /UAV1/gaussianReading /UAV2/gaussianReading /UAV3/gaussianReading /UAV1/true_position /UAV2/true_position /UAV3/true_position /UAV1/gaussianEstimation /UAV2/gaussianEstimation /UAV3/gaussianEstimation /hivemindEstimate" name="rosbagRecord"  if="$(eval PlumeType == 'gaussian' and rosbag)"/>
+    <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/rosbags/mutualInformationGaden/mutualInformationGaden /UAV1/Sensor_reading /UAV2/Sensor_reading /UAV3/Sensor_reading /UAV1/true_position /UAV2/true_position /UAV3/true_position /UAV1/gaussianEstimation /UAV2/gaussianEstimation /UAV3/gaussianEstimation /hivemindEstimate" name="rosbagRecord"  if="$(eval PlumeType == 'gaden' and rosbag)"/>
+    <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/rosbags/mutualInformationGaussian/mutualInformationGaussian /UAV1/gaussianReading /UAV2/gaussianReading /UAV3/gaussianReading /UAV1/true_position /UAV2/true_position /UAV3/true_position /UAV1/gaussianEstimation /UAV2/gaussianEstimation /UAV3/gaussianEstimation /hivemindEstimate" name="rosbagRecord"  if="$(eval PlumeType == 'gaussian' and rosbag)"/>
 
 </launch>

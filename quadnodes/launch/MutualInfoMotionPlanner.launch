@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<launch>
+
+
+
+  <arg name="sigma"          default="10000"/>
+  <arg name="ztMin"          default="0"/>
+  <arg name="ztMax"          default="125000"/>
+
+  <arg name="maxVelocity"    default="2.0"/>
+  <arg name="stepSize"       default="5"/>
+  <arg name="waypointRadius" default="1"/>
+  <arg name="stayTime"       default="0.01"/>
+
+  <arg name="infoPlot"       default="False"/>
+
+  <!-- Mutual Info Node/Server -->
+  <node name="mutualInfoServer" pkg="quadnodes" type="mutualInfoServer" output="log">
+    <param name="sigma"     type="double" value="$(arg sigma)"/>
+    <param name="ztMin"     type="double" value="$(arg ztMin)"/>
+    <param name="ztMax"     type="double" value="$(arg ztMax)"/>
+  </node>
+
+  <!-- Motion planner -->
+  <node name="MutualInformation" pkg="quadnodes" type="MutualInformationCppServer.py" output="screen">
+    <param name="maxVelocity"            value="$(arg maxVelocity)"     />
+    <param name="stepSize"               value="$(arg stepSize)"       />
+    <param name="waypointRadius"         value="$(arg waypointRadius)" />
+    <param name="stayTime"               value="$(arg stayTime)"       />
+  </node>
+
+  <!-- Mutual Info plotter -->
+  <node name="MutualInformationSurfaceCppServer" pkg="quadnodes" type="MutualInformationSurfaceCppServer.py" output="log" if="$(eval infoPlot)"/>
+
+</launch>

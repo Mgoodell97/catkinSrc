@@ -127,7 +127,7 @@ def main():
 
     X = 1
     Y = 1
-    Z = 1
+    Z = 2
     Theta = 1
     Q = 1
     V = 1
