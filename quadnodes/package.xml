@@ -65,6 +65,8 @@
   <exec_depend>tf2</exec_depend>
   <build_depend>tf2_ros</build_depend>
   <exec_depend>tf2_ros</exec_depend>
+  <build_depend>particle_filter</build_depend>
+  <exec_depend>particle_filter</exec_depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->

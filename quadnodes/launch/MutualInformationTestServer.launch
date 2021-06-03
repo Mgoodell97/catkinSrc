@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+
+  <param name="xMinMap"   value="0"/>
+  <param name="yMinMap"   value="0"/>
+  <param name="xMaxMap"   value="100"/>
+  <param name="yMaxMap"   value="100"/>
+  <param name="sigma"     type="double" value="10000"/>
+  <param name="ztMinMain" type="double" value="0"/>
+  <param name="ztMaxMain" type="double" value="125000"/>
+
+  <node name="fakePfPublisher" pkg="particle_filter" type="fakePfPublisher.py" output="screen"/>
+
+  <!-- Old -->
+  <!-- <node name="MutualInformationSurfacePlot" pkg="quadnodes" type="MutualInformationSurfaceTemp.py" output="screen"/> -->
+
+  <!-- New -->
+  <node name="MutualInformationSurfaceCppServer" pkg="quadnodes" type="MutualInformationSurfaceCppServer.py" output="screen"/>
+  <node name="mutualInfoServer" pkg="quadnodes" type="mutualInfoServer" output="screen"/>
+
+</launch>

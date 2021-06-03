@@ -7,7 +7,7 @@ project(quadnodes)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED roscpp geometry_msgs mavros_msgs sensor_msgs nav_msgs tf2 tf2_ros message_generation)
+find_package(catkin REQUIRED roscpp geometry_msgs mavros_msgs sensor_msgs nav_msgs tf2 tf2_ros particle_filter message_generation)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -49,11 +49,10 @@ add_message_files(
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+   FILES
+   mutualInfo.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -138,6 +137,8 @@ add_executable(xboxVelControl xboxVelControl.cpp)
 add_executable(xboxAltControl xboxAltControl.cpp)
 add_executable(xboxJoyTest xboxJoyTest.cpp)
 add_executable(tfWorldUAV tfWorldUAV.cpp)
+add_executable(mutualInfoGaussianSensorTestMap mutualInfoGaussianSensorTestMap.cpp)
+add_executable(mutualInfoServer mutualInfoServer.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -160,6 +161,8 @@ target_link_libraries(xboxVelControl ${catkin_LIBRARIES})
 target_link_libraries(xboxAltControl ${catkin_LIBRARIES})
 target_link_libraries(xboxJoyTest ${catkin_LIBRARIES})
 target_link_libraries(tfWorldUAV ${catkin_LIBRARIES})
+target_link_libraries(mutualInfoGaussianSensorTestMap ${catkin_LIBRARIES})
+target_link_libraries(mutualInfoServer ${catkin_LIBRARIES})
 
 #############
 ## Install ##

@@ -6,14 +6,14 @@
   <arg name="y1" default="5.0"/>
   <arg name="z1" default="0.0"/>
 
-  <arg name="SpawnUAV2" default="False"/>
+  <arg name="SpawnVTOL2" default="False"/>
   <arg name="x2" default="5.0"/>
-  <arg name="y2" default="18.33"/>
+  <arg name="y2" default="10.0"/>
   <arg name="z2" default="0.0"/>
 
-  <arg name="SpawnUAV3" default="False"/>
+  <arg name="SpawnVTOL3" default="False"/>
   <arg name="x3" default="5.0"/>
-  <arg name="y3" default="31.66"/>
+  <arg name="y3" default="15.0"/>
   <arg name="z3" default="0.0"/>
 
   <arg name="GazeboGUI" default="True"/>
@@ -33,18 +33,61 @@
   </include>
 
   <!-- Spawn UAV2 -->
-  <include file="$(find quadnodes)/launch/spawnUAV2_SDF.launch" if="$(eval SpawnUAV2)">
+  <include file="$(find vtolnodes)/launch/spawnVTOL2_SDF.launch" if="$(eval SpawnVTOL2)">
     <arg name="x" default="$(arg x2)"/>
     <arg name="y" default="$(arg y2)"/>
     <arg name="z" default="$(arg z2)"/>
   </include>
 
   <!-- Spawn UAV3 -->
-  <include file="$(find quadnodes)/launch/spawnUAV3_SDF.launch" if="$(eval SpawnUAV3)">
+  <include file="$(find vtolnodes)/launch/spawnVTOL3_SDF.launch" if="$(eval SpawnVTOL3)">
     <arg name="x" default="$(arg x3)"/>
     <arg name="y" default="$(arg y3)"/>
     <arg name="z" default="$(arg z3)"/>
   </include>
+
+
+  <group ns="UAV1" if="$(eval SpawnVTOL1)">
+    <!-- Motion planner -->
+    <node name="mavrosVTOLWaypoints" pkg="vtolnodes" type="mavrosVTOLWaypoints.py" output="screen" >
+      <rosparam param="xWaypointList"> [0, 100, 100, 0]</rosparam>
+      <rosparam param="yWaypointList"> [0, 0, 100, 100]</rosparam>
+      <rosparam param="zWaypointList"> [5, 5, 5, 5]</rosparam>
+      <param name="waypointRadius"         value="5"       />   # m
+      <param name="waypointIndex"          value="0"          />   # [-]
+      <param name="spawnBiasX"             value="$(arg x1)"  />   # m
+      <param name="spawnBiasY"             value="$(arg y1)"  />   # m
+      <param name="spawnBiasZ"             value="$(arg z1)"  />   # m
+    </node>
+  </group>
+
+  <group ns="UAV2" if="$(eval SpawnVTOL2)">
+    <!-- Motion planner -->
+    <node name="mavrosVTOLWaypoints" pkg="vtolnodes" type="mavrosVTOLWaypoints.py" output="screen" >
+      <rosparam param="xWaypointList"> [0, 10, 10, 0]</rosparam>
+      <rosparam param="yWaypointList"> [0, 0, 10, 10]</rosparam>
+      <rosparam param="zWaypointList"> [10, 10, 10, 10]</rosparam>
+      <param name="waypointRadius"         value="0.25"       />   # m
+      <param name="waypointIndex"          value="0"          />   # [-]
+      <param name="spawnBiasX"             value="$(arg x2)"  />   # m
+      <param name="spawnBiasY"             value="$(arg y2)"  />   # m
+      <param name="spawnBiasZ"             value="$(arg z2)"  />   # m
+    </node>
+  </group>
+
+  <group ns="UAV3" if="$(eval SpawnVTOL3)">
+    <!-- Motion planner -->
+    <node name="mavrosVTOLWaypoints" pkg="vtolnodes" type="mavrosVTOLWaypoints.py" output="screen" >
+      <rosparam param="xWaypointList"> [0, 10, 10, 0]</rosparam>
+      <rosparam param="yWaypointList"> [0, 0, 10, 10]</rosparam>
+      <rosparam param="zWaypointList"> [15, 15, 15, 15]</rosparam>
+      <param name="waypointRadius"         value="0.25"       />   # m
+      <param name="waypointIndex"          value="0"          />   # [-]
+      <param name="spawnBiasX"             value="$(arg x3)"  />   # m
+      <param name="spawnBiasY"             value="$(arg y3)"  />   # m
+      <param name="spawnBiasZ"             value="$(arg z3)"  />   # m
+    </node>
+  </group>
 
   <!-- Create tf transformations -->
   <node pkg="tf" type="static_transform_publisher" name="UAVs2World" args="0.0 0.0 0.0 0 0 0 world worldUAVs 100" />
