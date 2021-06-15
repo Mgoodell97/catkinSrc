@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+
+    <group ns="UAV1">
+      <param name="quadID" value="1"/>
+      <node name="fakeAgentMLEPublisher" pkg="particle_filter" type="fakeAgentMLEPublisher.py"/>
+      <!-- <node name="Fake_PF_MLE_merger" pkg="particle_filter" type="fake_PF_MLE_merger.py" output="screen"/> -->
+    </group>
+
+    <group ns="UAV2">
+      <param name="quadID" value="2"/>
+      <node name="fakeAgentMLEPublisher" pkg="particle_filter" type="fakeAgentMLEPublisher.py"/>
+      <node name="Fake_PF_MLE_merger" pkg="particle_filter" type="fake_PF_MLE_merger.py" output="screen"/>
+    </group>
+
+    <group ns="UAV3">
+      <param name="quadID" value="3"/>
+      <node name="fakeAgentMLEPublisher" pkg="particle_filter" type="fakeAgentMLEPublisher.py"/>
+    </group>
+
+
+</launch>
