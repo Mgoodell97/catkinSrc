@@ -11,3 +11,6 @@ float32 local_z
 float64 GPS_latitude
 float64 GPS_longitude
 float32 GPS_altitude
+float32 vel_x
+float32 vel_y
+float32 vel_z

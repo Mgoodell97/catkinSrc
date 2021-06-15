@@ -25,6 +25,7 @@
 #include <mavros_msgs/HomePosition.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include "geometry_msgs/Twist.h"
+#include <geometry_msgs/TwistStamped.h>
 #include <nav_msgs/Odometry.h>
 #include "std_msgs/UInt8.h"
 #include "std_msgs/Bool.h"
@@ -41,6 +42,7 @@
 #include <geographic_msgs/GeoPoint.h>
 #include "enif_iuc/AgentHome.h"
 #include "enif_iuc/AgentSource.h"
+#include "particle_filter/estimatedGaussian.h"
 
 using namespace std;
 
@@ -56,6 +58,16 @@ using namespace std;
 #define COMMAND_AVEHOME  10
 #define COMMAND_TARGETE    11
 #define COMMAND_REALTARGET 12
+#define COMMAND_MLE_GAUSS 13
+
+// length of package without start, agentnumber, and command.
+#define MPS_LENGTH        37//45//54 //42
+#define REALTARGET_LENGTH 45
+#define TARGETE_LENGTH    45
+#define BOX_LENGTH        47
+#define TAKEOFF_LENGTH    2
+#define STATE_LENGTH      2
+#define MLE_GAUSS_LENGTH  37
 
 #define GAS_NONE    0
 #define GAS_PROPANE 1
@@ -64,12 +76,23 @@ using namespace std;
 #define REMAP_A 0.5
 #define REMAP_B -990.0
 
+#define ALG_WAYPOINT  0
+#define ALG_LAWNMOWER 1
+#define ALG_PSO       2
+#define ALG_PF        3
+#define ALG_INFO      4
+
+int package_length = 0;
+
 // transmit local and home info from quad
 bool sendLocal = false;
 bool sendBat   = false;
 bool sendHome  = true;
 bool sendRealTarget = true;
 bool sendTargetE = true;
+
+string data;
+double transmitRate;
 
 std::string USB;
 int AGENT_NUMBER = 0;
@@ -78,6 +101,11 @@ int GAS_ID = 0;
 
 std_msgs::UInt8 state;
 sensor_msgs::NavSatFix gps;
+bool useMox;
+
+geometry_msgs::TwistStamped vel;
+
+particle_filter::estimatedGaussian MLE_gauss, MLE_gauss_other;
 mps_driver::MPS mps, mps_other;
 sensor_msgs::Range height,height_other;
 sensor_msgs::BatteryState battery;
@@ -85,8 +113,7 @@ sensor_msgs::BatteryState battery;
 mavros_msgs::HomePosition home;
 nav_msgs::Odometry local;
 
-geographic_msgs::GeoPoint targetE;
-enif_iuc::AgentSource realTarget;
+enif_iuc::AgentSource realTarget, targetE, targetE_other;
 enif_iuc::AgentHome agent_home;
 
 //containers for enif_iuc_ground
@@ -177,15 +204,16 @@ void CharToFloat(char* buf, float &number)
 
 int get_target_number(char* buf)
 {
-  int number = CharToInt(buf[1]);
+  int number = CharToInt(buf[0]);
   return number;
 }
 
 int get_command_type(char* buf)
 {
-  int number = CharToInt(buf[2]);
+  int number = CharToInt(buf[1]);
   return number;
 }
+
 
 bool checksum(char* buf)
 {
@@ -210,32 +238,55 @@ void form_checksum(char* buf)
   buf[0] = sum;
 }
 
+void form_start(char* buf)
+{
+  buf[0] = 0x3C;
+  buf[1] = 0x3C;
+}
+
+bool checkEnd(char* buf, int len){
+  if (buf[len]==0x0A){
+    return true;
+  }
+  return false;
+}
+
 std_msgs::Bool get_takeoff_command(char* buf, std_msgs::Int8 &newAlg)
 {
   std_msgs::Bool result;
-  int takeoff_newAlg = CharToInt(buf[3]);
+  uint8_t takeoff_newAlg = CharToInt(buf[0]);
   if(takeoff_newAlg >= 100)
     result.data = true;
   else
     result.data = false;
   newAlg.data = takeoff_newAlg - result.data*100;
-      
+
+  package_length = 5;
   return result;
 }
 
 int get_waypoint_number(char* buf)
 {
-  return CharToInt(buf[3]);
+  return CharToInt(buf[0]);
 }
 
 void get_waypoint_info(char* buf, enif_iuc::WaypointTask &waypoint_list)
 {
   double velocity, damping_distance;
-  CharToDouble(buf+4, velocity);
+  CharToDouble(buf, velocity);
   waypoint_list.velocity = velocity;
-  CharToDouble(buf+12, damping_distance);
+  CharToDouble(buf+8, damping_distance);
   waypoint_list.damping_distance = damping_distance;
 }
+
+int get_waypointlist_buf_size(int waypoint_number)
+{
+  int buf_size = 0;
+  //20 bytes of wp info + 25 bytes per waypoint
+  buf_size = 16+25*waypoint_number;
+  return buf_size;
+}
+
 
 void get_waypoints(int waypoint_number, char* buf, enif_iuc::WaypointTask &waypoint_list)
 {
@@ -246,57 +297,64 @@ void get_waypoints(int waypoint_number, char* buf, enif_iuc::WaypointTask &waypo
       double latitude, longitude, target_height;
       int staytime;
       // Get latitude
-      CharToDouble(buf+20+byte_number, latitude);
+      CharToDouble(buf+16+byte_number, latitude);
       waypoint.latitude = latitude;
       byte_number += sizeof(double);
       // Get longitude
-      CharToDouble(buf+20+byte_number, longitude);
+      CharToDouble(buf+16+byte_number, longitude);
       waypoint.longitude = longitude;
       byte_number += sizeof(double);
       // Get waypoint height
-      CharToDouble(buf+20+byte_number, target_height);
+      CharToDouble(buf+16+byte_number, target_height);
       waypoint.target_height = target_height;
       byte_number += sizeof(double);
       // Get staytime
-      waypoint.staytime = CharToInt(buf[20+byte_number]);
+      waypoint.staytime = CharToInt(buf[16+byte_number]);
       byte_number++;
       waypoint_list.mission_waypoint.push_back(waypoint);
     }
+  //int waypt_num = get_waypoint_number(buf);
+  //package_length = get_waypointlist_buf_size(waypt_num)+1;
 }
 
 void cut_buf(char* buf_0, char* buf_1, int size)
 {
-  //  char tbuf[size];
-  //  buf_1 = tbuf;
   strncpy(buf_1, buf_0, size-1);
   buf_1[size-1] = 0x0A;
-  //buf_0 += size;
 }
 
-int get_waypointlist_buf_size(int waypoint_number)
+// return false if the box is not valid
+bool get_box(char* buf, std_msgs::Float64MultiArray &box)
 {
-  int buf_size = 0;
-  //20 bytes of wp info + 25 bytes per waypoint
-  buf_size = 20+25*waypoint_number;
-  return buf_size;
-}
-
-void get_box(char* buf, std_msgs::Float64MultiArray &box)
-{
+  bool valid_box = false;
   double latitude, longitude, width, height, angle;
   double staytime, wp_height, velocity, wp_radius;
   double stepwidth, stepheight;
-  CharToDouble(buf+3,  longitude);
-  CharToDouble(buf+11, latitude);
-  CharToDouble(buf+19, width);
-  CharToDouble(buf+27, height);
-  CharToDouble(buf+35, angle);
-  staytime   = CharToInt(buf[43]);
-  wp_height  = CharToInt(buf[44])/20.0;
-  velocity   = CharToInt(buf[45]);
-  wp_radius  = CharToInt(buf[46]);
-  stepwidth  = CharToInt(buf[47]);
-  stepheight = CharToInt(buf[48]);
+  CharToDouble(buf,  longitude);
+  CharToDouble(buf+8, latitude);
+  CharToDouble(buf+16, width);
+  CharToDouble(buf+24, height);
+  CharToDouble(buf+32, angle);
+  staytime   = CharToInt(buf[40]);
+  wp_height  = CharToInt(buf[41])/20.0;
+  velocity   = CharToInt(buf[42]);
+  wp_radius  = CharToInt(buf[43]);
+  stepwidth  = CharToInt(buf[44]);
+  stepheight = CharToInt(buf[45]);
+
+  package_length = 50;
+
+  if(checkValue(latitude, -180, 180) && checkValue(longitude, -180, 180) &&
+     checkValue(width, 0, 1e+06)     && checkValue(height, 0, 1e+06) &&
+     checkValue(staytime, 0, 1e+06)  && checkValue(angle, -180, 180) &&
+     checkValue(wp_height, 0, 100)   && checkValue(velocity, 0, 50) &&
+     checkValue(wp_radius, 0, 100)   && checkValue(stepwidth, 0, 1e+06) &&
+     checkValue(stepheight, 0, 1e+06)){
+    valid_box = true;
+  }else{
+    return false;
+  }
+
   box.data.push_back(longitude);
   box.data.push_back(latitude);
   box.data.push_back(width);
@@ -308,17 +366,19 @@ void get_box(char* buf, std_msgs::Float64MultiArray &box)
   box.data.push_back(wp_radius);
   box.data.push_back(stepwidth);
   box.data.push_back(stepheight);
+
+  return valid_box;
 }
 
 bool extract_GPS_from_MPS(mps_driver::MPS mps_read)
 {
   if(checkValue(mps_read.GPS_latitude, -180, 180) &&
      checkValue(mps_read.GPS_longitude, -180, 180) &&
-     checkValue(mps_read.GPS_altitude, 0, 2000)){
+     checkValue(mps_read.GPS_altitude, -2000, 6000)){
     gps.latitude = mps_read.GPS_latitude;
     gps.longitude = mps_read.GPS_longitude;
     gps.altitude = mps_read.GPS_altitude;
-    
+
     height.range = mps_read.GPS_altitude;
     return true;
   }else{
@@ -340,6 +400,18 @@ bool check_MPS(mps_driver::MPS mps_read)
 }
 
 
+// bool check_MLE_GAUSS(mps_driver::MPS mps_read)
+// {
+//   if(checkValue(mps_read.GPS_latitude, -180, 180) &&
+//      checkValue(mps_read.GPS_longitude, -180, 180) &&
+//      checkValue(mps_read.GPS_altitude, 0, 2000)){
+//     return true;
+//   }else{
+//     cout<<mps_read.GPS_latitude<<" "<<mps_read.GPS_longitude<<" "<<mps_read.GPS_altitude<<endl;
+//   }
+//   return false;
+// }
+
 bool checkGeo(geographic_msgs::GeoPoint newData, geographic_msgs::GeoPoint storedData)
 {
   // check if newData is new compared with storedData
@@ -349,7 +421,7 @@ bool checkGeo(geographic_msgs::GeoPoint newData, geographic_msgs::GeoPoint store
     }
   return false;
 }
-  
+
 
 bool checkHome(mavros_msgs::HomePosition myhome)
 {
@@ -379,108 +451,173 @@ bool checkLocal(nav_msgs::Odometry mylocal)
 
 void get_mps(char* buf)
 {
-  GAS_ID = CharToInt(buf[3]);
-  if(GAS_ID == GAS_PROPANE){
-    string str = "Propane";
-    mps.gasID = str;
-  }else if(GAS_ID == GAS_METHANE){
-    string str = "Methane";
-    mps.gasID = str;
-  }else{
-    string str = "None";
-    mps.gasID = str;
-  }
-  float percentLEL, temperature, local_height, humidity;
+  float percentLEL, local_height, vel_x, vel_y, vel_z;
   double GPS_latitude, GPS_longitude, GPS_altitude;
-  CharToFloat(buf+4, percentLEL);
+  CharToFloat(buf, percentLEL);
   mps.percentLEL = percentLEL;
-  CharToFloat(buf+4+4, temperature);
-  mps.temperature = temperature;
-  CharToFloat(buf+4+8, local_height);
+  CharToFloat(buf+4, local_height);
   mps.local_z = local_height;
-  CharToFloat(buf+4+12, humidity);
-  mps.humidity = humidity;
-  CharToDouble(buf+4+16, GPS_latitude);
+  CharToDouble(buf+8, GPS_latitude);
   mps.GPS_latitude = GPS_latitude;
-  CharToDouble(buf+4+24, GPS_longitude);
+  CharToDouble(buf+16, GPS_longitude);
   mps.GPS_longitude = GPS_longitude;
-  CharToDouble(buf+4+32, GPS_altitude);
-  mps.GPS_altitude = GPS_altitude;
-  buf = buf + 44;
-  
+
+  CharToFloat(buf+24, vel_x);
+  mps.vel_x = vel_x;
+  CharToFloat(buf+28, vel_y);
+  mps.vel_y = vel_y;
+  CharToFloat(buf+32, vel_z);
+  mps.vel_z = vel_z;
+
+  //CharToDouble(buf+24, GPS_altitude);
+  //mps.GPS_altitude = GPS_altitude;
+
+  //CharToFloat(buf+32, vel_x);
+  //mps.vel_x = vel_x;
+  //CharToFloat(buf+36, vel_y);
+  //mps.vel_y = vel_y;
+  //CharToFloat(buf+40, vel_z);
+  //mps.vel_z = vel_z;
+
 }
 
 void get_other_mps(char* buf)
 {
-  GAS_ID = CharToInt(buf[3]);
-  if(GAS_ID == GAS_PROPANE){
-    string str = "Propane";
-    mps_other.gasID = str;
-  }else if(GAS_ID == GAS_METHANE){
-    string str = "Methane";
-    mps_other.gasID = str;
-  }else{
-    string str = "None";
-    mps_other.gasID = str;
-  }
-  float percentLEL, temperature, local_height, humidity;
+  float percentLEL, local_height, vel_x, vel_y, vel_z;
   double GPS_latitude, GPS_longitude, GPS_altitude;
-  CharToFloat(buf+4, percentLEL);
+  CharToFloat(buf, percentLEL);
   mps_other.percentLEL = percentLEL;
-  CharToFloat(buf+4+4, temperature);
-  mps_other.temperature = temperature;
-  CharToFloat(buf+4+8, local_height);
+  CharToFloat(buf+4, local_height);
   mps_other.local_z = local_height;
-  CharToFloat(buf+4+12, humidity);
-  mps_other.humidity = humidity;
-  CharToDouble(buf+4+16, GPS_latitude);
+  CharToDouble(buf+8, GPS_latitude);
   mps_other.GPS_latitude = GPS_latitude;
-  CharToDouble(buf+4+24, GPS_longitude);
+  CharToDouble(buf+16, GPS_longitude);
   mps_other.GPS_longitude = GPS_longitude;
-  CharToDouble(buf+4+32, GPS_altitude);
-  mps_other.GPS_altitude = GPS_altitude;
-  buf = buf + 44;
-  
+
+  CharToFloat(buf+24, vel_x);
+  mps_other.vel_x = vel_x;
+  CharToFloat(buf+28, vel_y);
+  mps_other.vel_y = vel_y;
+  CharToFloat(buf+32, vel_z);
+  mps_other.vel_z = vel_z;
+
+  //CharToDouble(buf+24, GPS_altitude);
+  //mps_other.GPS_altitude = GPS_altitude;
+
+  //CharToFloat(buf+32, vel_x);
+  //mps_other.vel_x = vel_x;
+  //CharToFloat(buf+36, vel_y);
+  //mps_other.vel_y = vel_y;
+  //CharToFloat(buf+40, vel_z);
+  //mps_other.vel_z = vel_z;
+
+}
+
+void get_other_MLE_gauss(char* buf)
+{
+  float percentLEL, local_height, vel_x, vel_y, vel_z;
+  double GPS_latitude, GPS_longitude, GPS_altitude;
+  CharToFloat(buf, percentLEL);
+  mps_other.percentLEL = percentLEL;
+  CharToFloat(buf+4, local_height);
+  mps_other.local_z = local_height;
+  CharToDouble(buf+8, GPS_latitude);
+  mps_other.GPS_latitude = GPS_latitude;
+  CharToDouble(buf+16, GPS_longitude);
+  mps_other.GPS_longitude = GPS_longitude;
+
+  CharToFloat(buf+24, vel_x);
+  mps_other.vel_x = vel_x;
+  CharToFloat(buf+28, vel_y);
+  mps_other.vel_y = vel_y;
+  CharToFloat(buf+32, vel_z);
+  mps_other.vel_z = vel_z;
+
+  //CharToDouble(buf+24, GPS_altitude);
+  //mps_other.GPS_altitude = GPS_altitude;
+
+  //CharToFloat(buf+32, vel_x);
+  //mps_other.vel_x = vel_x;
+  //CharToFloat(buf+36, vel_y);
+  //mps_other.vel_y = vel_y;
+  //CharToFloat(buf+40, vel_z);
+  //mps_other.vel_z = vel_z;
+
+}
+
+void get_targetE_other(char* buf)
+{
+  double latitude, longitude, altitude;
+  float angle, diff_y, diff_z, release_rate, wind_speed;
+  CharToDouble(buf, latitude);
+  CharToDouble(buf+8, longitude);
+  CharToDouble(buf+16, altitude);
+  CharToFloat(buf+24, angle);
+  CharToFloat(buf+28, wind_speed);
+  CharToFloat(buf+32, diff_y);
+  CharToFloat(buf+36, diff_z);
+  CharToFloat(buf+40, release_rate);
+
+  targetE_other.source.latitude = latitude;
+  targetE_other.source.longitude = longitude;
+  targetE_other.source.altitude = altitude;
+  targetE_other.angle = angle;
+  targetE_other.wind_speed = wind_speed;
+  targetE_other.diff_y = diff_y;
+  targetE_other.diff_z = diff_z;
+  targetE_other.release_rate = release_rate;
+
 }
 
 void get_targetE(char* buf)
 {
   double latitude, longitude, altitude;
-  
-  CharToDouble(buf+3, latitude);
-  CharToDouble(buf+11, longitude);
-  CharToDouble(buf+19, altitude);
-  
-  targetE.latitude = latitude;
-  targetE.longitude = longitude;  
-  targetE.altitude = altitude;
-  buf = buf + 28;
-}
-
-void get_realTarget(char* buf)
-{
-  double latitude, longitude, altitude, wind_speed;
-  float angle, diff_y, diff_z, release_rate;
-  CharToDouble(buf+3, latitude);
-  CharToDouble(buf+11, longitude);
-  CharToDouble(buf+19, altitude);
-  CharToFloat(buf+27, angle);
-
-  wind_speed = CharToInt(buf[31]);
+  float angle, diff_y, diff_z, release_rate, wind_speed;
+  CharToDouble(buf, latitude);
+  CharToDouble(buf+8, longitude);
+  CharToDouble(buf+16, altitude);
+  CharToFloat(buf+24, angle);
+  CharToFloat(buf+28, wind_speed);
   CharToFloat(buf+32, diff_y);
   CharToFloat(buf+36, diff_z);
   CharToFloat(buf+40, release_rate);
-  
+
+  targetE.source.latitude = latitude;
+  targetE.source.longitude = longitude;
+  targetE.source.altitude = altitude;
+  targetE.angle = angle;
+  targetE.wind_speed = wind_speed;
+  targetE.diff_y = diff_y;
+  targetE.diff_z = diff_z;
+  targetE.release_rate = release_rate;
+
+  package_length = 48;
+}
+
+
+void get_realTarget(char* buf)
+{
+  double latitude, longitude, altitude;
+  float angle, diff_y, diff_z, release_rate, wind_speed;
+  CharToDouble(buf, latitude);
+  CharToDouble(buf+8, longitude);
+  CharToDouble(buf+16, altitude);
+  CharToFloat(buf+24, angle);
+  CharToFloat(buf+28, wind_speed);
+  CharToFloat(buf+32, diff_y);
+  CharToFloat(buf+36, diff_z);
+  CharToFloat(buf+40, release_rate);
+
   realTarget.source.latitude = latitude;
-  realTarget.source.longitude = longitude;  
+  realTarget.source.longitude = longitude;
   realTarget.source.altitude = altitude;
   realTarget.angle = angle;
   realTarget.wind_speed = wind_speed;
   realTarget.diff_y = diff_y;
   realTarget.diff_z = diff_z;
   realTarget.release_rate = release_rate;
-  
-  buf = buf + 44;
+
+  package_length = 48;
 }
 
 
@@ -491,16 +628,16 @@ void getAvehome(void){
   double aveLong=0.0;
   double aveLat=0.0;
   double aveAlt=0.0;
-  
-  for (int i=0; i<agentHomes.size(); i++){    
+
+  for (int i=0; i<agentHomes.size(); i++){
     // std::cout<<"agentHome: "<<agentHomes[i]<<std::endl;
     aveLong = aveLong + agentHomes[i].longitude;
     aveLat = aveLat + agentHomes[i].latitude;
     aveAlt = aveAlt + agentHomes[i].altitude;
     //ROS_INFO("i: %d, lat: %f, long: %f, alt: %f", agentHomes[i].latitude, agentHomes[i].longitude, agentHomes[i].altitude);
-    
+
   }
-  
+
   averageHome.longitude = aveLong/agentHomes.size();
   averageHome.latitude = aveLat/agentHomes.size();
   averageHome.altitude = aveAlt/agentHomes.size();

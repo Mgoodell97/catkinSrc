@@ -2,6 +2,7 @@
 
 #include "enif_iuc/AgentTakeoff.h"
 #include "enif_iuc/AgentWaypointTask.h"
+#include "particle_filter/estimatedGaussian.h"
 
 using namespace std;
 
@@ -11,11 +12,12 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
 	
   ros::Rate loop_rate(1000);
-  ros::Publisher  stuff_pub2 = n.advertise<std_msgs::UInt8>("/gro", 1000);
-  ros::Publisher  stuff_pub = n.advertise<enif_iuc::AgentTakeoff>("/takeoff_command", 1);
-  ros::Publisher  wp_pub = n.advertise<enif_iuc::AgentWaypointTask>("/waypoint_list", 1);
-  ros::Publisher  mps_pub = n.advertise<mps_driver::MPS>("/mps_data", 1);
-  ros::Publisher  GPS_pub = n.advertise<sensor_msgs::NavSatFix>("mavros/global_position/global", 1);
+  ros::Publisher  stuff_pub2    = n.advertise<std_msgs::UInt8>("/gro", 1000);
+  ros::Publisher  stuff_pub     = n.advertise<enif_iuc::AgentTakeoff>("/takeoff_command", 1);
+  ros::Publisher  wp_pub        = n.advertise<enif_iuc::AgentWaypointTask>("/waypoint_list", 1);
+  ros::Publisher  mps_pub       = n.advertise<mps_driver::MPS>("/mps_data", 1);
+  ros::Publisher  GPS_pub       = n.advertise<sensor_msgs::NavSatFix>("mavros/global_position/global", 1);
+  ros::Publisher  MLE_Gauss_pub = n.advertise<particle_filter::estimatedGaussian>("MLE_particle_gaussian", 1);
   int count = 0;
   
   while (ros::ok())
@@ -49,7 +51,19 @@ int main(int argc, char **argv)
     gps.longitude = 44.444444;
     gps.altitude = 22.222222;
     GPS_pub.publish(gps);
-    
+
+    particle_filter::estimatedGaussian MLE_gaussian_particle_msg;
+    MLE_gaussian_particle_msg.X = count;
+    MLE_gaussian_particle_msg.Y = count+1;
+    MLE_gaussian_particle_msg.Z = count+2;
+    MLE_gaussian_particle_msg.Theta = count+3;
+    MLE_gaussian_particle_msg.Q = count+4;
+    MLE_gaussian_particle_msg.V = count+5;
+    MLE_gaussian_particle_msg.Dy = count+6;
+    MLE_gaussian_particle_msg.Dz = count+7;
+    MLE_gaussian_particle_msg.W = count+8;
+    MLE_Gauss_pub.publish(MLE_gaussian_particle_msg);
+
     enif_iuc::AgentTakeoff command;
     command.agent_number = count%3+1;
     command.takeoff_command.data = true;

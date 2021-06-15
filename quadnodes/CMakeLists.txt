@@ -130,15 +130,15 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/quadnodes_node.cpp)
-add_executable(offb_node offb_node.cpp)
-add_executable(zScan zScan.cpp)
-add_executable(zScanNoYaw zScanNoYaw.cpp)
-add_executable(xboxVelControl xboxVelControl.cpp)
-add_executable(xboxAltControl xboxAltControl.cpp)
-add_executable(xboxJoyTest xboxJoyTest.cpp)
-add_executable(tfWorldUAV tfWorldUAV.cpp)
-add_executable(mutualInfoGaussianSensorTestMap mutualInfoGaussianSensorTestMap.cpp)
-add_executable(mutualInfoServer mutualInfoServer.cpp)
+add_executable(offb_node src/offb_node.cpp)
+add_executable(zScan src/zScan.cpp)
+add_executable(zScanNoYaw src/zScanNoYaw.cpp)
+add_executable(xboxVelControl src/xboxVelControl.cpp)
+add_executable(xboxAltControl src/xboxAltControl.cpp)
+add_executable(xboxJoyTest src/xboxJoyTest.cpp)
+add_executable(tfWorldUAV src/tfWorldUAV.cpp)
+add_executable(mutualInfoGaussianSensorTestMap src/mutualInfoGaussianSensorTestMap.cpp)
+add_executable(mutualInfoServer src/mutualInfoServer.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
