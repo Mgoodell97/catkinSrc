@@ -46,7 +46,9 @@ find_package(catkin REQUIRED roscpp rospy std_msgs message_generation)
 add_message_files(
     FILES
     estimatedGaussian.msg
+    estimatedRatebased.msg
     particles.msg
+    max_conc.msg
 )
 
 ## Generate services in the 'srv' folder

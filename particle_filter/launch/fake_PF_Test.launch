@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="PlumeType" default="gaussian"/>
+  <arg name="Model" default="gaussian"/>
+
+  <arg name="simulation" default="False"/>
+
+  <arg name="SpawnUAV1" default="True"/>
+  <arg name="SpawnUAV2" default="True"/>
+  <arg name="SpawnUAV3" default="True"/>
+
+  <arg name="plotGaussian" default="True"/>
+
+  <param name="PPM_at_center"    type="double"  value="50000" />               #  ppm     release rate
+  <param name="vPlume"           type="double"  value="1"     />               #  m/s      velocity
+  <param name="DyPlume"          type="double"  value="0.15"  />               #  m        diffusion along y
+  <param name="DzPlume"          type="double"  value="0.15"  />               #  m        diffusion along z
+  <param name="DiameterPlume"    type="double"  value="0.015" />               #  m        diameter of release valve
+
+  <!-- Plume location -->
+  <param name="xPlume"           type="double"  value="25"    /> # m
+  <param name="yPlume"           type="double"  value="45"    /> # m
+  <param name="zPlume"           type="double"  value="2"     /> # m
+  <param name="thetaPlume"       type="double"  value="-90"   /> # degrees (both methods need to know the wind direction)
+
+  <node name="plotGaussianwithPF" pkg="quadnodes" type="plotGaussianwithPF.py" output="screen" if="$(eval plotGaussian)">
+      <!-- Plot UAVS -->
+      <param name="plotUAV1" type="bool" value="$(arg SpawnUAV1)"/>
+      <param name="plotUAV2" type="bool" value="$(arg SpawnUAV2)"/>
+      <param name="plotUAV3" type="bool" value="$(arg SpawnUAV3)"/>
+
+      <!-- Map params -->
+      <param name="mapMin" value="0"/>
+      <param name="mapMax" value="50"/>
+  </node>
+
+  <group ns="UAV1">
+    <param name="PlumeType" value="$(arg PlumeType)" />
+    <param name="simulation" value="$(arg simulation)"/>
+
+    <node name="fakePFInfoPublisher" pkg="particle_filter" type="fakePFInfoPublisher.py" output="log"/>
+
+    <include file="$(find particle_filter)/launch/particle_filter_params.launch">
+      <arg name="quadID"      default="1"/>
+      <arg name="printOutput" default="log"/>
+      <arg name="simulation"   default="$(arg simulation)"/>
+      <arg name="PlumeType"   default="$(arg PlumeType)"/>
+      <arg name="Model"       default="$(arg Model)"/>
+    </include>
+  </group>
+
+  <group ns="UAV2">
+    <param name="PlumeType" value="$(arg PlumeType)" />
+    <param name="simulation" value="$(arg simulation)"/>
+
+    <node name="fakePFInfoPublisher" pkg="particle_filter" type="fakePFInfoPublisher.py" output="log"/>
+
+    <include file="$(find particle_filter)/launch/particle_filter_params.launch">
+      <arg name="quadID"      default="1"/>
+      <arg name="printOutput" default="log"/>
+      <arg name="simulation"   default="$(arg simulation)"/>
+      <arg name="PlumeType"   default="$(arg PlumeType)"/>
+      <arg name="Model"       default="$(arg Model)"/>
+    </include>
+  </group>
+
+  <group ns="UAV3">
+    <param name="PlumeType" value="$(arg PlumeType)" />
+    <param name="simulation" value="$(arg simulation)"/>
+
+    <node name="fakePFInfoPublisher" pkg="particle_filter" type="fakePFInfoPublisher.py" output="log"/>
+
+    <include file="$(find particle_filter)/launch/particle_filter_params.launch">
+      <arg name="quadID"      default="1"/>
+      <arg name="printOutput" default="log"/>
+      <arg name="simulation"   default="$(arg simulation)"/>
+      <arg name="PlumeType"   default="$(arg PlumeType)"/>
+      <arg name="Model"       default="$(arg Model)"/>
+    </include>
+  </group>
+
+</launch>

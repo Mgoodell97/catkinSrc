@@ -22,7 +22,7 @@
   <arg name="ReadingPlot" default="False"/>
   <arg name="plotGaussian" default="False"/>
   <arg name="rosbag" default="False"/>
-  <arg name="enableObsAvoid" default="True"/>
+  <arg name="enableObsAvoid" default="False"/>
 
   <!-- Gazebo sim -->
   <!-- Needed for quad -->
@@ -67,7 +67,9 @@
   <param name="zPlume"           type="double"  value="2"     /> # m
   <param name="thetaPlume"       type="double"  value="-90"   /> # degrees (both methods need to know the wind direction)
 
-  <node name="plotGaussianwithPF" pkg="quadnodes" type="plotGaussianwithPF.py" output="screen" if="$(eval plotGaussian)">
+  <node name="startPositionController" pkg="quadnodes" type="StartPositionController.py" output="log"/>
+
+  <node name="plotGaussian" pkg="quadnodes" type="plotGaussian.py" output="screen" if="$(eval plotGaussian)">
       <!-- Plot UAVS -->
       <param name="plotUAV1" type="bool" value="$(arg SpawnUAV1)"/>
       <param name="plotUAV2" type="bool" value="$(arg SpawnUAV2)"/>
@@ -79,7 +81,7 @@
   </node>
 
 
-    <group ns="UAV1">
+    <group ns="UAV1" if="$(eval SpawnUAV1)">
       <!-- Gas sensor -->
       <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen" if="$(eval PlumeType == 'gaden')">
           <param name="sensor_model" value="30" />
@@ -114,7 +116,7 @@
       </include>
     </group>
 
-    <group ns="UAV2">
+    <group ns="UAV2" if="$(eval SpawnUAV2)">
       <!-- Gas sensor -->
       <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen" if="$(eval PlumeType == 'gaden')">
           <param name="sensor_model" value="30" />
@@ -149,7 +151,7 @@
       </include>
     </group>
 
-    <group ns="UAV3">
+    <group ns="UAV3" if="$(eval SpawnUAV3)">
       <!-- Gas sensor -->
       <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen" if="$(eval PlumeType == 'gaden')">
           <param name="sensor_model" value="30" />
@@ -187,15 +189,16 @@
     <!-- Create tf transformations -->
     <node pkg="tf" type="static_transform_publisher" name="UAVs2World" args="0.0 0.0 0.0 0 0 0 world worldUAVs 100" />
     <node pkg="tf" type="static_transform_publisher" name="gaden2World" args="0.0 0.0 0.0 0 0 0 world map_gaden 100" if="$(eval PlumeType == 'gaden')"/>
-    <node pkg="tf" type="static_transform_publisher" name="pid1_broadcaster" args="0.0 0.0 0.01 0 0 0 UAV1 pid_frame1 100" if="$(eval PlumeType == 'gaden')"/>
-    <node pkg="tf" type="static_transform_publisher" name="pid2_broadcaster" args="0.0 0.0 0.01 0 0 0 UAV2 pid_frame2 100" if="$(eval PlumeType == 'gaden')"/>
-    <node pkg="tf" type="static_transform_publisher" name="pid3_broadcaster" args="0.0 0.0 0.01 0 0 0 UAV3 pid_frame3 100" if="$(eval PlumeType == 'gaden')"/>
+    <node pkg="tf" type="static_transform_publisher" name="pid1_broadcaster" args="0.0 0.0 0.01 0 0 0 UAV1 pid_frame1 100" if="$(eval PlumeType == 'gaden' and SpawnUAV1)"/>
+    <node pkg="tf" type="static_transform_publisher" name="pid2_broadcaster" args="0.0 0.0 0.01 0 0 0 UAV2 pid_frame2 100" if="$(eval PlumeType == 'gaden' and SpawnUAV2)"/>
+    <node pkg="tf" type="static_transform_publisher" name="pid3_broadcaster" args="0.0 0.0 0.01 0 0 0 UAV3 pid_frame3 100" if="$(eval PlumeType == 'gaden' and SpawnUAV3)"/>
 
-    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot2"  args="/UAV1/Sensor_reading/raw /UAV2/Sensor_reading/raw /UAV3/Sensor_reading/raw" if="$(eval PlumeType == 'gaden')"/>
-    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot"  args="/UAV1/gaussianReading/ppm /UAV2/gaussianReading/ppm /UAV3/gaussianReading/ppm" if="$(eval PlumeType == 'gaussian')"/>
+    <!-- Plotting -->
+    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot2"  args="/UAV1/Sensor_reading/raw /UAV2/Sensor_reading/raw /UAV3/Sensor_reading/raw" if="$(eval (PlumeType == 'gaden' and ReadingPlot))"/>
+    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot2"  args="/UAV1/gaussianReading/ppm /UAV2/gaussianReading/ppm /UAV3/gaussianReading/ppm" if="$(eval (PlumeType == 'gaussian' and ReadingPlot))"/>
 
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/gaden.rviz" if="$(eval PlumeType == 'gaden')"/>
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/gauss.rviz"  if="$(eval PlumeType == 'gaussian')"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/gaden.rviz" if="$(eval PlumeType == 'gaden' and RVIZGUI)"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadnodes)/rvizConfigs/gauss.rviz"  if="$(eval PlumeType == 'gaussian' and RVIZGUI)"/>
 
     <!-- <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/Gaden/gadenRosbagFixedQuads/fixed120s /PID1/Sensor_reading /PID2/Sensor_reading /PID3/Sensor_reading /UAV1/true_position /UAV2/true_position /UAV3/true_position" name="rosbagRecord" /> -->
 

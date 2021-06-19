@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="PlumeType" default="gaussian"/>
+    <arg name="Model" default="gaussian"/>
 
     <arg name="SpawnUAV1" default="True"/>
     <arg name="x1" default="5.0"/>
@@ -83,6 +84,8 @@
     <param name="zPlume"           type="double"  value="2"     /> # m
     <param name="thetaPlume"       type="double"  value="-90"   /> # degrees (both methods need to know the wind direction)
 
+    <node name="startPositionController" pkg="quadnodes" type="StartPositionController.py" output="log"/>
+
     <node name="plotGaussianwithPF" pkg="quadnodes" type="plotGaussianwithPF.py" output="screen" if="$(eval plotGaussian)">
         <!-- Plot UAVS -->
         <param name="plotUAV1" type="bool" value="$(arg SpawnUAV1)"/>
@@ -114,20 +117,23 @@
         <param name="UAVofIntrest" value="UAV1"/>
       </node>
 
-      <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py">
-        <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
-      </node>
+      <include file="$(find particle_filter)/launch/particle_filter_params.launch">
+        <arg name="quadID"      default="1"/>
+        <arg name="printOutput" default="log"/>
+        <arg name="PlumeType"   default="$(arg PlumeType)"/>
+        <arg name="Model"       default="$(arg Model)"/>
+      </include>
 
       <param name="rowSteps" value="20"/>
       <param name="colSteps" value="20"/>
-      <param name="xMinMap" value="0"/>
-      <param name="yMinMap" value="0"/>
-      <param name="xMaxMap" value="50"/>
-      <param name="yMaxMap" value="50"/>
+      <param name="xMinMap"  value="0"/>
+      <param name="yMinMap"  value="0"/>
+      <param name="xMaxMap"  value="50"/>
+      <param name="yMaxMap"  value="50"/>
 
       <!-- Motion planner -->
-      <node name="GraphSearch" pkg="graph_search" type="GraphSearch.py" output="screen">
-        <param name="maxVelocity"              value="$(arg maxVelocity)"    />   # m/s
+      <node name="GraphSearch" pkg="graph_search" type="GraphSearch.py" output="log">
+        <param name="maxVelocity"            value="$(arg maxVelocity)"    />   # m/s
         <param name="zHeight"                value="2.0"                     />   # m
         <param name="waypointRadius"         value="0.25"                    />   # m
         <param name="stayTime"               value="0.05"                    />   # seconds
@@ -161,9 +167,12 @@
         <param name="UAVofIntrest" value="UAV2"/>
       </node>
 
-      <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py">
-        <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
-      </node>
+      <include file="$(find particle_filter)/launch/particle_filter_params.launch">
+        <arg name="quadID"      default="2"/>
+        <arg name="printOutput" default="screen"/>
+        <arg name="PlumeType"   default="$(arg PlumeType)"/>
+        <arg name="Model"       default="$(arg Model)"/>
+      </include>
 
       <param name="rowSteps" value="10"/>
       <param name="colSteps" value="10"/>
@@ -208,9 +217,11 @@
         <param name="UAVofIntrest" value="UAV3"/>
       </node>
 
-      <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py">
-        <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
-      </node>
+      <include file="$(find particle_filter)/launch/particle_filter_params.launch">
+        <arg name="quadID"      default="3"/>
+        <arg name="PlumeType"   default="$(arg PlumeType)"/>
+        <arg name="Model"       default="$(arg Model)"/>
+      </include>
 
       <param name="rowSteps" value="10"/>
       <param name="colSteps" value="10"/>
