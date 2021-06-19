@@ -41,8 +41,8 @@ float getReading(float xRobotDef, float yRobotDef, float thetaFunc, float xPlume
 
 	float det = Ctheta*Ctheta - (Stheta*-Stheta);
 
-	float XplumeFrame = (Ctheta  * xRobotDef + Stheta * yRobotDef + -Ctheta * xPlumeFunc - Stheta * yPlumeFunc) / det;
-	float YplumeFrame = (-Stheta * xRobotDef + Ctheta * yRobotDef +  Stheta * xPlumeFunc - Ctheta * yPlumeFunc) / det;
+	float XplumeFrame = (Ctheta  * xRobotDef + Stheta * yRobotDef + -Ctheta * xPlumeFunc - Stheta * yPlumeFunc);
+	float YplumeFrame = (-Stheta * xRobotDef + Ctheta * yRobotDef +  Stheta * xPlumeFunc - Ctheta * yPlumeFunc);
 
 	float reading;
 

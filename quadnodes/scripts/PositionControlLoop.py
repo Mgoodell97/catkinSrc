@@ -4,6 +4,7 @@ import rospy #include <ros/ros.h> cpp equivalent
 from math import sqrt, atan2, sin, cos
 from numpy import sign
 
+from std_msgs.msg import Bool
 from geometry_msgs.msg import PoseStamped #include <geometry_msgs/PoseStamped.h>
 from mavros_msgs.msg import State #include <mavros_msgs/State.h>
 from geometry_msgs.msg import TwistStamped
@@ -19,9 +20,11 @@ from mavros_msgs.srv import SetMode #include <mavros_msgs/SetMode.h>
 global current_state
 global current_pose
 global desired_waypoint
+global startPositionController
 current_pose = PoseStamped()
 desired_waypoint = PoseStamped()
 current_state = State()
+startPositionController = Bool()
 
 state_cb_flag = False;
 pose_cb_flag = False;
@@ -67,6 +70,10 @@ def waypoint_cb(waypointMsg):
     desired_waypoint = waypointMsg
     waypoint_cb_flag = True
 
+def start_position_controller_cb(startPositionControllerMsg):
+    global startPositionController
+    startPositionController = startPositionControllerMsg
+
 # For obstical avoidance
 def UAV_avoid_1_cb(UAV_avoid_1_msg):
     global UAV_avoid_1
@@ -87,6 +94,7 @@ def main():
     rospy.Subscriber("mavros/state", State, state_cb)
     rospy.Subscriber("true_position", PoseStamped, pose_cb)
     rospy.Subscriber("desired_waypoint", PoseStamped, waypoint_cb)
+    rospy.Subscriber("/startTopic", Bool, start_position_controller_cb)
 
     local_vel_pub = rospy.Publisher('mavros/setpoint_velocity/cmd_vel', TwistStamped, queue_size=100)
 
@@ -153,9 +161,9 @@ def main():
 
     rate = rospy.Rate(50)
     #Before publishing anything, we wait for the connection to be established between MAVROS and the autopilot.
-    while ((not rospy.is_shutdown() and current_state.connected) or not state_cb_flag or not pose_cb_flag or not waypoint_cb_flag):
+    while ((not rospy.is_shutdown() and current_state.connected) or not state_cb_flag or not pose_cb_flag or not waypoint_cb_flag or not startPositionController.data):
         rate.sleep()
-        if state_cb_flag and pose_cb_flag and waypoint_cb_flag:
+        if state_cb_flag and pose_cb_flag and startPositionController.data:
             break
 
     DesiredVel = TwistStamped()
@@ -186,10 +194,14 @@ def main():
                     rospy.loginfo("Vehicle armed")
                 last_request = rospy.get_rostime()
 
-
-        xyzError[0] = desired_waypoint.pose.position.x - current_pose.pose.position.x
-        xyzError[1] = desired_waypoint.pose.position.y - current_pose.pose.position.y
-        xyzError[2] = desired_waypoint.pose.position.z - current_pose.pose.position.z
+        try:
+            xyzError[0] = desired_waypoint.pose.position.x - current_pose.pose.position.x
+            xyzError[1] = desired_waypoint.pose.position.y - current_pose.pose.position.y
+            xyzError[2] = desired_waypoint.pose.position.z - current_pose.pose.position.z
+        except:
+            xyzError[0] = 0
+            xyzError[1] = 0
+            xyzError[2] = 0
 
         denom = sqrt( pow(xyzError[0],2) + pow(xyzError[1],2) ) # only compute denominator once per loop
 

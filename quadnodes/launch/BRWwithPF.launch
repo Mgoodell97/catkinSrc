@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="PlumeType" default="gaussian"/>
+    <arg name="Model" default="gaussian"/>
 
     <arg name="SpawnUAV1" default="True"/>
     <arg name="x1" default="5.0"/>
@@ -22,7 +23,7 @@
     <arg name="ReadingPlot" default="False"/>
     <arg name="plotGaussian" default="False"/>
     <arg name="rosbag" default="False"/>
-    <arg name="enableObsAvoid" default="True"/>
+    <arg name="enableObsAvoid" default="False"/>
 
     <!-- Gazebo sim -->
     <!-- Needed for quad -->
@@ -66,6 +67,8 @@
     <param name="zPlume"           type="double"  value="2"     /> # m
     <param name="thetaPlume"       type="double"  value="-90"   /> # degrees (both methods need to know the wind direction)
 
+    <node name="startPositionController" pkg="quadnodes" type="StartPositionController.py" output="log"/>
+
     <node name="plotGaussianwithPF" pkg="quadnodes" type="plotGaussianwithPF.py" output="screen" if="$(eval plotGaussian)">
         <!-- Plot UAVS -->
         <param name="plotUAV1" type="bool" value="$(arg SpawnUAV1)"/>
@@ -97,9 +100,10 @@
         <param name="UAVofIntrest" value="UAV1"/>
       </node>
 
-      <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py">
-        <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
-      </node>
+      <include file="$(find particle_filter)/launch/particle_filter_params.launch">
+        <arg name="PlumeType" default="$(arg PlumeType)"/>
+        <arg name="Model" default="$(arg Model)"/>
+      </include>
 
       <!-- Motion planner -->
       <node name="BRWpf" pkg="quadnodes" type="BRWpf.py" output="screen">
@@ -135,9 +139,10 @@
         <param name="UAVofIntrest" value="UAV2"/>
       </node>
 
-      <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py">
-        <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
-      </node>
+      <include file="$(find particle_filter)/launch/particle_filter_params.launch">
+        <arg name="PlumeType" default="$(arg PlumeType)"/>
+        <arg name="Model" default="$(arg Model)"/>
+      </include>
 
       <!-- Motion planner -->
       <node name="BRWpf" pkg="quadnodes" type="BRWpf.py" output="screen">
@@ -173,9 +178,10 @@
         <param name="UAVofIntrest" value="UAV3"/>
       </node>
 
-      <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py">
-        <param name="PlumeType" value="$(arg PlumeType)"/>   # String for plume sim
-      </node>
+      <include file="$(find particle_filter)/launch/particle_filter_params.launch">
+        <arg name="PlumeType" default="$(arg PlumeType)"/>
+        <arg name="Model" default="$(arg Model)"/>
+      </include>
 
       <!-- Motion planner -->
       <node name="BRWpf" pkg="quadnodes" type="BRWpf.py" output="screen">

@@ -318,7 +318,7 @@ void transmitData_state(const ros::TimerEvent& event)
   }
 }
 
-void transmitMLE_Gauss(const ros::TimerEvent& event)
+void transmitData_MLE_Gauss(const ros::TimerEvent& event)
 {
   char send_buf[256] = {'\0'};
   form_start(send_buf);
@@ -327,6 +327,8 @@ void transmitMLE_Gauss(const ros::TimerEvent& event)
     //form_checksum(send_buf);
     string send_data(send_buf);
     USBPORT.write(send_data);
+    cout << "sending to other agents: " << endl;
+    cout << MLE_gauss << endl;
     NEW_MLE_GAUSS = false;
   }
 }
@@ -341,6 +343,7 @@ int main(int argc, char **argv)
   ros::Publisher  box_pub     = n.advertise<std_msgs::Float64MultiArray>("rotated_box", 1);
   ros::Publisher  mps_pub     = n.advertise<enif_iuc::AgentMPS>("agent_mps_data", 1);
   ros::Publisher  mle_pub     = n.advertise<enif_iuc::AgentSource>("agent_mle_data", 1);
+  ros::Publisher  mle_gauss_pub  = n.advertise<enif_iuc::AgentEstimatedGaussian>("agent_mle_gauss_data", 1);
 
   ros::Publisher  home_pub    = n.advertise<enif_iuc::AgentHome>("agent_home_data", 1);
   ros::Publisher  local_pub   = n.advertise<enif_iuc::AgentLocal>("agent_local_data", 1);
@@ -366,10 +369,10 @@ int main(int argc, char **argv)
 
   n.param<double>("/enif_iuc_quad/transmitRate", transmitRate, .35);
 
-  ros::Timer transmit_timer_MPS         = n.createTimer(ros::Duration(transmitRate), transmitData_MPS);
+  //ros::Timer transmit_timer_MPS         = n.createTimer(ros::Duration(transmitRate), transmitData_MPS);
   ros::Timer transmit_timer_targetE     = n.createTimer(ros::Duration(2), transmitData_targetE);
   ros::Timer transmit_timer_state       = n.createTimer(ros::Duration(10), transmitData_state);
-  ros::Timer transmit_timer_MLE_Gauss   = n.createTimer(ros::Duration(2), transmitData_state);
+  ros::Timer transmit_timer_MLE_Gauss   = n.createTimer(ros::Duration(1), transmitData_MLE_Gauss);
 
   n.getParam("/enif_iuc_quad/AGENT_NUMBER", AGENT_NUMBER);
   cout<<"This is Agent No."<<AGENT_NUMBER<<endl;
@@ -480,7 +483,7 @@ int main(int argc, char **argv)
               agent_MLE_gauss.agent_number = target_number;
               agent_MLE_gauss.estimatedgaussian = MLE_gauss_other;
               // if(check_MPS(MLE_gauss_other)){
-              mps_pub.publish(agent_MLE_gauss);
+              mle_gauss_pub.publish(agent_MLE_gauss);
               // }
             }
             else{

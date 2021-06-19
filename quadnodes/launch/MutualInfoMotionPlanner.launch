@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
 <launch>
 
-
-
   <arg name="sigma"          default="10000"/>
   <arg name="ztMin"          default="0"/>
   <arg name="ztMax"          default="125000"/>

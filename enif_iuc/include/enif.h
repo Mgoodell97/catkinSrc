@@ -515,34 +515,26 @@ void get_other_mps(char* buf)
 
 void get_other_MLE_gauss(char* buf)
 {
-  float percentLEL, local_height, vel_x, vel_y, vel_z;
-  double GPS_latitude, GPS_longitude, GPS_altitude;
-  CharToFloat(buf, percentLEL);
-  mps_other.percentLEL = percentLEL;
-  CharToFloat(buf+4, local_height);
-  mps_other.local_z = local_height;
-  CharToDouble(buf+8, GPS_latitude);
-  mps_other.GPS_latitude = GPS_latitude;
-  CharToDouble(buf+16, GPS_longitude);
-  mps_other.GPS_longitude = GPS_longitude;
+  float gauss_X, gauss_Y, gauss_Z, gauss_Theta, gauss_Q, gauss_V, gauss_Dy, gauss_Dz, gauss_W;
+  CharToFloat(buf, gauss_X);
+  CharToFloat(buf+4, gauss_Y);
+  CharToFloat(buf+8, gauss_Z);
+  CharToFloat(buf+12, gauss_Theta);
+  CharToFloat(buf+16, gauss_Q);
+  CharToFloat(buf+20, gauss_V);
+  CharToFloat(buf+24, gauss_Dy);
+  CharToFloat(buf+28, gauss_Dz);
+  CharToFloat(buf+32, gauss_W);
 
-  CharToFloat(buf+24, vel_x);
-  mps_other.vel_x = vel_x;
-  CharToFloat(buf+28, vel_y);
-  mps_other.vel_y = vel_y;
-  CharToFloat(buf+32, vel_z);
-  mps_other.vel_z = vel_z;
-
-  //CharToDouble(buf+24, GPS_altitude);
-  //mps_other.GPS_altitude = GPS_altitude;
-
-  //CharToFloat(buf+32, vel_x);
-  //mps_other.vel_x = vel_x;
-  //CharToFloat(buf+36, vel_y);
-  //mps_other.vel_y = vel_y;
-  //CharToFloat(buf+40, vel_z);
-  //mps_other.vel_z = vel_z;
-
+  MLE_gauss_other.X     = gauss_X;
+  MLE_gauss_other.Y     = gauss_Y;
+  MLE_gauss_other.Z     = gauss_Z;
+  MLE_gauss_other.Theta = gauss_Theta;
+  MLE_gauss_other.Q     = gauss_Q;
+  MLE_gauss_other.V     = gauss_V;
+  MLE_gauss_other.Dy    = gauss_Dy;
+  MLE_gauss_other.Dz    = gauss_Dz;
+  MLE_gauss_other.W     = gauss_W;
 }
 
 void get_targetE_other(char* buf)

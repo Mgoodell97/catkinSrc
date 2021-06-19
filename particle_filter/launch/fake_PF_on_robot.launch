@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="PlumeType" default="gaussian"/>
+  <arg name="Model" default="gaussian"/>
+
+  <arg name="simulation" default="False"/>
+
+  <param name="PlumeType" value="$(arg PlumeType)" />
+  <param name="simulation" value="$(arg simulation)"/>
+
+  <node name="fakePFInfoPublisher" pkg="particle_filter" type="fakePFInfoPublisher.py" output="log"/>
+
+  <include file="$(find particle_filter)/launch/particle_filter_params.launch">
+    <arg name="quadID"      default="1"/>
+    <arg name="printOutput" default="log"/>
+    <arg name="simulation"   default="$(arg simulation)"/>
+    <arg name="PlumeType"   default="$(arg PlumeType)"/>
+    <arg name="Model"       default="$(arg Model)"/>
+  </include>
+
+</launch>

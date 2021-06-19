@@ -4,6 +4,13 @@
 #include "enif_iuc/AgentWaypointTask.h"
 #include "particle_filter/estimatedGaussian.h"
 
+float RandomFloat(float a, float b) {
+    float random = ((float) rand()) / (float) RAND_MAX;
+    float diff = b - a;
+    float r = random * diff;
+    return a + r;
+}
+
 using namespace std;
 
 int main(int argc, char **argv)
@@ -53,15 +60,15 @@ int main(int argc, char **argv)
     GPS_pub.publish(gps);
 
     particle_filter::estimatedGaussian MLE_gaussian_particle_msg;
-    MLE_gaussian_particle_msg.X = count;
-    MLE_gaussian_particle_msg.Y = count+1;
-    MLE_gaussian_particle_msg.Z = count+2;
-    MLE_gaussian_particle_msg.Theta = count+3;
-    MLE_gaussian_particle_msg.Q = count+4;
-    MLE_gaussian_particle_msg.V = count+5;
-    MLE_gaussian_particle_msg.Dy = count+6;
-    MLE_gaussian_particle_msg.Dz = count+7;
-    MLE_gaussian_particle_msg.W = count+8;
+    MLE_gaussian_particle_msg.X = RandomFloat(0, 100);
+    MLE_gaussian_particle_msg.Y = RandomFloat(0, 100);
+    MLE_gaussian_particle_msg.Z = RandomFloat(0, 100);
+    MLE_gaussian_particle_msg.Theta = RandomFloat(0, 100);
+    MLE_gaussian_particle_msg.Q = RandomFloat(0, 100);
+    MLE_gaussian_particle_msg.V = RandomFloat(0, 100);
+    MLE_gaussian_particle_msg.Dy = RandomFloat(0, 100);
+    MLE_gaussian_particle_msg.Dz = RandomFloat(0, 100);
+    MLE_gaussian_particle_msg.W = RandomFloat(0, 100);
     MLE_Gauss_pub.publish(MLE_gaussian_particle_msg);
 
     enif_iuc::AgentTakeoff command;

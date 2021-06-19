@@ -114,7 +114,7 @@ def main():
     #We instantiate a publisher to publish the commanded local position and the appropriate clients to request arming and mode change
     rospy.Subscriber("mavros/state", State, state_cb)
     rospy.Subscriber("true_position", PoseStamped, pose_cb)
-    rospy.Subscriber("gaussianEstimation", estimatedGaussian, pf_cb) # Sub to particle filter
+    rospy.Subscriber("estimatedGaussian", estimatedGaussian, pf_cb) # Sub to particle filter
 
     global_waypoint_pub = rospy.Publisher('desired_waypoint', PoseStamped, queue_size=100)
 

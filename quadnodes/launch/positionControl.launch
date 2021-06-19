@@ -14,9 +14,9 @@
   <node name="PositionControlLoop" pkg="quadnodes" type="PositionControlLoop.py" output="log">
     <param name="maxVelocity"              value="$(arg maxVelocity)"    />   # m/s
     <param name="enableObsAvoid"           value="$(arg enableObsAvoid)" />   # [-]
-    <param name="potentialFeild"           value="5"                     />   # m
+    <param name="potentialFeild"           value="4"                     />   # m
     <param name="emergancyFeild"           value="1.5"                   />   # m
-    <param name="potentialFeildScalor"     value="0.3"                   />   #
+    <param name="potentialFeildScalor"     value="0.2"                   />   #
     <param name="quadID"                   value="$(arg quadID)"         />   # [-]
     <param name="subToUAV1Pose"            value="$(arg SpawnUAV1)"      />   # [-]
     <param name="subToUAV2Pose"            value="$(arg SpawnUAV2)"      />   # [-]
