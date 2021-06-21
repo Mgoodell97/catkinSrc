@@ -72,11 +72,10 @@
 
     <include file="$(find quadnodes)/launch/50x50.launch" if="$(eval PlumeType == 'gaden')"/>
 
-    <param name="PPM_at_center"    type="double"  value="50000" />               #  ppm     release rate
-    <param name="vPlume"           type="double"  value="1"     />               #  m/s      velocity
-    <param name="DyPlume"          type="double"  value="0.15"  />               #  m        diffusion along y
-    <param name="DzPlume"          type="double"  value="0.15"  />               #  m        diffusion along z
-    <param name="DiameterPlume"    type="double"  value="0.015" />               #  m        diameter of release valve
+    <param name="Q"                type="double"  value="0.0258"/> #  kg/s     release rate
+    <param name="vPlume"           type="double"  value="0.5"   /> #  m/s      velocity
+    <param name="DyPlume"          type="double"  value="0.5"   /> #  m        diffusion along y
+    <param name="DzPlume"          type="double"  value="0.005" /> #  m        diffusion along z
 
     <!-- Plume location -->
     <param name="xPlume"           type="double"  value="25"    /> # m

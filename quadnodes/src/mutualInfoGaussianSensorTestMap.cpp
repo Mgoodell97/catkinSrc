@@ -24,7 +24,7 @@ particle_filter::particles current_particles;
 
 float gaussFunc(float xFunc, float yFunc, float zFunc, float QFunc, float vFunc, float DyFunc, float DzFunc) {
 	// returns concentration at x,y,z cordinates in plume frame
-	return (QFunc/(4 * M_PI * xFunc * sqrt(DyFunc*DzFunc))) * exp( -vFunc/(4*xFunc) * (pow(yFunc,2)/DyFunc + pow(zFunc,2)/DzFunc));
+	return (QFunc/(4 * M_PI * xFunc * sqrt(DyFunc*DzFunc))) * exp( -vFunc/(4*xFunc) * (pow(yFunc,2)/DyFunc + pow(zFunc,2)/DzFunc))* 1000;
 }
 
 float getReading(float xRobotDef, float yRobotDef, float thetaFunc, float xPlumeFunc, float yPlumeFunc, float zFunc, float QFunc, float vFunc, float DyFunc, float DzFunc) {

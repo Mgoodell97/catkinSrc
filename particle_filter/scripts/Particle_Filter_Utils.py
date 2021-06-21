@@ -115,7 +115,7 @@ class Particle_Gen():
 
         # pdf_std = self.pdf_thresh_function(actual_sensor_readings)
 
-        pdf_std = 175
+        pdf_std = 0.225
 
         particle_likelihoods = np.zeros((self.num_of_parti))
 
@@ -125,7 +125,7 @@ class Particle_Gen():
 
         concentrations = np.zeros(Xp.shape)        #print(particle_likelihoods)
 
-        concentrations = (Q/((4*np.pi*Xp)*np.sqrt(Dy*Dz)))*(np.exp((-V/(4*Xp))*((Yp**2/Dy)+(Zp**2/Dz))))
+        concentrations = ((Q/((4*np.pi*Xp)*np.sqrt(Dy*Dz)))*(np.exp((-V/(4*Xp))*((Yp**2/Dy)+(Zp**2/Dz)))))* 1000 # convert from kg/m^3 to ppm
         concentrations[concentrations == inf] = 0
 
         # concentrations = np.log(concentrations+1)/np.log(10)

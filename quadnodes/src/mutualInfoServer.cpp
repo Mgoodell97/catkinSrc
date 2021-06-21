@@ -32,14 +32,12 @@ particle_filter::particles current_particles;
 
 float gaussFunc(float xFunc, float yFunc, float zFunc, float QFunc, float vFunc, float DyFunc, float DzFunc) {
 	// returns concentration at x,y,z cordinates in plume frame
-	return (QFunc/(4 * M_PI * xFunc * sqrt(DyFunc*DzFunc))) * exp( -vFunc/(4*xFunc) * (pow(yFunc,2)/DyFunc + pow(zFunc,2)/DzFunc));
+	return (QFunc/(4 * M_PI * xFunc * sqrt(DyFunc*DzFunc))) * exp( -vFunc/(4*xFunc) * (pow(yFunc,2)/DyFunc + pow(zFunc,2)/DzFunc))* 1000;
 }
 
 float getReading(float xRobotDef, float yRobotDef, float thetaFunc, float xPlumeFunc, float yPlumeFunc, float zFunc, float QFunc, float vFunc, float DyFunc, float DzFunc) {
 	float Stheta = sin(thetaFunc);
 	float Ctheta = cos(thetaFunc);
-
-	float det = Ctheta*Ctheta - (Stheta*-Stheta);
 
 	float XplumeFrame = (Ctheta  * xRobotDef + Stheta * yRobotDef + -Ctheta * xPlumeFunc - Stheta * yPlumeFunc);
 	float YplumeFrame = (-Stheta * xRobotDef + Ctheta * yRobotDef +  Stheta * xPlumeFunc - Ctheta * yPlumeFunc);
@@ -67,7 +65,7 @@ std::vector<float> conditionalEntropyAndMeasurementEntropy(std::vector<float> xI
 
 	for (int i = 0; i < current_particles.X.size(); i++) {
 		                                                                           // theta      x        y        z        Q        v        Dy      Dz
-		float sensorReading = getReading(xInfoDes[0], xInfoDes[1], current_particles.theta[i], current_particles.X[i], current_particles.Y[i], current_particles.Z[i] - xInfoDes[2], current_particles.Q[i], current_particles.v[i], current_particles.Dy[i], current_particles.Dz[i] );
+		float sensorReading = getReading(xInfoDes[0], xInfoDes[1], current_particles.theta[i], current_particles.X[i], current_particles.Y[i], xInfoDes[2] - current_particles.Z[i], current_particles.Q[i], current_particles.v[i], current_particles.Dy[i], current_particles.Dz[i] );
 		partileLikelihood(i) = pdf(zt, sensorReading, sigma);
 		probabilityZt(i) = current_particles.weights[i] * partileLikelihood(i);
 		conditionalEntropyVector(i) = probabilityZt(i) * log(partileLikelihood(i));

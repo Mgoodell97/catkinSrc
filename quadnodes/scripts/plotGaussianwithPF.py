@@ -16,35 +16,16 @@ from matplotlib import cm
 
 def gaussFunc(xFunc, yFunc, zFunc, QFunc, vFunc, DyFunc, DzFunc):
     con = (QFunc/(4 * pi * xFunc * sqrt(DyFunc*DzFunc))) * exp( -vFunc/(4*xFunc) * ((yFunc**2)/DyFunc + (zFunc**2)/DzFunc))
-    return con
-
+    return con * 1000 # convert from kg/m^3 to ppm
 
 def getReading(xRobotDef, yRobotDef, thetaFunc, xPlumeFunc, yPlumeFunc, zFunc, QFunc, vFunc, DyFunc, DzFunc):
     # Rotate frame
 
-    Xw_r = np.array([xRobotDef, yRobotDef, 1])
+    Stheta = sin(thetaFunc)
+    Ctheta = cos(thetaFunc)
 
-    R = np.array([[cos(thetaFunc), -sin(thetaFunc)], [sin(thetaFunc), cos(thetaFunc)]])
-    P = np.array([[xPlumeFunc, yPlumeFunc]]).T;
-
-    bottomArray = np.array([[0, 0 , 1]]);
-    # Tw_plumeFrame = np.concatenate((R, P), axis=1)
-
-    # # Transfer matrix from plumeframe to w
-    # Tw_plumeFrame = np.concatenate((Tw_plumeFrame, bottomArray), axis=0)
-
-    Rinv = np.linalg.inv(R)
-    Pinv = np.array([np.matmul(-Rinv, np.squeeze(P))]).T
-
-    TplumeFrame_w = np.concatenate((Rinv, Pinv), axis=1)
-
-    # Transfer matrix from w to plumeframe
-    TplumeFrame_w = np.concatenate((TplumeFrame_w, bottomArray), axis=0)
-
-    XplumeFrame = np.matmul(TplumeFrame_w, Xw_r)
-
-    xRobotRotated = XplumeFrame[0]
-    yRobotRotated = XplumeFrame[1]
+    xRobotRotated = (Ctheta  * xRobotDef + Stheta * yRobotDef + -Ctheta * xPlumeFunc - Stheta * yPlumeFunc)
+    yRobotRotated = (-Stheta * xRobotDef + Ctheta * yRobotDef +  Stheta * xPlumeFunc - Ctheta * yPlumeFunc)
 
     if xRobotRotated <= 0:
         reading = 0
@@ -141,13 +122,10 @@ def main():
     maxLim = rospy.get_param("/plotGaussianwithPF/mapMax")
 
     # Plume parameters
-    PPM_at_center = rospy.get_param("/PPM_at_center")       #  kg/s     release rate
+    QPlume        = rospy.get_param("/Q")            #  kg/s     release rate
     vPlume        = rospy.get_param("/vPlume")       #  m/s      velocity
     DyPlume       = rospy.get_param("/DyPlume")      #  m        diffusion along y
     DzPlume       = rospy.get_param("/DzPlume")      #  m        diffusion along z
-    DiameterPlume = rospy.get_param("/DiameterPlume")       #  m        diameter of release valve
-    releaseArea   = pi * pow((DiameterPlume/2),2)
-    QPlume = releaseArea * vPlume * PPM_at_center/1000
 
     # Plume orientation translation then rotation
     xPlume     = rospy.get_param("/xPlume")       #  m
@@ -183,7 +161,7 @@ def main():
 
     for xCurrentIndex in range(len(xPlumePlot)):
         for yCurrentIndex in range(len(yPlumePlot)):
-            conArray[xCurrentIndex,yCurrentIndex] = getReading(yPlumePlot[yCurrentIndex], xPlumePlot[xCurrentIndex], thetaPlume, xPlume, yPlume, 0.0, QPlume, vPlume, DyPlume, DzPlume)* (1/vPlume) * (1/releaseArea) * 1000
+            conArray[xCurrentIndex,yCurrentIndex] = getReading(yPlumePlot[yCurrentIndex], xPlumePlot[xCurrentIndex], thetaPlume, xPlume, yPlume, 0.0, QPlume, vPlume, DyPlume, DzPlume)
 
 
     flat=conArray.flatten()
@@ -198,7 +176,6 @@ def main():
     while not rospy.is_shutdown():
         # Plotting stuff
         plt.clf()
-
 
         if plotUAV3:
             xPlume_estimated = (UAV1_predict_gauss.X+UAV2_predict_gauss.X+UAV3_predict_gauss.X)/3
