@@ -14,35 +14,35 @@
 
   <arg name="X_u" default="50"/>
   <arg name="X_l" default="0"/>
-  <arg name="X_n" default="0.5"/>
+  <arg name="X_n" default="0.15"/>
 
   <arg name="Y_u" default="50"/>
   <arg name="Y_l" default="0"/>
-  <arg name="Y_n" default="0.5"/>
+  <arg name="Y_n" default="0.15"/>
 
-  <arg name="Z_u" default="2"/>
-  <arg name="Z_l" default="2"/>
-  <arg name="Z_n" default="0"/>
+  <arg name="Z_u" default="2.5"/>
+  <arg name="Z_l" default="1.5"/>
+  <arg name="Z_n" default="0.05"/>
 
   <arg name="Theta_u" default="6.28"/>
   <arg name="Theta_l" default="0"/>
-  <arg name="Theta_n" default=".1"/>
+  <arg name="Theta_n" default=".05"/>
 
-  <arg name="Q_u" default="75000"/>
-  <arg name="Q_l" default="25000"/>
-  <arg name="Q_n" default="1000"/>
+  <arg name="Q_u" default="0.0558"/>
+  <arg name="Q_l" default="0.00258"/>
+  <arg name="Q_n" default="0.00258"/>
 
-  <arg name="V_u" default="4"/>
+  <arg name="V_u" default="2"/>
   <arg name="V_l" default=".01"/>
-  <arg name="V_n" default=".25"/>
+  <arg name="V_n" default=".15"/>
 
   <!-- Just for Gaussian -->
-  <arg name="Dy_u" default=".15"/>
-  <arg name="Dy_l" default=".15"/>
+  <arg name="Dy_u" default="0.5"/>
+  <arg name="Dy_l" default="0.5"/>
   <arg name="Dy_n" default="0"/>
 
-  <arg name="Dz_u" default=".15"/>
-  <arg name="Dz_l" default=".15"/>
+  <arg name="Dz_u" default="0.005"/>
+  <arg name="Dz_l" default="0.005"/>
   <arg name="Dz_n" default="0"/>
 
   <!-- Just for Ratebased -->
