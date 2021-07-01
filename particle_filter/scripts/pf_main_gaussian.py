@@ -42,9 +42,11 @@ SELF_maxconc = max_conc()
 
 current_state = State() # message type for current state of the quad
 
+global quadID
+global quad_agent_msg_dict
+global quad_agent_msg_dict_previous
 quad_agent_msg_dict = {}
 quad_agent_msg_dict_previous = {}
-quad_agent_msg_flag = {}
 
 ##################
 # Functions
@@ -80,19 +82,40 @@ def state_cb(state_sub):
     global current_state
     current_state = state_sub
 
-def agent_mle_gauss_cb(agent_mle_gauss_msg_tmp):
-
+def agent_mle_gauss_cb(agent_mle_gauss_msg_tmp, particle_filter):
     quad_agent_msg_dict_previous = quad_agent_msg_dict.copy()
-
     quad_agent_msg_dict[agent_mle_gauss_msg_tmp.agent_number] = agent_mle_gauss_msg_tmp.estimatedgaussian
+
+    LLE_idx = np.argmin(particle_filter.prob_df)
+
+    # print(particle_filter.prob_df[LLE_idx], agent_mle_gauss_msg_tmp.estimatedgaussian.W)
 
     # Update PF with new particle and renormalize the weights
     if agent_mle_gauss_msg_tmp.agent_number not in quad_agent_msg_dict_previous.keys():
-        quad_agent_msg_flag[agent_mle_gauss_msg_tmp.agent_number] = True # Raise flag to add particle in next loop
+        particle_filter.particles[0][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.X
+        particle_filter.particles[1][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Y
+        particle_filter.particles[2][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Z
+        particle_filter.particles[3][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Theta
+        particle_filter.particles[4][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Q
+        particle_filter.particles[5][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.V
+        particle_filter.particles[6][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Dy
+        particle_filter.particles[7][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Dz
+        particle_filter.prob_df[LLE_idx]      = agent_mle_gauss_msg_tmp.estimatedgaussian.W
+        particle_filter.normalize()
+        print "Added agent's", agent_mle_gauss_msg_tmp.agent_number, "particle"
 
     elif quad_agent_msg_dict[agent_mle_gauss_msg_tmp.agent_number] != quad_agent_msg_dict_previous[agent_mle_gauss_msg_tmp.agent_number]:
-        quad_agent_msg_flag[agent_mle_gauss_msg_tmp.agent_number] = True # Raise flag to add particle in next loop
-
+        particle_filter.particles[0][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.X
+        particle_filter.particles[1][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Y
+        particle_filter.particles[2][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Z
+        particle_filter.particles[3][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Theta
+        particle_filter.particles[4][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Q
+        particle_filter.particles[5][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.V
+        particle_filter.particles[6][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Dy
+        particle_filter.particles[7][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Dz
+        particle_filter.prob_df[LLE_idx]      = agent_mle_gauss_msg_tmp.estimatedgaussian.W
+        particle_filter.normalize()
+        print "Added agent's", agent_mle_gauss_msg_tmp.agent_number, "particle"
 
 ##################
 # Main
@@ -144,19 +167,19 @@ def main():
 
     # if simulation: #True
     if quadID == 1:
-        rospy.Subscriber("/agent_mle_gauss_data1", AgentEstimatedGaussian, agent_mle_gauss_cb)
+        rospy.Subscriber("/agent_mle_gauss_data1", AgentEstimatedGaussian, agent_mle_gauss_cb, particle_filter)
 
         mle_gauss_pub1 = rospy.Publisher('/agent_mle_gauss_data2', AgentEstimatedGaussian, queue_size=1)
         mle_gauss_pub2 = rospy.Publisher('/agent_mle_gauss_data3', AgentEstimatedGaussian, queue_size=1)
 
     if quadID == 2:
-        rospy.Subscriber("/agent_mle_gauss_data2", AgentEstimatedGaussian, agent_mle_gauss_cb)
+        rospy.Subscriber("/agent_mle_gauss_data2", AgentEstimatedGaussian, agent_mle_gauss_cb, particle_filter)
 
         mle_gauss_pub1 = rospy.Publisher('/agent_mle_gauss_data1', AgentEstimatedGaussian, queue_size=1)
         mle_gauss_pub2 = rospy.Publisher('/agent_mle_gauss_data3', AgentEstimatedGaussian, queue_size=1)
 
     if quadID == 3:
-        rospy.Subscriber("/agent_mle_gauss_data3", AgentEstimatedGaussian, agent_mle_gauss_cb)
+        rospy.Subscriber("/agent_mle_gauss_data3", AgentEstimatedGaussian, agent_mle_gauss_cb, particle_filter)
 
         mle_gauss_pub1 = rospy.Publisher('/agent_mle_gauss_data1', AgentEstimatedGaussian, queue_size=1)
         mle_gauss_pub2 = rospy.Publisher('/agent_mle_gauss_data2', AgentEstimatedGaussian, queue_size=1)
@@ -265,29 +288,6 @@ def main():
             pub.publish(plumeMsg)
             mle_gauss_pub1.publish(MLE_Msg)
             mle_gauss_pub2.publish(MLE_Msg)
-
-
-            LLE_idx = np.argmin(particle_filter.prob_df)
-
-            for key, value in quad_agent_msg_flag.items():
-                if value:
-                    LLE_idx = np.argmin(particle_filter.prob_df)
-
-                    particle_filter.particles[0][LLE_idx] = quad_agent_msg_dict[key].X
-                    particle_filter.particles[1][LLE_idx] = quad_agent_msg_dict[key].Y
-                    particle_filter.particles[2][LLE_idx] = quad_agent_msg_dict[key].Z
-                    particle_filter.particles[3][LLE_idx] = quad_agent_msg_dict[key].Theta
-                    particle_filter.particles[4][LLE_idx] = quad_agent_msg_dict[key].Q
-                    particle_filter.particles[5][LLE_idx] = quad_agent_msg_dict[key].V
-                    particle_filter.particles[6][LLE_idx] = quad_agent_msg_dict[key].Dy
-                    particle_filter.particles[7][LLE_idx] = quad_agent_msg_dict[key].Dz
-                    particle_filter.prob_df[LLE_idx]      = quad_agent_msg_dict[key].W
-                    particle_filter.normalize()
-
-                    quad_agent_msg_flag[key] = False
-                    # print "Added agent's", key, "particle"
-                    # print (quad_agent_msg_dict[key])
-
 
             # Seperate noise and resampling step...
             particle_filter.state_transition(_NOISE_STD_PARAMS)
