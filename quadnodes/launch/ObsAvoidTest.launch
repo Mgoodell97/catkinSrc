@@ -54,7 +54,7 @@
 
     <group ns="UAV1" if="$(eval SpawnUAV1)">
       <!-- Motion Planner -->
-      <node name="waypointListNode" pkg="quadnodes" type="waypointTemplateNew.py" output="screen">
+      <node name="waypointListNode" pkg="quadnodes" type="waypointTemplate.py" output="screen">
         <rosparam param="xWaypointList"> [0, 10]</rosparam>
         <rosparam param="yWaypointList"> [0, 10]</rosparam>
         <rosparam param="zWaypointList"> [2, 2]</rosparam>
@@ -75,7 +75,7 @@
 
     <group ns="UAV2" if="$(eval SpawnUAV2)">
       <!-- Motion Planner -->
-      <node name="waypointListNode" pkg="quadnodes" type="waypointTemplateNew.py" output="log">
+      <node name="waypointListNode" pkg="quadnodes" type="waypointTemplate.py" output="log">
         <rosparam param="xWaypointList"> [0, 10]</rosparam>
         <rosparam param="yWaypointList"> [0, 10]</rosparam>
         <rosparam param="zWaypointList"> [2, 2]</rosparam>
@@ -96,7 +96,7 @@
 
     <group ns="UAV3" if="$(eval SpawnUAV3)">
       <!-- Motion Planner -->
-      <node name="waypointListNode" pkg="quadnodes" type="waypointTemplateNew.py" output="log">
+      <node name="waypointListNode" pkg="quadnodes" type="waypointTemplate.py" output="log">
         <rosparam param="xWaypointList"> [0, 10]</rosparam>
         <rosparam param="yWaypointList"> [10, 0]</rosparam>
         <rosparam param="zWaypointList"> [2, 2]</rosparam>
