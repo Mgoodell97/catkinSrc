@@ -1,0 +1,4 @@
+<launch>
+  <arg name = "log" default="log"/>
+  <node pkg="rosbag" type="record" args="-o /home/mocaplinux/milestone1/sensor_test /Robot_1/mps_data /Robot_2/mps_data /Robot_3/mps_data /Robot_4/mps_data /Robot_5/mps_data" name="mps_record_data" />
+</launch>

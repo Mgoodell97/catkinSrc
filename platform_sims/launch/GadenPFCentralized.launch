@@ -1,0 +1,29 @@
+<launch>
+  <arg name="SpawnUAV1" default="True"/>
+  <arg name="SpawnUAV2" default="True"/>
+  <arg name="SpawnUAV3" default="True"/>
+  <arg name="SpawnUAV4" default="True"/>
+  <arg name="SpawnUAV5" default="True"/>
+
+  <!-- <arg name="plotGaussian" default="True"/> -->
+
+  <param name="startTest"        type="bool"  value="False" />
+  <param name="SpawnUAV1"        type="bool"  value="$(arg SpawnUAV1)" />
+  <param name="SpawnUAV2"        type="bool"  value="$(arg SpawnUAV2)" />
+  <param name="SpawnUAV3"        type="bool"  value="$(arg SpawnUAV3)" />
+  <param name="SpawnUAV4"        type="bool"  value="$(arg SpawnUAV4)" />
+  <param name="SpawnUAV5"        type="bool"  value="$(arg SpawnUAV5)" />
+
+  <arg name = "log" default="log"/>
+  <param name="plumeType"         type="int"     value="2"        /> # 1 = gaussian, 2 = gaden, 3 = MPS
+
+  <node name="plotRobots" pkg="platform_sims" type="plotGaussianParticleCentralized.py" output="screen"/>
+
+  <include file="$(find platform_sims)/launch/PFparams_gaden_static_centralized.launch">
+    <arg name="plumeType"     default="2"/>
+  </include>
+
+  <include file="$(find test_env)/14x9/launch/GADEN_player_mocap.launch"/>
+
+  <!-- <node pkg="rosbag" type="record" args="-o /home/mocaplinux/milestone2/gadenSim /Robot_1/Sensor_reading /Robot_2/Sensor_reading /Robot_3/Sensor_reading /Robot_4/Sensor_reading /Robot_5/Sensor_reading /mocap_node/Robot_1/pose /mocap_node/Robot_2/pose /mocap_node/Robot_3/pose /mocap_node/Robot_4/pose /mocap_node/Robot_5/pose /particles /estimatedGaussian" name="mps_record_data" /> -->
+</launch>

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+  <param name="startTest" type="bool"  value="False"   />
+
+  <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
+
+  <node name="stepResponse" pkg="platform_sims" type="stepResponse.py" output="screen"/>
+
+</launch>
