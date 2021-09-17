@@ -1,0 +1,66 @@
+<!-- mission file for GADEN player -->
+
+<launch>
+
+    ### NODE Simulated Gas Sensor ###
+    #--------------------------------
+    # SENSOR MODELS:
+    # MOX: TGS2620=0, TGS2600=1, TGS2611=2
+    # PID: MiniRaeLite=30
+
+    # First row of 5 X = 0.43m
+    <node pkg="tf" type="static_transform_publisher" name="pid5_broadcaster" args="0.85 0.46 0.3 0 0 0 map pid5_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid6_broadcaster" args="0.85 0.91 0.3 0 0 0 map pid6_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid7_broadcaster" args="0.85 1.37 0.3 0 0 0 map pid7_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid8_broadcaster" args="0.85 1.83 0.3 0 0 0 map pid8_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid9_broadcaster" args="0.85 2.29 0.3 0 0 0 map pid9_frame 50" />
+
+
+    # second row of 5 X = 0.85m
+    #                X    Y    Z
+    <group ns="PID__0_85__0_46__0_3">
+        <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
+	        <param name="/sensor_model" value="30" />
+	        <param name="/sensor_frame" value="pid5_frame" />
+	        <param name="/fixed_frame" value="map"/>
+        </node>
+    </group>
+
+    <group ns="PID__0_85__0_91__0_3">
+        <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
+	        <param name="/sensor_model" value="30" />
+	        <param name="/sensor_frame" value="pid6_frame" />
+	        <param name="/fixed_frame" value="map"/>
+        </node>
+    </group>
+
+    <group ns="PID__0_85__1_37__0_3">
+        <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
+	        <param name="/sensor_model" value="30" />
+	        <param name="/sensor_frame" value="pid7_frame" />
+	        <param name="/fixed_frame" value="map"/>
+        </node>
+    </group>
+
+    <group ns="PID__0_85__1_83__0_3">
+        <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
+          <param name="/sensor_model" value="30" />
+          <param name="/sensor_frame" value="pid8_frame" />
+          <param name="/fixed_frame" value="map"/>
+        </node>
+    </group>
+
+    <group ns="PID__0_85__2_29__0_3">
+        <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
+          <param name="/sensor_model" value="30" />
+          <param name="/sensor_frame" value="pid9_frame" />
+          <param name="/fixed_frame" value="map"/>
+        </node>
+    </group>
+
+    ### RQT PLOT Sensors ###
+    #-----------------------
+    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot2"  args="/PID__0_85__0_46__0_3/Sensor_reading/raw /PID__0_85__0_91__0_3/Sensor_reading/raw /PID__0_85__1_37__0_3/Sensor_reading/raw /PID__0_85__1_83__0_3/Sensor_reading/raw /PID__0_85__2_29__0_3/Sensor_reading/raw"/>
+
+
+</launch>

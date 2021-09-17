@@ -1,0 +1,33 @@
+<launch>
+ <arg name="PlumeType" default="gaussian"/>
+  <arg name="Model" default="gaussian"/>
+
+  <arg name="plotGaussian" default="True"/>
+
+  <param name="startTest"        type="bool"  value="False" />
+
+<!-- Plume parameters -->
+  <param name="QPlume"           type="double"  value="0.000036" /> #  kg/s     release rate         
+  <param name="vPlume"           type="double"  value="0.447"    /> #  m/s      velocity             
+  <param name="DyPlume"          type="double"  value="0.0075"    /> #  m        diffusion along y   
+  <param name="DzPlume"          type="double"  value="0.000075"   /> #  m        diffusion along z  
+                                                                                                     
+  <!-- Plume location -->
+  <param name="xPlume"           type="double"  value="0.75"   /> # m                                   
+  <param name="yPlume"           type="double"  value="1.3716"   /> # m                              
+  <param name="zPlume"           type="double"  value="0"        /> # m                              
+  <param name="careAboutZ"       type="bool"    value="False"    /> # boolean                        
+  <param name="thetaPlume"       type="double"  value="0"        /> # degrees (both methods need to \
+know the wind direction)                                                                             
+
+  <param name="SpawnUAV1"        type="bool"  value="True"   />
+  <param name="SpawnUAV2"        type="bool"  value="True"   />	
+  <param name="SpawnUAV3"        type="bool"  value="True"   />
+  <param name="SpawnUAV4"        type="bool"  value="True"   />
+  <param name="SpawnUAV5"        type="bool"  value="True"   />	
+<node pkg="rqt_plot" type="rqt_plot" name="rqt_plot"  args="/Robot_1/mps_data/pressure /Robot_2/mps_data/pressure /Robot_3/mps_data/pressure /Robot_4/mps_data/pressure /Robot_5/mps_data/pressure"/>
+  <!-- Motion Capture Gaussian Plotter -->
+  <node name="plotGaussianParticleMocap" pkg="platform_sims" type="plotGaussianParticleMocap.py" output="screen"
+    if="$(eval plotGaussian)"/>
+
+</launch>

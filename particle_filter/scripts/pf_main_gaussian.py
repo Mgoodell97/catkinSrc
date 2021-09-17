@@ -43,16 +43,39 @@ SELF_maxconc = max_conc()
 current_state = State() # message type for current state of the quad
 
 global quadID
+global printID
 global quad_agent_msg_dict
 global quad_agent_msg_dict_previous
 quad_agent_msg_dict = {}
 quad_agent_msg_dict_previous = {}
 
+sensorMsg_cb_flag = False;
+
 ##################
 # Functions
 ##################
 
+from math import cos, sin, pi, acos, sqrt, exp
 
+def gaussFunc(xFunc, yFunc, zFunc, QFunc, vFunc, DyFunc, DzFunc):
+    con = (QFunc/(4 * pi * xFunc * sqrt(DyFunc*DzFunc))) * exp( -vFunc/(4*xFunc) * ((yFunc**2)/DyFunc + (zFunc**2)/DzFunc))
+    return con * 1000 # convert from kg/m^3 to ppm
+
+def getReading(xRobotDef, yRobotDef, thetaFunc, xPlumeFunc, yPlumeFunc, zFunc, QFunc, vFunc, DyFunc, DzFunc):
+    # Rotate frame
+
+    Stheta = sin(thetaFunc)
+    Ctheta = cos(thetaFunc)
+
+    xRobotRotated = (Ctheta  * xRobotDef + Stheta * yRobotDef + -Ctheta * xPlumeFunc - Stheta * yPlumeFunc)
+    yRobotRotated = (-Stheta * xRobotDef + Ctheta * yRobotDef +  Stheta * xPlumeFunc - Ctheta * yPlumeFunc)
+
+    if xRobotRotated <= 0:
+        reading = 0
+    else:
+        reading = gaussFunc(xRobotRotated,yRobotRotated,zFunc,QFunc,vFunc,DyFunc,DzFunc)
+
+    return reading
 
 ##################
 # Callbacks
@@ -60,15 +83,21 @@ quad_agent_msg_dict_previous = {}
 
 def SELF_gaussSensor_cb(gaussMsg):
     global SELF_current_reading_gauss
+    global sensorMsg_cb_flag
     SELF_current_reading_gauss = gaussMsg
+    sensorMsg_cb_flag = True
 
 def SELF_gadenSensor_cb(gadenMsg):
     global SELF_current_reading_gaden
+    global sensorMsg_cb_flag
     SELF_current_reading_gaden = gadenMsg
+    sensorMsg_cb_flag = True
 
 def SELF_MPS_Sensor_cb(MPS_Msg):
     global SELF_current_reading_MPS
+    global sensorMsg_cb_flag
     SELF_current_reading_MPS = MPS_Msg
+    sensorMsg_cb_flag = True
 
 def SELF_location_gauss_get(loc_read_all): # function(variable to store message data)
     global SELF_location_gauss
@@ -88,10 +117,12 @@ def agent_mle_gauss_cb(agent_mle_gauss_msg_tmp, particle_filter):
 
     LLE_idx = np.argmin(particle_filter.prob_df)
 
-    # print(particle_filter.prob_df[LLE_idx], agent_mle_gauss_msg_tmp.estimatedgaussian.W)
+    global printID
 
+    # print(particle_filter.prob_df[LLE_idx], agent_mle_gauss_msg_tmp.estimatedgaussian.W)
     # Update PF with new particle and renormalize the weights
     if agent_mle_gauss_msg_tmp.agent_number not in quad_agent_msg_dict_previous.keys():
+
         particle_filter.particles[0][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.X
         particle_filter.particles[1][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Y
         particle_filter.particles[2][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Z
@@ -102,7 +133,7 @@ def agent_mle_gauss_cb(agent_mle_gauss_msg_tmp, particle_filter):
         particle_filter.particles[7][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Dz
         particle_filter.prob_df[LLE_idx]      = agent_mle_gauss_msg_tmp.estimatedgaussian.W
         particle_filter.normalize()
-        print "Added agent's", agent_mle_gauss_msg_tmp.agent_number, "particle"
+        print "Agent", printID, "added agent's", agent_mle_gauss_msg_tmp.agent_number, "particle"
 
     elif quad_agent_msg_dict[agent_mle_gauss_msg_tmp.agent_number] != quad_agent_msg_dict_previous[agent_mle_gauss_msg_tmp.agent_number]:
         particle_filter.particles[0][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.X
@@ -115,7 +146,7 @@ def agent_mle_gauss_cb(agent_mle_gauss_msg_tmp, particle_filter):
         particle_filter.particles[7][LLE_idx] = agent_mle_gauss_msg_tmp.estimatedgaussian.Dz
         particle_filter.prob_df[LLE_idx]      = agent_mle_gauss_msg_tmp.estimatedgaussian.W
         particle_filter.normalize()
-        print "Added agent's", agent_mle_gauss_msg_tmp.agent_number, "particle"
+        print "Agent", printID, "added agent's", agent_mle_gauss_msg_tmp.agent_number, "particle"
 
 ##################
 # Main
@@ -128,13 +159,16 @@ def main():
 
     rospy.init_node('Particle_Filter') # name your node
     ## Initialization of Particles and Sensor ##
-    rate = rospy.Rate(1)
+    rate = rospy.Rate(5)
 
     particle_params = rospy.get_param("particleFilter") # get params defined in launch file
 
     # Saves dictionary entries from launch file as variables
     for key,val in particle_params.items():
         exec(key + '=val')
+
+    global printID
+    printID = quadID
 
     ##### Uses pulled variables and sets inital parameters #####
     # use launch file parameters to define parameters for the particles
@@ -146,7 +180,7 @@ def main():
     # set number of particled to deal with impoverishment
     _IMP_PARTICLES = ImpovParticles
 
-    particle_filter = Particle_Gen(_PARTICLE_PARAMETERS,_NUM_OF_PARTICLES,_NUM_OF_ROBOTS) # initializes particles
+    particle_filter = Particle_Gen(_PARTICLE_PARAMETERS,_NUM_OF_PARTICLES,_NUM_OF_ROBOTS, pdf_std) # initializes particles
     sensors = Sensor(_NUM_OF_ROBOTS) # initializes sensor recording device
 
     # code for publishing particles
@@ -154,13 +188,21 @@ def main():
     MLE_Msg = AgentEstimatedGaussian()
 
     if simulation: #True
-        if PlumeType == "gaussian": # if gaussian env subscribe to gaussian messages
+        if PlumeType == "gaussian" and not Platform: # if gaussian env subscribe to gaussian messages
             rospy.Subscriber("gaussianReading", gaussian, SELF_gaussSensor_cb)
             rospy.Subscriber("true_position", PoseStamped, SELF_location_gauss_get)
 
         if PlumeType == "gaden": # if gaden subscribe to gaden messages
             rospy.Subscriber("Sensor_reading", gas_sensor, SELF_gadenSensor_cb)
             rospy.Subscriber("Sensor_display", Marker, SELF_location_gaden_get)
+
+        if PlumeType == "gaussian" and Platform: # Platform gaussian
+            rospy.Subscriber("gaussianReading", gaussian, SELF_gaussSensor_cb)
+            fullStringName = "/mocap_node/Robot_" + str(int(quadID)) + "/pose"
+            rospy.Subscriber(fullStringName, PoseStamped, SELF_location_gauss_get)
+
+        # Need to add gaden plume sim
+
     else : #False
         rospy.Subscriber("MPS_Sensor_reading", MPS, SELF_MPS_Sensor_cb)
         rospy.Subscriber("true_position", PoseStamped, SELF_location_gauss_get) # might need to change
@@ -171,32 +213,63 @@ def main():
 
         mle_gauss_pub1 = rospy.Publisher('/agent_mle_gauss_data2', AgentEstimatedGaussian, queue_size=1)
         mle_gauss_pub2 = rospy.Publisher('/agent_mle_gauss_data3', AgentEstimatedGaussian, queue_size=1)
+        mle_gauss_pub3 = rospy.Publisher('/agent_mle_gauss_data4', AgentEstimatedGaussian, queue_size=1)
+        mle_gauss_pub4 = rospy.Publisher('/agent_mle_gauss_data5', AgentEstimatedGaussian, queue_size=1)
 
     if quadID == 2:
         rospy.Subscriber("/agent_mle_gauss_data2", AgentEstimatedGaussian, agent_mle_gauss_cb, particle_filter)
 
         mle_gauss_pub1 = rospy.Publisher('/agent_mle_gauss_data1', AgentEstimatedGaussian, queue_size=1)
         mle_gauss_pub2 = rospy.Publisher('/agent_mle_gauss_data3', AgentEstimatedGaussian, queue_size=1)
+        mle_gauss_pub3 = rospy.Publisher('/agent_mle_gauss_data4', AgentEstimatedGaussian, queue_size=1)
+        mle_gauss_pub4 = rospy.Publisher('/agent_mle_gauss_data5', AgentEstimatedGaussian, queue_size=1)
 
     if quadID == 3:
         rospy.Subscriber("/agent_mle_gauss_data3", AgentEstimatedGaussian, agent_mle_gauss_cb, particle_filter)
 
         mle_gauss_pub1 = rospy.Publisher('/agent_mle_gauss_data1', AgentEstimatedGaussian, queue_size=1)
         mle_gauss_pub2 = rospy.Publisher('/agent_mle_gauss_data2', AgentEstimatedGaussian, queue_size=1)
+        mle_gauss_pub3 = rospy.Publisher('/agent_mle_gauss_data4', AgentEstimatedGaussian, queue_size=1)
+        mle_gauss_pub4 = rospy.Publisher('/agent_mle_gauss_data5', AgentEstimatedGaussian, queue_size=1)
+
+    if quadID == 4:
+        rospy.Subscriber("/agent_mle_gauss_data4", AgentEstimatedGaussian, agent_mle_gauss_cb, particle_filter)
+
+        mle_gauss_pub1 = rospy.Publisher('/agent_mle_gauss_data1', AgentEstimatedGaussian, queue_size=1)
+        mle_gauss_pub2 = rospy.Publisher('/agent_mle_gauss_data2', AgentEstimatedGaussian, queue_size=1)
+        mle_gauss_pub3 = rospy.Publisher('/agent_mle_gauss_data3', AgentEstimatedGaussian, queue_size=1)
+        mle_gauss_pub4 = rospy.Publisher('/agent_mle_gauss_data5', AgentEstimatedGaussian, queue_size=1)
+
+    if quadID == 5:
+        rospy.Subscriber("/agent_mle_gauss_data5", AgentEstimatedGaussian, agent_mle_gauss_cb, particle_filter)
+
+        mle_gauss_pub1 = rospy.Publisher('/agent_mle_gauss_data1', AgentEstimatedGaussian, queue_size=1)
+        mle_gauss_pub2 = rospy.Publisher('/agent_mle_gauss_data2', AgentEstimatedGaussian, queue_size=1)
+        mle_gauss_pub3 = rospy.Publisher('/agent_mle_gauss_data3', AgentEstimatedGaussian, queue_size=1)
+        mle_gauss_pub4 = rospy.Publisher('/agent_mle_gauss_data4', AgentEstimatedGaussian, queue_size=1)
+
+
     # else : #False
 
 
-    particlesPublisher = rospy.Publisher('particles', particles, queue_size=5)
+    particlesPublisher = rospy.Publisher('particles', particles, queue_size=1)
     pub = rospy.Publisher("estimatedGaussian", estimatedGaussian, queue_size=10)
     # maxConcPublisher = rospy.Publisher('max_conc',max_conc, queue_size=5)
 
     while not rospy.is_shutdown(): # while roscore is running do this. if not, stop... Executes Function
-        # global location_reading
-        while not current_state.armed: # waits until the quad is armed before starting particle filtering
-            rospy.sleep(1)
+
+        if not Platform:
+            while not current_state.armed: # waits until the quad is armed before starting particle filtering
+                rospy.sleep(1)
+        elif Platform:
+            while not rospy.get_param("/startTest") or not sensorMsg_cb_flag: # waits until the quad is armed before starting particle filtering
+                rospy.sleep(1)
+                # print(rospy.get_param("/startTest"), "   ,   ", sensorMsg_cb_flag)
+                if rospy.get_param("/startTest") and sensorMsg_cb_flag:
+                    break
 
         if simulation: #True
-            if PlumeType == "gaussian": # If env is gauss then grab gauss message data
+            if PlumeType == "gaussian" and not Platform: # If env is gauss then grab gauss message data
                 chem_reading_self = SELF_current_reading_gauss.ppm
                 sensors.reading(SELF_current_reading_gauss.ppm,SELF_location_gauss.pose.position.x,SELF_location_gauss.pose.position.y,SELF_location_gauss.pose.position.z) # saves information gathered in sensor history
 
@@ -213,6 +286,16 @@ def main():
                 x_locations = np.array([[SELF_location_gaden.pose.position.x]])
                 y_locations = np.array([[SELF_location_gaden.pose.position.y]])
                 z_locations = np.array([[SELF_location_gaden.pose.position.z]])
+
+            if PlumeType == "gaussian" and Platform: # If env is gauss then grab gauss message data
+                chem_reading_self = SELF_current_reading_gauss.ppm
+                sensors.reading(SELF_current_reading_gauss.ppm,SELF_current_reading_gauss.x,SELF_current_reading_gauss.y,SELF_current_reading_gauss.z) # saves information gathered in sensor history
+
+                chem_readings = np.array([[SELF_current_reading_gauss.ppm]])
+                x_locations = np.array([[SELF_current_reading_gauss.x]])
+                y_locations = np.array([[SELF_current_reading_gauss.y]])
+                z_locations = np.array([[SELF_current_reading_gauss.z]])
+
         else: # simulation == False
             chem_reading_self = SELF_current_reading_MPS.pressure
             sensors.reading(SELF_current_reading_MPS.pressure,SELF_location_gauss.pose.position.x,SELF_location_gauss.pose.position.y,SELF_location_gauss.pose.position.z) # saves information gathered in sensor history
@@ -221,6 +304,8 @@ def main():
             x_locations = np.array([[SELF_location_gauss.pose.position.x]])
             y_locations = np.array([[SELF_location_gauss.pose.position.y]])
             z_locations = np.array([[SELF_location_gauss.pose.position.z]])
+
+        # print(chem_reading_self)
 
         SELF_maxconc.X = sensors.max_conc_loc[0]
         SELF_maxconc.Y = sensors.max_conc_loc[1]
@@ -286,6 +371,13 @@ def main():
             particlesPublisher.publish(particlesMsg)
             # maxConcPublisher.publish(concMsg)
             pub.publish(plumeMsg)
+
+
+            # print(chem_readings, "   ", getReading(x_locations, y_locations, 0, 2, 1.3716, 0.0, 0.000036, 0.447, 0.0075, 0.000075))
+
+            # print(SELF_location_gauss)
+            # print('Published estimate')
+
             mle_gauss_pub1.publish(MLE_Msg)
             mle_gauss_pub2.publish(MLE_Msg)
 
@@ -295,8 +387,8 @@ def main():
             resamp_check = 1/sum((particle_filter.prob_df**2))
             # print('Resamp Check: ' + str(resamp_check))
             # print('np/2: ' +str(_NUM_OF_PARTICLES/2))
-            if resamp_check <= _NUM_OF_PARTICLES/2:
-                particle_filter.resample(_NUM_OF_PARTICLES, _IMP_PARTICLES)
+            # if resamp_check <= _NUM_OF_PARTICLES/2:
+            particle_filter.resample(_NUM_OF_PARTICLES, _IMP_PARTICLES)
 
             rate.sleep() # have you met the rospy.Rate? if not wait some amount of time.
 
@@ -305,70 +397,3 @@ if __name__ == '__main__':
         main()
     except rospy.ROSInterruptException:
         pass
-
-
-# _PARTICLE_PARAMETERS_GAUS = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[50000, 50000],[1, 1],[.15,.15],[.15,.15]] #x,y,z,theta,Q,V,Dy,Dz
-# _PARTICLE_PARAMETERS_GADEN = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[43659, 43659],[.828, .828],[1.03697,1.03697],[.00007265,.00007265]] #x,y,z,theta,Q,V,Dy,Dz
-# _PARTICLE_PARAMETERS_GADEN = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[43659, 43659],[.828, .828],[1.03697,1.03697],[.00007265,.00007265]] #x,y,z,theta,Q,V,Dy,Dz
-
-#_PARTICLE_PARAMETERS = [[0,50],[0, 50],[2,2],[3*np.pi/2,3*np.pi/2],[50000, 50000],[1, 1],[.15,.15],[.15,.15]] #x,y,z,theta,Q,V,Dy,Dz
-# _PARTICLE_PARAMETERS_GADEN = [[0,50],[0,50],[2,2],[3*np.pi/2,3*np.pi/2],[.1, 25],[.01, 10],[.1,5],[.1,10]] #x,y,z,theta,Q,V,Dy,Dz
-# _PARTICLE_PARAMETERS_GADEN_ratebased = [[0,50],[0,50],[2,2],[3*np.pi/2,3*np.pi/2],[.1, 5],[.01, 10],[.1,5],[.1,10],[1, 1]]
-
-
-# _PARTICLE_PARAMETERS = [[0, 50],[0, 50],[0,4],[0,6*np.pi/4],[90000, 110000],[0, 8],[20,60],[.005, .025]]
-
-#_PDF_STD_DIST = 75
-
-# # norm noise #
-# x_noise = 1
-# y_noise = 1
-# z_noise = 0
-# theta_noise = 0
-# Q_noise = .05
-# V_noise = .02
-# Dy_noise = .025
-# Dz_noise = 0.025
-
-# x_noise = .25
-# y_noise = .25
-# z_noise = 0
-# theta_noise = 0
-# Q_noise = 0
-# V_noise = 0
-# Dy_noise = 0
-# Dz_noise = 0
-
-# x_noise = 0
-# y_noise = 0
-# z_noise = 0
-# theta_noise = 0
-# Q_noise = 250
-# V_noise = .05
-# Dy_noise = .025
-# Dz_noise = .025
-
-
-
-# # ratebased noise #
-# x_noise = 1
-# y_noise = 1
-# z_noise = 0
-# theta_noise = 0
-# Q_noise = .02
-# V_noise = .02
-# D_noise = .02
-# tau_noise = .02
-# a_noise = 0
-#
-# _NOISE_STD_PARAMS_ratebased = np.array((x_noise,y_noise,z_noise,theta_noise,Q_noise,V_noise,D_noise,tau_noise,a_noise))
-
-# chem_reading = gaussian()
-
-
-# controllerValues.axes = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-# controllerValues.buttons = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-# def chem_sens_cb(raw_readings_msg): # function(variable to store message data)
-#     global chem_reading
-#     chem_reading = raw_readings_msg

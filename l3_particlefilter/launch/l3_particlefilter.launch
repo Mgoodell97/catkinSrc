@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Mocap -->
+  <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
+
+  <!-- Plotter -->
+  <node name="plot_l3particles" pkg="l3_particlefilter" type="plotParticleMocap.py" output="screen"/>
+
+
+  <node name="l3_actualparticlefilter" pkg="l3_particlefilter" type="l3_actualparticlefilter.py" output="screen"/>
+
+
+</launch>

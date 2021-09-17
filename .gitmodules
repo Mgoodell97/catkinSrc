@@ -34,4 +34,7 @@
 	path = urg_node
 	url = https://github.com/ros-drivers/urg_node.git
 	branch = master
-
+[submodule "mocap_optitrack"]
+	path = mocap_optitrack
+	url = https://github.com/ros-drivers/mocap_optitrack
+	branch = master

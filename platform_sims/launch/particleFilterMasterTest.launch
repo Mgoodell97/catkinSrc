@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- <arg name="PlumeType" default="gaussian"/>
+  <arg name="Model" default="gaussian"/> -->
+  <arg name="SpawnUAV1" default="True"/>
+  <arg name="SpawnUAV2" default="True"/>
+  <arg name="SpawnUAV3" default="True"/>
+  <arg name="SpawnUAV4" default="False"/>
+  <arg name="SpawnUAV5" default="False"/>
+
+  <arg name="plotGaussian" default="True"/>
+
+  <param name="startTest"        type="bool"  value="False" />
+  <param name="SpawnUAV1"        type="bool"  value="$(arg SpawnUAV1)" />
+  <param name="SpawnUAV2"        type="bool"  value="$(arg SpawnUAV2)" />
+  <param name="SpawnUAV3"        type="bool"  value="$(arg SpawnUAV3)" />
+  <param name="SpawnUAV4"        type="bool"  value="$(arg SpawnUAV4)" />
+  <param name="SpawnUAV5"        type="bool"  value="$(arg SpawnUAV5)" />
+
+  <!-- Plume parameters -->
+  <param name="QPlume"           type="double"  value="0.000036" /> #  kg/s     release rate
+  <param name="vPlume"           type="double"  value="0.447"    /> #  m/s      velocity
+  <param name="DyPlume"          type="double"  value="0.0075"    /> #  m        diffusion along y
+  <param name="DzPlume"          type="double"  value="0.000075"   /> #  m        diffusion along z
+
+  <!-- Plume location -->
+  <param name="xPlume"           type="double"  value="2"   /> # m
+  <param name="yPlume"           type="double"  value="1.3716"   /> # m
+  <param name="zPlume"           type="double"  value="0"        /> # m
+  <param name="careAboutZ"       type="bool"    value="False"    /> # boolean
+  <param name="thetaPlume"       type="double"  value="0"        /> # degrees (both methods need to know the wind direction)
+
+  <param name="sensorRate"       type="double"  value="5"        /> # Hz
+
+  <!-- <include file="$(find mocap_optitrack)/launch/mocap.launch"/> -->
+
+  <!-- Motion Capture Gaussian Plotter -->
+  <node name="plotGaussianParticleMocap" pkg="platform_sims" type="plotGaussianParticleMocap.py" output="screen" if="$(eval plotGaussian)"/>
+
+  <node name="plotGaussianMocapProjector" pkg="platform_sims" type="plotGaussianAndRobotsAll.py" output="screen" if="$(eval plotGaussian)"/>
+
+  <!-- Robot_1 -->
+  <group ns="Robot_1" if="$(eval SpawnUAV1)">
+    <include file="$(find platform_sims)/launch/fakeRobotPoseRaster.launch">
+      <arg name="xmin" default="0.1524"/>
+      <arg name="xmax" default="2.5908"/>
+      <arg name="ymin" default="4.1148"/>
+      <arg name="ymax" default="0.1524"/>
+      <arg name="flipXY"    default="True"/>
+      <arg name="RobotID"    default="1"/>
+    </include>
+
+    <include file="$(find platform_sims)/launch/platformParticleFilterMatthew.launch">
+      <arg name="quadID"     default="1"/>
+    </include>
+  </group>
+
+  <!-- Robot_2 -->
+  <group ns="Robot_2" if="$(eval SpawnUAV2)">
+    <include file="$(find platform_sims)/launch/fakeRobotPoseRaster.launch">
+      <arg name="xmin" default="2.5908"/>
+      <arg name="xmax" default="0.1524"/>
+      <arg name="ymin" default="0.1524"/>
+      <arg name="ymax" default="4.1148"/>
+      <arg name="flipXY"    default="True"/>
+      <arg name="RobotID"    default="2"/>
+    </include>
+
+    <include file="$(find platform_sims)/launch/platformParticleFilterMatthew.launch">
+      <arg name="quadID"      default="2"/>
+    </include>
+  </group>
+
+  <group ns="Robot_3" if="$(eval SpawnUAV3)">
+    <include file="$(find platform_sims)/launch/fakeRobotPoseRaster.launch">
+      <arg name="xmin" default="0.1524"/>
+      <arg name="xmax" default="4.1148"/>
+      <arg name="ymin" default="0.1524"/>
+      <arg name="ymax" default="2.5908"/>
+      <arg name="flipXY"    default="False"/>
+      <arg name="RobotID"    default="3"/>
+    </include>
+
+    <include file="$(find platform_sims)/launch/platformParticleFilterMatthew.launch">
+      <arg name="quadID"     default="3"/>
+    </include>
+  </group>
+
+  <!-- <node pkg="rosbag" type="record" args="-o /home/mocaplinux/milestone2/testBag /Robot_1/estimatedGaussian /Robot_1/gaussianReading /Robot_1/particles /mocap_node/Robot_1/pose" name="testBagRecord" /> -->
+
+</launch>
