@@ -226,6 +226,9 @@ int main( int argc, char** argv )
                     break;
                 }
 
+                sensor_msg.local_x = x_pos;
+                sensor_msg.local_y = y_pos;
+                sensor_msg.local_z = z_pos;
 
                 //Publish simulated sensor reading
                 sensor_read_pub.publish(sensor_msg);

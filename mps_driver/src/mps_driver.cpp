@@ -77,8 +77,8 @@ int main(int argc, char *argv[]){
     ros::Publisher MPS_pub = nh.advertise<mps_driver::MPS>("mps_data", 1);
     ros::Subscriber subscribe_GPS = nh.subscribe("dji_sdk/global_position",1,gps_callback);
     ros::Subscriber subscribe_local_position = nh.subscribe("dji_sdk/local_position",1,local_position_callback);
-    ros::Rate loop_rate(0.5);
-    
+    ros::Rate loop_rate(1);
+
     // Local variables
 	answerEngine_rqst_t  request;
   	answerEngine_reply_t reply;
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]){
   	int                  count = 0;
 
   	init_MPS();
-    
+
     int fd, result = 0;
     // Register the MPS at address 0x3E
     fd = wiringPiI2CSetup(0x3e);

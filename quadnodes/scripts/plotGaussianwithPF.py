@@ -117,6 +117,7 @@ def main():
         plotUAV3 = rospy.get_param("/plotGaussianwithPF/plotUAV3")
     except:
         plotUAV3 = False
+
     # Map parameters
     minLim = rospy.get_param("/plotGaussianwithPF/mapMin")
     maxLim = rospy.get_param("/plotGaussianwithPF/mapMax")

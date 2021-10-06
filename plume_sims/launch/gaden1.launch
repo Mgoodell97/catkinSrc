@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+
+  <param name="plumeType"         type="int"     value="2"        /> # 1 = gaussian, 2 = gaden, 3 = MPS
+  <include file="$(find test_env)/14x9/launch/GADEN_player_mocap.launch"/>
+
+</launch>
