@@ -72,7 +72,7 @@
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find platform_sims)/rvizConfigs/GadenMocap.rviz"/>
 
     ### Mocap ###
-    <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
+    <!-- <include file="$(find mocap_optitrack)/launch/mocap.launch"/> -->
 
     ### NODE Simulated Gas Sensor ###
     #--------------------------------
