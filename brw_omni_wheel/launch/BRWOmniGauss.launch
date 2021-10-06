@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name = "RobotID" default = "1"/>
+
+  <group ns = "Robot_$(arg RobotID)">
+    <param name = "RobotID" value = "$(arg RobotID)"/>
+
+    <!-- Sensor -->
+    <node name="gaussianSensorPlatform" pkg="platform_sims" type="gaussianSensorPlatform.py" output="log">
+        <param name="RobotID" value="$(arg RobotID)"/>
+    </node>
+
+    <!-- Motion planner -->
+    <node name="BRW" pkg="brw_omni_wheel" type="BRWOmni.py" output="screen">
+      <param name="minLimX"                value="0.175"   />   # m
+      <param name="maxLimX"                value="3.75"  />   # m
+      <param name="minLimY"                value="0.175"   />   # m
+      <param name="maxLimY"                value="2.5"  />   # m
+      <param name="biasRange"              value="60.0"  />   # degrees
+      <param name="stepSize"               value="0.15"   />   # m
+      <param name="waypointRadius"         value="0.05"  />   # m
+      <param name="stayTime"               value="0.05"   />   # seconds
+    </node>
+
+    <!-- Controller -->
+    <node name="positionController" pkg="motion_controller" type="position_control2_0.py" output="log"/>
+    <node name="potentialFieldController" pkg="motion_controller" type="potential_field.py" output="log"/>
+    <node name="summer" pkg="motion_controller" type="summer.py" output="log"/>
+    <node name="velocityControlDynamixel" pkg="omni_wheel" type="velocityControlDynamixel"/>
+  </group>
+
+</launch>
