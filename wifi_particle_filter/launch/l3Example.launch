@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Mocap -->
+  <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
+
+  <!-- Plotter -->
+  <node name="plotGaussianParticleMocap" pkg="wifi_particle_filter" type="plotGaussianParticleMocap.py" output="screen"/>
+
+
+  <node name="estimate_transmitter_env" pkg="wifi_particle_filter" type="estimate_transmitter_env.py" output="screen"/>
+
+
+</launch>

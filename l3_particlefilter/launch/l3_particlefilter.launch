@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Mocap -->
+  <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
+
+  <!-- Plotter -->
+  <node name="plot_l3particles" pkg="l3_particlefilter" type="plotParticleMocap.py" output="screen"/>
+
+
+  <node name="l3_particlefilter" pkg="l3_particlefilter" type="l3_actualparticlefilter.py" output="screen"/>
+
+  <node name="teleop_twist_keyboard" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" output="log"/>
+
+  <param name = "RobotID" value = "1" />
+
+</launch>

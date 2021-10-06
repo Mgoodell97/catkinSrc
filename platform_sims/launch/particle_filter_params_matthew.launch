@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- For Gaussian and Ratebased -->
+  <arg name="NumOfParticles" default="2000"/>
+  <arg name="ImpovParticles" default="0"/>
+  <arg name="printOutput" default="log"/>
+
+  <arg name="quadID"      default="1"/>
+  <arg name="Platform"    default="False"/>
+
+  <arg name="pdf_std" default="5"/>
+
+  <arg name="X_u" default="50"/>
+  <arg name="X_l" default="0"/>
+  <arg name="X_n" default="0.10"/>
+
+  <arg name="Y_u" default="50"/>
+  <arg name="Y_l" default="0"/>
+  <arg name="Y_n" default="0.10"/>
+
+  <arg name="Z_u" default="2.5"/>
+  <arg name="Z_l" default="1.5"/>
+  <arg name="Z_n" default="0.05"/>
+
+  <arg name="Theta_u" default="6.28"/>
+  <arg name="Theta_l" default="0"/>
+  <arg name="Theta_n" default=".05"/>
+
+  <arg name="Q_u" default="0.0558"/>
+  <arg name="Q_l" default="0.00258"/>
+  <arg name="Q_n" default="0.00258"/>
+
+  <arg name="V_u" default="2"/>
+  <arg name="V_l" default=".01"/>
+  <arg name="V_n" default=".15"/>
+
+  <!-- Just for Gaussian -->
+  <arg name="Dy_u" default="0.5"/>
+  <arg name="Dy_l" default="0.5"/>
+  <arg name="Dy_n" default="0"/>
+
+  <arg name="Dz_u" default="0.005"/>
+  <arg name="Dz_l" default="0.005"/>
+  <arg name="Dz_n" default="0"/>
+
+
+
+
+
+  <node name="particleFilter" pkg="particle_filter" type="pf_main_gaussian.py" output="$(arg printOutput)" if="$(eval Model == 'gaussian')">
+    <param name="quadID"     value="$(arg quadID)"/>
+
+    <param name="NumOfParticles" value="$(arg NumOfParticles)"/>
+
+    <param name="pdf_std" value="$(arg pdf_std)"/>
+
+    <param name="X_u" value="$(arg X_u)"/>
+    <param name="X_l" value="$(arg X_l)"/>
+    <param name="X_n" value="$(arg X_n)"/>
+
+    <param name="Y_u" value="$(arg Y_u)"/>
+    <param name="Y_l" value="$(arg Y_l)"/>
+    <param name="Y_n" value="$(arg Y_n)"/>
+
+    <param name="Z_u" value="$(arg Z_u)"/>
+    <param name="Z_l" value="$(arg Z_l)"/>
+    <param name="Z_n" value="$(arg Z_n)"/>
+
+    <param name="Theta_u" value="$(arg Theta_u)"/>
+    <param name="Theta_l" value="$(arg Theta_l)"/>
+    <param name="Theta_n" value="$(arg Theta_n)"/>
+
+    <param name="Q_u" value="$(arg Q_u)"/>
+    <param name="Q_l" value="$(arg Q_l)"/>
+    <param name="Q_n" value="$(arg Q_n)"/>
+
+    <param name="V_u" value="$(arg V_u)"/>
+    <param name="V_l" value="$(arg V_l)"/>
+    <param name="V_n" value="$(arg V_n)"/>
+
+    <param name="Dy_u" value="$(arg Dy_u)"/>
+    <param name="Dy_l" value="$(arg Dy_l)"/>
+    <param name="Dy_n" value="$(arg Dy_n)"/>
+
+    <param name="Dz_u" value="$(arg Dz_u)"/>
+    <param name="Dz_l" value="$(arg Dz_l)"/>
+    <param name="Dz_n" value="$(arg Dz_n)"/>
+
+  </node>
+</launch>

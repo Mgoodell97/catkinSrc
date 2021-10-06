@@ -4,5 +4,8 @@
 	<node pkg="mps_driver" type="mps_driver" name="mps_driver" output="screen" respawn="true"/>
 	<node pkg="rosbag" type="record" name="bagging_mps"
 	      args="-a -o /home/odroid/Logging_data/$(arg bag_name)"/>
-  <!--/group-->
+  <!-- Motion Capture Gaussian Plotter -->
+       <node name="plotGaussianParticleMocap" pkg="platform_sims" type="plotGaussianParticleMocap.py"
+       	     output="screen" if="$(eval plotGaussian)"/>
+<!--/group-->
 </launch>

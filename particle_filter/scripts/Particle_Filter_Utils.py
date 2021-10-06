@@ -49,7 +49,7 @@ class Sensor():
             self.max_conc_loc = np.array([x,y,z])
 
 class Particle_Gen():
-    def __init__(self, estimated_parameters, num_of_parti, sens_number):
+    def __init__(self, estimated_parameters, num_of_parti, sens_number, pdf_std):
         self.estimated_parameters = estimated_parameters
         self.num_of_parti = num_of_parti
         self.num_of_parameters = len(estimated_parameters)
@@ -57,12 +57,22 @@ class Particle_Gen():
         self.prior = np.ones((num_of_parti))
         self.sens_number = sens_number
         self.prob_df = np.ones((num_of_parti))/num_of_parti
+        self.pdf_std = pdf_std
 
         idx = 0
         for x in range(0,self.num_of_parameters):
             #print(x)
             self.particles[idx] = np.random.uniform(estimated_parameters[x][0],estimated_parameters[x][1],num_of_parti)
             idx += 1
+
+        xStd     = np.std(self.particles[0])
+        yStd     = np.std(self.particles[1])
+        thetaStd = np.std(self.particles[3])
+
+        stdVec = np.array([xStd, yStd, thetaStd])
+
+        self.stdL2NormMax = np.linalg.norm(stdVec)
+
 
     def normalize(self):
         self.prob_df = self.prob_df/sum(self.prob_df)
@@ -78,6 +88,10 @@ class Particle_Gen():
         return out_area_particles
 
     def pdf_thresh_function(self, sensorval):
+        new_pdf_std = np.log(sensorval+1)
+        return new_pdf_std
+
+
         #     if sensorval < .01:
         #         return .005
         #     elif sensorval < .1:
@@ -94,7 +108,6 @@ class Particle_Gen():
         #         return 100
         #     else:
         #         return 500
-        return 100
 
 
     def likelihood(self, actual_sensor_readings, sensor_xs, sensor_ys, sensor_zs, max_conc_quad):#, UAV1_maxconc, UAV2_maxconc, UAV3_maxconc):
@@ -115,7 +128,7 @@ class Particle_Gen():
 
         # pdf_std = self.pdf_thresh_function(actual_sensor_readings)
 
-        pdf_std = 0.225
+        # pdf_std = 0.225 good for 50x50 sims
 
         particle_likelihoods = np.zeros((self.num_of_parti))
 
@@ -125,48 +138,30 @@ class Particle_Gen():
 
         concentrations = np.zeros(Xp.shape)        #print(particle_likelihoods)
 
-        concentrations = ((Q/((4*np.pi*Xp)*np.sqrt(Dy*Dz)))*(np.exp((-V/(4*Xp))*((Yp**2/Dy)+(Zp**2/Dz)))))* 1000 # convert from kg/m^3 to ppm
-        concentrations[concentrations == inf] = 0
-
-        # concentrations = np.log(concentrations+1)/np.log(10)
-        # if actual_sensor_reading>0:
-        #     print("concentrations: " + str(concentrations))
-        #     print("actual_sensor_reading: " + str(actual_sensor_reading))
-        # else:
-        #     print(actual_sensor_reading)
-
-        ##### added to compare with ratebased method... #####
-        # concentrations = np.log(concentrations+1)/np.log(2)
-        # actual_sensor_reading = np.log(actual_sensor_reading+1)/np.log(2)
-
-        # print("actual sensor reading: " + str(actual_sensor_readings))
-        # print("mean: "+str(np.mean(concentrations)))
-        # print("max: "+ str(np.max(concentrations)))
-        #
-        # all_quad_conc = np.array([UAV1_maxconc[3], UAV2_maxconc[3], UAV3_maxconc[3]])
-        # print(all_quad_conc)
-
-        #####
-        #X_k = np.array([max_conc_quad.X,max_conc_quad.Y,max_conc_quad.Z])
-        #X_s = np.stack([x_world,y_world,z_world],2)
-        #pdf_std = self.pdf_thresh_function(actual_sensor_readings)
-        #norm_dist_likelihoods = norm.pdf(X_k,X_s,100)
-        #norm_dist_likelihoods = norm_dist_likelihoods.prod(2)[0]
-        #####
+        concentrations = ((Q/(4*np.pi*Xp*np.sqrt(Dy*Dz)))*(np.exp( (-V/(4*Xp)) * ( (Yp**2/Dy) + (Zp**2/Dz) )) )) * 1000 # convert from kg/m^3 to ppm
 
 
+        concentrations[concentrations == inf] = 50000
+        concentrations[concentrations < 0] = 0
 
-        # X_k = np.array([max_conc_quad.X,max_conc_quad.Y,max_conc_quad.Z])
-        # X_s = np.stack([x_world,y_world,z_world],2)
-        #
-        # best_conc_like = norm.pdf(X_k,X_s,100)
-        # best_conc_like = best_conc_like.prod(2)[:,0]
-        # print(best_conc_like)
-        # print(best_conc_like.shape)
+        xStd     = np.std(self.particles[0])
+        yStd     = np.std(self.particles[1])
+        thetaStd = np.std(self.particles[3])
 
-        #####################################################
+        stdVec = np.array([xStd, yStd, thetaStd])
 
-        particle_likelihoods = norm.pdf(actual_sensor_readings,concentrations,pdf_std)
+        # print(stdVec)
+
+        stdL2Norm = np.linalg.norm(stdVec)
+
+        print(stdL2Norm)
+
+        if self.stdL2NormMax <= stdL2Norm:
+            self.stdL2NormMax = stdL2Norm
+
+        r = self.pdf_std * stdL2Norm / self.stdL2NormMax
+
+        particle_likelihoods = norm.pdf(actual_sensor_readings,concentrations,self.pdf_std)
         particle_likelihoods = particle_likelihoods.prod(1)
 
         # # print(particle_likelihoods)
@@ -177,8 +172,8 @@ class Particle_Gen():
         # print(concentrations[np.argmax(particle_likelihoods)])
 
         # finds out what particles have been placed outside vineyard and makes them unlikely
-        out_area_particles = self.particle_removal()
-        particle_likelihoods = particle_likelihoods*out_area_particles
+        # out_area_particles = self.particle_removal()
+        # particle_likelihoods = particle_likelihoods*out_area_particles
 
         # print(particle_likelihoods)
 
@@ -243,7 +238,7 @@ class Particle_Gen():
 
         X_k = np.array([max_conc_quad.X,max_conc_quad.Y,max_conc_quad.Z])
         X_s = np.stack([x_world,y_world,z_world],2)
-        pdf_std = self.pdf_thresh_function(actual_sensor_readings)
+        # pdf_std = self.pdf_thresh_function(actual_sensor_readings)
 
 
         norm_dist_likelihoods = norm.pdf(X_k,X_s,100)
