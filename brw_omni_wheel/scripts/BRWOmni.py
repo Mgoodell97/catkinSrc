@@ -73,7 +73,7 @@ def main():
     justHitWaypoint = False
     firstWaypointFlag = False
     optimalTimeToWaypoint = 20
-    maxVelocity = 0.8
+    maxVelocity = 0.1
 
     DesiredWaypoint = PoseStamped()
 
@@ -152,9 +152,9 @@ def main():
                     optimalTimeToWaypointTimer = rospy.get_rostime()
 
                 if plumeType == 1:
-                    waypointDistance = sqrt( (xWaypoint - current_reading_full_data_gauss.x)**2 + (yWaypoint - current_reading_full_data_gauss.x)**2 )
+                    waypointDistance = sqrt( (xWaypoint - current_reading_full_data_gauss.x)**2 + (yWaypoint - current_reading_full_data_gauss.y)**2 )
                 if plumeType == 2:
-                    waypointDistance = sqrt( (xWaypoint - current_reading_full_data_gaden.local_x)**2 + (yWaypoint - current_reading_full_data_gaden.local_x)**2 )
+                    waypointDistance = sqrt( (xWaypoint - current_reading_full_data_gaden.local_x)**2 + (yWaypoint - current_reading_full_data_gaden.local_y)**2 )
 
                 optimalTimeToWaypoint = waypointDistance/maxVelocity
 
