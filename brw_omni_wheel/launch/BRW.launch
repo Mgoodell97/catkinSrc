@@ -4,6 +4,8 @@
   <arg name="gauss1" default="False"/>
   <arg name="gaden1" default="False"/>
 
+  <arg name="enablePF" default="False"/>
+
   <arg name="subToR1Pose" default="True"/>
   <arg name="subToR2Pose" default="False"/>
   <arg name="subToR3Pose" default="False"/>
@@ -18,10 +20,75 @@
   <param name = "subToR4Pose" value = "$(arg subToR4Pose)" />
   <param name = "subToR5Pose" value = "$(arg subToR5Pose)" />
 
+  <param name = "startTest" value = "False" />
+
   <include file="$(find plume_sims)/launch/gauss1.launch" if="$(eval gauss1)"/>
   <include file="$(find plume_sims)/launch/gaden1.launch" if="$(eval gaden1)"/>
 
-  <node name="plotRobots" pkg="brw_omni_wheel" type="plotGaussianAndRobots.py" output="screen"/>
-  <node name="plotRobotsForScreenRecording" pkg="brw_omni_wheel" type="plotGaussianAndRobotsForScreenRecording.py" output="screen"/>
+  <!-- <node name="plotRobots" pkg="brw_omni_wheel" type="plotGaussianAndRobots.py" output="screen" if="$(eval not enablePF)"/> -->
+  <node name="plotRobotsForScreenRecording" pkg="brw_omni_wheel" type="plotGaussianAndRobotsForScreenRecording.py" output="screen" if="$(eval not enablePF)"/>
+
+  <!-- <node name="plotRobots" pkg="brw_omni_wheel" type="plotGaussianAndRobotsWithParticles.py" output="screen" if="$(eval enablePF)"/> -->
+  <node name="plotRobotsForScreenRecording" pkg="brw_omni_wheel" type="plotGaussianAndRobotsForScreenRecordingWithParticles.py" output="screen" if="$(eval enablePF)"/>
+
+  <group ns = "Robot_1" if="$(eval enablePF)">
+    <include file="$(find particle_filter)/launch/params_gaussian_matthew.launch" if="$(eval gauss1)">
+      <arg name="plumeType"  default="1"/>
+      <arg name="quadID"     default="1"/>
+    </include>
+
+    <include file="$(find particle_filter)/launch/params_gaden_matthew.launch" if="$(eval gaden1)">
+      <arg name="plumeType"  default="2"/>
+      <arg name="quadID"     default="1"/>
+    </include>
+  </group>
+
+  <group ns = "Robot_2" if="$(eval enablePF)">
+    <include file="$(find particle_filter)/launch/params_gaussian_matthew.launch" if="$(eval gauss1)">
+      <arg name="plumeType"  default="1"/>
+      <arg name="quadID"     default="2"/>
+    </include>
+
+    <include file="$(find particle_filter)/launch/params_gaden_matthew.launch" if="$(eval gaden1)">
+      <arg name="plumeType"  default="2"/>
+      <arg name="quadID"     default="2"/>
+    </include>
+  </group>
+
+  <group ns = "Robot_3" if="$(eval enablePF)">
+    <include file="$(find particle_filter)/launch/params_gaussian_matthew.launch" if="$(eval gauss1)">
+      <arg name="plumeType"  default="1"/>
+      <arg name="quadID"     default="3"/>
+    </include>
+
+    <include file="$(find particle_filter)/launch/params_gaden_matthew.launch" if="$(eval gaden1)">
+      <arg name="plumeType"  default="2"/>
+      <arg name="quadID"     default="3"/>
+    </include>
+  </group>
+
+  <group ns = "Robot_4" if="$(eval enablePF)">
+    <include file="$(find particle_filter)/launch/params_gaussian_matthew.launch" if="$(eval gauss1)">
+      <arg name="plumeType"  default="1"/>
+      <arg name="quadID"     default="4"/>
+    </include>
+
+    <include file="$(find particle_filter)/launch/params_gaden_matthew.launch" if="$(eval gaden1)">
+      <arg name="plumeType"  default="2"/>
+      <arg name="quadID"     default="4"/>
+    </include>
+  </group>
+
+  <group ns = "Robot_5" if="$(eval enablePF)">
+    <include file="$(find particle_filter)/launch/params_gaussian_matthew.launch" if="$(eval gauss1)">
+      <arg name="plumeType"  default="1"/>
+      <arg name="quadID"     default="5"/>
+    </include>
+
+    <include file="$(find particle_filter)/launch/params_gaden_matthew.launch" if="$(eval gaden1)">
+      <arg name="plumeType"  default="2"/>
+      <arg name="quadID"     default="5"/>
+    </include>
+  </group>
 
 </launch>
