@@ -424,18 +424,17 @@ def main():
         # 5. Resampling
         resampleCheck = 1/sum(wp**2)
 
-        dist = np.linalg.norm(robotPoseNew - robotPoseOld)
+        # dist = np.linalg.norm(robotPoseNew - robotPoseOld)
 
         # print(dist, resampleDistance)
 
         # if (resampleCheck <= NumOfParticles/2) and (dist >= resampleDistance):
-        if (resampleCheck <= NumOfParticles/2):
-            print("resampling")
-            # xp, wp = resampling(xp, wp, NumberOfParticlesToReset, randomStateBoundsVec, NumOfParticles)
-
-            xp, wp = resamplingOld(xp,wp);
-
-        # print("Resample")
+        # if (resampleCheck <= NumOfParticles/2):
+        #     print("resampling")
+        #     xp, wp = resamplingOld(xp,wp);
+        #
+        xp, wp = resamplingOld(xp,wp);
+        print("Resample")
         # xp, wp = resampling(xp, wp, NumberOfParticlesToReset, randomStateBoundsVec, NumOfParticles)
 
         # 6. Random process noise
