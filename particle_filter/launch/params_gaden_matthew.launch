@@ -30,8 +30,8 @@
   <arg name="Y_u" default="2.7432"/>
   <arg name="Y_l" default="0"/>
 
-  <arg name="Z_u" default="0"/>
-  <arg name="Z_l" default="0"/>
+  <arg name="Z_u" default="0.2"/>
+  <arg name="Z_l" default="0.2"/>
 
   <arg name="Theta_u" default="0.0001"/>
   <arg name="Theta_l" default="-0.0001"/>

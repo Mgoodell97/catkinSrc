@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+  <param name="startTest"        type="bool"  value="True" />
+  <include file="$(find platform_sims)/launch/fakeRobotPoseRaster.launch"/>
+
+</launch>

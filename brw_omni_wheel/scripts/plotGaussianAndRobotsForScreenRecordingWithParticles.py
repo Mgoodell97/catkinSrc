@@ -154,11 +154,11 @@ def main():
         yPlume        = rospy.get_param("/yPlume")       #  m
         thetaPlume    = rospy.get_param("/thetaPlume")   #  degrees
 
-    SpawnUAV1     = rospy.get_param("/subToR1Pose")
-    SpawnUAV2     = rospy.get_param("/subToR2Pose")
-    SpawnUAV3     = rospy.get_param("/subToR3Pose")
-    SpawnUAV4     = rospy.get_param("/subToR4Pose")
-    SpawnUAV5     = rospy.get_param("/subToR5Pose")
+    SpawnUAV1     = rospy.get_param("/subToR1Pose", False)
+    SpawnUAV2     = rospy.get_param("/subToR2Pose", False)
+    SpawnUAV3     = rospy.get_param("/subToR3Pose", False)
+    SpawnUAV4     = rospy.get_param("/subToR4Pose", False)
+    SpawnUAV5     = rospy.get_param("/subToR5Pose", False)
 
     robotList = []
 
@@ -258,9 +258,26 @@ def main():
         if plumeType == 1:
             plt.contour(xPlumePlot,yPlumePlot,conArrayTrue,15)
 
+
+        if SpawnUAV1 == 1:
+            plt.plot(Robot1_particles.X,Robot1_particles.Y,'.', color='lime')
+
+        if SpawnUAV2 == 1:
+            plt.plot(Robot2_particles.X,Robot2_particles.Y,'.', color='hotpink')
+
+        if SpawnUAV3 == 1:
+            plt.plot(Robot3_particles.X,Robot3_particles.Y,'.', color='cyan')
+
+        if SpawnUAV4 == 1:
+            plt.plot(Robot4_particles.X,Robot4_particles.Y,'.', color='red')
+
+        if SpawnUAV5 == 1:
+            plt.plot(Robot5_particles.X,Robot5_particles.Y,'.', color='crimson')
+
         if SpawnUAV1 == 1:
             plt.plot(xPltRobot1, yPltRobot1, color='lime')
-            plt.plot(Robot1_poseXft, Robot1_poseYft, 'D', markersize=10, color='lime')
+            plt.plot(Robot1_poseXft, Robot1_poseYft, 'D', markersize=10, color='lime', markeredgewidth=1.5, markeredgecolor='black')
+
 
         if SpawnUAV2 == 1:
             plt.plot(xPltRobot2, yPltRobot2, color='hotpink')
@@ -277,23 +294,6 @@ def main():
         if SpawnUAV5 == 1:
             plt.plot(xPltRobot5, yPltRobot5, color='crimson')
             plt.plot(Robot5_poseXft, Robot5_poseYft, 'D', markersize=10, color='crimson')
-
-
-
-        if SpawnUAV1 == 1:
-            plt.plot(Robot1_particles.X,Robot1_particles.Y,'.', color='lime')
-
-        if SpawnUAV2 == 1:
-            plt.plot(Robot2_particles.X,Robot2_particles.Y,'.', color='hotpink')
-
-        if SpawnUAV3 == 1:
-            plt.plot(Robot3_particles.X,Robot3_particles.Y,'.', color='cyan')
-
-        if SpawnUAV4 == 1:
-            plt.plot(Robot4_particles.X,Robot4_particles.Y,'.', color='red')
-
-        if SpawnUAV5 == 1:
-            plt.plot(Robot5_particles.X,Robot5_particles.Y,'.', color='crimson')
 
         plt.axis("tight")  # gets rid of white border
         plt.margins(x=0)
