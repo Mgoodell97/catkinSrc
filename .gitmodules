@@ -26,10 +26,6 @@
 	path = navigation
 	url = https://github.com/ros-planning/navigation.git
 	branch = master
-[submodule "olfaction_msgs"]
-	path = olfaction_msgs
-	url = https://github.com/MAPIRlab/olfaction_msgs.git
-	branch = master
 [submodule "urg_node"]
 	path = urg_node
 	url = https://github.com/ros-drivers/urg_node.git
