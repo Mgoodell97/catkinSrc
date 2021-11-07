@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="gauss1" default="False"/>
+  <arg name="gaden1" default="False"/>
+
+  <arg name="enablePF" default="False"/>
+
+  <arg name="subToR1Pose" default="True"/>
+  <arg name="subToR2Pose" default="False"/>
+  <arg name="subToR3Pose" default="False"/>
+  <arg name="subToR4Pose" default="False"/>
+  <arg name="subToR5Pose" default="False"/>
+
+  <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
+
+  <param name = "subToR1Pose" value = "$(arg subToR1Pose)" />
+  <param name = "subToR2Pose" value = "$(arg subToR2Pose)" />
+  <param name = "subToR3Pose" value = "$(arg subToR3Pose)" />
+  <param name = "subToR4Pose" value = "$(arg subToR4Pose)" />
+  <param name = "subToR5Pose" value = "$(arg subToR5Pose)" />
+
+  <param name = "startTest" value = "False" />
+
+  <include file="$(find plume_sims)/launch/gauss1.launch" if="$(eval gauss1)"/>
+  <include file="$(find plume_sims)/launch/gaden1.launch" if="$(eval gaden1)"/>
+
+  <!-- <node name="plotRobots" pkg="brw_omni_wheel" type="plotGaussianAndRobots.py" output="screen" if="$(eval not enablePF)"/> -->
+  <node name="plotRobotsForScreenRecording" pkg="brw_omni_wheel" type="plotGaussianAndRobotsForScreenRecording.py" output="screen" if="$(eval not enablePF)"/>
+
+  <!-- <node name="plotRobots" pkg="brw_omni_wheel" type="plotGaussianAndRobotsWithParticles.py" output="screen" if="$(eval enablePF)"/> -->
+  <node name="plotRobotsForScreenRecording" pkg="brw_omni_wheel" type="plotGaussianAndRobotsForScreenRecordingWithParticles.py" output="screen" if="$(eval enablePF)"/>
+
+  <group ns = "Robot_1">
+    <node name="gaussianSensorPlatform" pkg="platform_sims" type="gaussianSensorPlatform.py" output="log" if="$(eval gauss1 and enablePF)">
+        <param name="RobotID" value="1"/>
+    </node>
+
+    <include file="$(find particle_filter)/launch/params_gaussian_matthew.launch" if="$(eval gauss1 and enablePF)">
+      <arg name="plumeType"  default="1"/>
+      <arg name="quadID"     default="1"/>
+    </include>
+
+    <include file="$(find particle_filter)/launch/params_gaden_matthew.launch" if="$(eval gaden1 and enablePF)">
+      <arg name="plumeType"  default="2"/>
+      <arg name="quadID"     default="1"/>
+    </include>
+
+    <include file="$(find raster_scan)/launch/robotPoseRaster.launch"/>
+    <param name="RobotID"  type="double"  value="1" /> # m
+  </group>
+
+
+</launch>
