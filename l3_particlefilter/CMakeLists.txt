@@ -13,7 +13,6 @@ find_package(catkin REQUIRED COMPONENTS
   quadnodes
   roscpp
   rospy
-  l3_particlefilter
 )
 
 ## System dependencies are found with CMake's conventions
