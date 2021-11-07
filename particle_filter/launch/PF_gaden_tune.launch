@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name = "RobotID" default = "1"/>
+  <arg name = "gauss1" default = "False"/>
+  <arg name = "gaden1" default = "True"/>
+
+  <param name="startTest" value="False"/>
+  <param name="subToR1Pose" value="True"/>
+
+  # Launch gaden environment
+  <include file="$(find plume_sims)/launch/gaden1FakeRobots.launch"/>
+
+  <group ns = "Robot_$(arg RobotID)">
+    <include file="$(find platform_sims)/launch/fakeRobotPoseRaster_tf.launch"/>
+
+    # Launch PF with Gaussian parameters
+    <include file="$(find particle_filter)/launch/params_gaussian_matthew.launch" if="$(eval gauss1)">
+      <arg name="plumeType"  default="1"/>
+      <arg name="quadID"     default="1"/>
+    </include>
+
+    # Launch PF with Gaden parameters
+    <include file="$(find particle_filter)/launch/params_gaden_matthew.launch" if="$(eval gaden1)">
+
+      <arg name="plumeType"  default="2"/>
+      <arg name="quadID"     default="1"/>
+
+      # Tuneable  parameters for convergance
+      <arg name="NumOfParticles" default="2500"/>
+      <arg name="NumberOfParticlesToReset" default="1000"/>
+      <arg name="pdf_std" default="60"/> # lower => more aggressive convergance
+      <arg name="PF_HZ_rate" default="5"/>
+
+      # Tuneable plume parameters bounds
+      <arg name="Q_u" default="0.000372"/>
+      <arg name="Q_l" default="0.000372"/>
+
+      <arg name="V_u" default="0.643"/>
+      <arg name="V_l" default="0.511"/>
+
+      <arg name="Dy_u" default="0.0047"/>
+      <arg name="Dy_l" default="0.0006750"/>
+
+      <arg name="Dz_u" default="0.001"/>
+      <arg name="Dz_l" default="0.0000675"/>
+    </include>
+
+    <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log">
+      <param name="/sensor_model" value="30" />
+      <param name="/sensor_frame" value="pid0_frame" />
+      <param name="/fixed_frame" value="map_gaden"/>
+    </node>
+
+  </group>
+
+  <node pkg="tf" type="static_transform_publisher" name="Robot_to_sensor1" args="0.0 0.0 0.0 0 0 0 Robot_1/base_link pid0_frame 100" />
+
+  <!-- <node pkg="tf" type="static_transform_publisher" name="pid1_broadcaster" args="0.0 0.0 0.01 0 0 0 UAV1 pid_frame1 100" if="$(eval PlumeType == 'gaden' and SpawnUAV1)"/> -->
+
+  <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot1"  args="/Robot_1/Sensor_reading/raw"/>
+
+  <node name="plotRobotsForScreenRecording" pkg="brw_omni_wheel" type="plotGaussianAndRobotsForScreenRecordingWithParticles.py" output="screen"/>
+
+</launch>

@@ -11,6 +11,7 @@ from olfaction_msgs.msg import gas_sensor
 from geometry_msgs.msg import PoseStamped
 from visualization_msgs.msg import Marker
 from mps_driver.msg import MPS
+from olfaction_msgs.msg import gas_sensor
 
 from particle_filter.msg import estimatedGaussian
 from particle_filter.msg import particles
@@ -31,7 +32,9 @@ _NUM_OF_ROBOTS = 1
 plumeMsg = estimatedGaussian()
 
 robotSensorReadingPoseGauss = gaussian() # chem reading in gauss env
+robotSensorReadingPoseGaden = gas_sensor()
 robotSensorReadingPoseMPS = MPS() # chem reading in gauss env
+
 
 current_state = State() # message type for current state of the quad
 
@@ -165,6 +168,12 @@ def gaussSensorAndPose_cb(gaussMsg):
     robotSensorReadingPoseGauss = gaussMsg
     sensorMsg_cb_flag = True
 
+def gadenSensor_cb(gadenMsg):
+    global robotSensorReadingPoseGaden
+    global sensorMsg_cb_flag
+    robotSensorReadingPoseGaden = gadenMsg
+    sensorMsg_cb_flag = True
+
 def MPSSensorAndPose_cb(MPSMsg):
     global robotSensorReadingPoseMPS
     global sensorMsg_cb_flag
@@ -217,7 +226,7 @@ def main():
 
     rospy.init_node('Particle_Filter') # name your node
     ## Initialization of Particles and Sensor ##
-    rate = rospy.Rate(1)
+
 
     particle_params = rospy.get_param("particleFilter") # get params defined in launch file
 
@@ -236,13 +245,18 @@ def main():
     print([X_l, X_u],[Y_l, Y_u],[Z_l, Z_u],[Theta_l,Theta_u],[Q_l,Q_u],[V_l,V_u],[Dy_l,Dy_u],[Dz_l, Dz_u])
     print("Xn, Yn, Zn, Thetan, Qn, Vn, Dyn, Dzn")
     print(np.array((X_n,Y_n,Z_n,Theta_n,Q_n,V_n,Dy_n,Dz_n)))
+    print("Number of Particles, PF_HZ_rate")
     print(NumOfParticles)
+
+    rate = rospy.Rate(PF_HZ_rate)
 
     randomStateBoundsVec = np.array([[X_l, X_u],[Y_l, Y_u],[Z_l, Z_u],[Theta_l,Theta_u],[Q_l,Q_u],[V_l,V_u],[Dy_l,Dy_u],[Dz_l, Dz_u]])
     noiseVec = np.array([X_n,Y_n,Z_n,Theta_n,Q_n,V_n,Dy_n,Dz_n])
 
     if plumeType == 1:
         rospy.Subscriber("gaussianReading", gaussian, gaussSensorAndPose_cb)
+    elif plumeType == 2:
+        rospy.Subscriber("Sensor_reading", gas_sensor, gadenSensor_cb)
     elif plumeType == 3:
         rospy.Subscriber("mps_data", MPS, MPSSensorAndPose_cb)
 
@@ -352,9 +366,14 @@ def main():
         if plumeType == 1:
             chem_reading = robotSensorReadingPoseGauss.ppm
             robotPoseNew = np.array([robotSensorReadingPoseGauss.x, robotSensorReadingPoseGauss.y, robotSensorReadingPoseGauss.z])
+        elif plumeType == 2:
+            chem_reading = robotSensorReadingPoseGaden.raw
+            robotPoseNew = np.array([robotSensorReadingPoseGaden.local_x, robotSensorReadingPoseGaden.local_y, robotSensorReadingPoseGaden.local_z])
         elif plumeType == 3:
             chem_reading = robotSensorReadingPoseMPS.pressure
             robotPoseNew = np.array([robotSensorReadingPoseMPS.local_x, robotSensorReadingPoseMPS.local_y, robotSensorReadingPoseMPS.local_z])
+
+        print(chem_reading)
 
         # 1. Measurement prediction
         yi = observerEquation(robotPoseNew, xp)
@@ -375,7 +394,7 @@ def main():
         # 3. Normalization
         wpSum = sum(wp)
         if wpSum == 0:
-            np.ones(NumOfParticles) * 1/NumOfParticles
+            wp = np.ones(NumOfParticles) * 1/NumOfParticles
         else:
             wp = wp/wpSum
 
@@ -405,19 +424,18 @@ def main():
         # 5. Resampling
         resampleCheck = 1/sum(wp**2)
 
-        dist = np.linalg.norm(robotPoseNew - robotPoseOld)
+        # dist = np.linalg.norm(robotPoseNew - robotPoseOld)
 
         # print(dist, resampleDistance)
 
         # if (resampleCheck <= NumOfParticles/2) and (dist >= resampleDistance):
         # if (resampleCheck <= NumOfParticles/2):
         #     print("resampling")
-        #     xp, wp = resampling(xp, wp, NumberOfParticlesToReset, randomStateBoundsVec, NumOfParticles)
-
-            # xp, wp = resamplingOld(xp,wp);
-
-        # print("Resample")
-        xp, wp = resampling(xp, wp, NumberOfParticlesToReset, randomStateBoundsVec, NumOfParticles)
+        #     xp, wp = resamplingOld(xp,wp);
+        #
+        xp, wp = resamplingOld(xp,wp);
+        print("Resample")
+        # xp, wp = resampling(xp, wp, NumberOfParticlesToReset, randomStateBoundsVec, NumOfParticles)
 
         # 6. Random process noise
         xNoise     = np.array([np.random.normal(0, X_n    , len(xp))]).T

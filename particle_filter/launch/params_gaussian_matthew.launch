@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- For Gaussian and Ratebased -->
+  <arg name="NumOfParticles" default="2000"/>
+  <arg name="NumberOfParticlesToReset" default="5"/>
+  <arg name="printOutput" default="screen"/>
+
+  <arg name="plumeType"     default="1"/>
+
+  <arg name="quadID"      default="1"/>
+
+  <!-- <arg name="pdf_std" default="3"/> -->
+
+  <!-- <arg name="pdf_std" default="1.5"/> -->
+  <arg name="pdf_std" default="1.5"/>
+
+  <arg name="PF_HZ_rate" default="10"/>
+
+  <arg name="mapPercent" default="0.004"/>
+  <arg name="percentTheta" default="0.0055"/>
+  <arg name="percentQ" default="0.0075"/>
+  <arg name="percentV" default="0.0075"/>
+  <arg name="percentDy" default="0.005"/>
+  <arg name="percentDz" default="0.005"/>
+
+  <arg name="X_u" default="4.2672"/>
+  <arg name="X_l" default="0"/>
+
+  <arg name="Y_u" default="2.7432"/>
+  <arg name="Y_l" default="0"/>
+
+  <arg name="Z_u" default="0"/>
+  <arg name="Z_l" default="0"/>
+
+  <arg name="Theta_u" default="0.0872665"/>
+  <arg name="Theta_l" default="-0.0872665"/>
+
+  <!-- <arg name="Q_u" default="0.000154"/>
+  <arg name="Q_l" default="0.000039"/>
+
+  <arg name="V_u" default="0.894"/>
+  <arg name="V_l" default="0.2235"/>
+
+  <arg name="Dy_u" default="0.015"/>
+  <arg name="Dy_l" default="0.00375"/>
+
+  <arg name="Dz_u" default="0.00015"/>
+  <arg name="Dz_l" default="0.000038"/> -->
+
+  <arg name="Q_u" default="0.000077"/>
+  <arg name="Q_l" default="0.000077"/>
+
+  <arg name="V_u" default="0.447"/>
+  <arg name="V_l" default="0.447"/>
+
+  <arg name="Dy_u" default="0.01"/>
+  <arg name="Dy_l" default="0.01"/>
+
+  <arg name="Dz_u" default="0.0005"/>
+  <arg name="Dz_l" default="0.0005"/>
+
+  <node name="particleFilter" pkg="particle_filter" type="matthewPFV2.py" output="screen">
+    <param name="PF_HZ_rate"     value="$(arg PF_HZ_rate)"/>
+
+    <param name="quadID"     value="$(arg quadID)"/>
+    <param name="plumeType"  value="$(arg plumeType)"/>
+
+    <param name="NumOfParticles" value="$(arg NumOfParticles)"/>
+    <param name="NumberOfParticlesToReset" value="$(arg NumberOfParticlesToReset)"/>
+
+    <param name="pdf_std" value="$(arg pdf_std)"/>
+
+    <param name="mapPercent" value="$(arg mapPercent)"/>
+
+    <param name="X_u" value="$(arg X_u)"/>
+    <param name="X_l" value="$(arg X_l)"/>
+    <param name="X_n" value="$(eval (arg('X_u') - arg('X_l')) * arg('mapPercent'))"/>
+
+    <param name="Y_u" value="$(arg Y_u)"/>
+    <param name="Y_l" value="$(arg Y_l)"/>
+    <param name="Y_n" value="$(eval (arg('Y_u') - arg('Y_l')) * arg('mapPercent'))"/>
+
+    <param name="Z_u" value="$(arg Z_u)"/>
+    <param name="Z_l" value="$(arg Z_l)"/>
+    <param name="Z_n" value="$(eval (arg('Z_u') - arg('Z_l')) * arg('mapPercent'))"/>
+
+    <param name="Theta_u" value="$(arg Theta_u)"/>
+    <param name="Theta_l" value="$(arg Theta_l)"/>
+    <param name="Theta_n" value="$(eval (arg('Theta_u') - arg('Theta_l')) * arg('percentTheta'))"/>
+
+    <param name="Q_u" value="$(arg Q_u)"/>
+    <param name="Q_l" value="$(arg Q_l)"/>
+    <param name="Q_n" value="$(eval (arg('Q_u') - arg('Q_l')) * arg('percentQ'))"/>
+
+    <param name="V_u" value="$(arg V_u)"/>
+    <param name="V_l" value="$(arg V_l)"/>
+    <param name="V_n" value="$(eval (arg('V_u') - arg('V_l')) * arg('percentV'))"/>
+
+    <param name="Dy_u" value="$(arg Dy_u)"/>
+    <param name="Dy_l" value="$(arg Dy_l)"/>
+    <param name="Dy_n" value="$(eval (arg('Dy_u') - arg('Dy_l')) * arg('percentDy'))"/>
+
+    <param name="Dz_u" value="$(arg Dz_u)"/>
+    <param name="Dz_l" value="$(arg Dz_l)"/>
+    <param name="Dz_n" value="$(eval (arg('Dz_u') - arg('Dz_l')) * arg('percentDz'))"/>
+
+  </node>
+</launch>

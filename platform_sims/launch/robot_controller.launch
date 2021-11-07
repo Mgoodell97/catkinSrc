@@ -17,36 +17,36 @@
 
   <!-- Robot_1 -->
   <group ns="Robot_1" if="$(eval subToR1Pose)">
-    <rosparam param="waypoints_x">[1.0, 1.5, 1.0, 1.5]</rosparam>
-    <rosparam param="waypoints_y">[1.0, 1.0, 1.0, 1.0]</rosparam>
-    <rosparam param="waypoints_yaw">[0, 1.517, 3.14, 4]</rosparam>
+    <rosparam param="waypoints_x">[0.5, 2.7]</rosparam>
+    <rosparam param="waypoints_y">[0.5, 2.0]</rosparam>
+    <rosparam param="waypoints_yaw">[0, 1.5]</rosparam>
   </group>
   <!-- Robot_2 -->
   <group ns="Robot_2" if="$(eval subToR2Pose)">
-    <rosparam param="waypoints_x">[1.0, 2.7, 2.7, 1.0]</rosparam>
-    <rosparam param="waypoints_y">[1.0, 1.0, 2.0, 2.0]</rosparam>
-    <rosparam param="waypoints_yaw">[0, 1.517, 3.14, 4]</rosparam>
+    <rosparam param="waypoints_x">[2.7, 0.5]</rosparam>
+    <rosparam param="waypoints_y">[2.0, 0.5]</rosparam>
+    <rosparam param="waypoints_yaw">[0, 1.517]</rosparam>
   </group>
 
   <!-- Robot_3 -->
   <group ns="Robot_3" if="$(eval subToR3Pose)">
-    <rosparam param="waypoints_x">[1.0, 2.7, 2.7, 1.0]</rosparam>
-    <rosparam param="waypoints_y">[1.0, 1.0, 2.0, 2.0]</rosparam>
-    <rosparam param="waypoints_yaw">[0, 1.517, 3.14, 4]</rosparam>
+    <rosparam param="waypoints_x">[0.5, 2.7]</rosparam>
+    <rosparam param="waypoints_y">[1.5, 1.0]</rosparam>
+    <rosparam param="waypoints_yaw">[0, 1.517]</rosparam>
   </group>
 
   <!-- Robot_4 -->
   <group ns="Robot_4" if="$(eval subToR4Pose)">
-    <rosparam param="waypoints_x">[1.0, 2.7, 2.7, 1.0]</rosparam>
-    <rosparam param="waypoints_y">[1.0, 1.0, 2.0, 2.0]</rosparam>
-    <rosparam param="waypoints_yaw">[0, 1.517, 3.14, 4]</rosparam>
+    <rosparam param="waypoints_x">[2.7, 0.5]</rosparam>
+    <rosparam param="waypoints_y">[1.0, 1.5]</rosparam>
+    <rosparam param="waypoints_yaw">[0, 1.517]</rosparam>
   </group>
 
   <!-- Robot_5 -->
   <group ns="Robot_5" if="$(eval subToR5Pose)">
-    <rosparam param="waypoints_x">[1.0, 2.7, 2.7, 1.0]</rosparam>
-    <rosparam param="waypoints_y">[1.0, 1.0, 2.0, 2.0]</rosparam>
-    <rosparam param="waypoints_yaw">[0, 1.517, 3.14, 4]</rosparam>
+    <rosparam param="waypoints_x">[1.0, 1.0]</rosparam>
+    <rosparam param="waypoints_y">[1.0, 2.0]</rosparam>
+    <rosparam param="waypoints_yaw">[0, 1.517]</rosparam>
   </group>
 
 </launch>
