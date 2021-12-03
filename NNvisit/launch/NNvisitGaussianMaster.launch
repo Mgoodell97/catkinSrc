@@ -1,0 +1,23 @@
+<launch>
+  <arg name = "log" default="log"/>
+
+  <!-- Plume parameters -->
+  <param name="QPlume"            type="double"  value="0.000077" /> #  ppm     release rate
+  <param name="vPlume"            type="double"  value="0.447"    /> #  m/s      velocity
+  <param name="DyPlume"           type="double"  value="0.001"    /> #  m        diffusion along y
+  <param name="DzPlume"           type="double"  value="0.0005"   /> #  m        diffusion along z
+
+  <!-- Plume location -->
+  <param name="xPlume"            type="double"  value="0.3048"   /> # m
+  <param name="yPlume"            type="double"  value="1.3716"   /> # m
+  <param name="zPlume"            type="double"  value="0"        /> # m
+  <param name="careAboutZ"        type="bool"    value="False"    /> # boolean
+  <param name="thetaPlume"        type="double"  value="0"        /> # degrees (both methods need to know the wind direction)
+
+  <param name="sensorRate"        type="double"  value="1"        /> # Hz
+  <param name="plumeType"         type="int"     value="1"        /> # 1 = gaussian, 2 = gaden, 3 = MPS
+
+  <node name="plotRobots" pkg="NNvisit" type="plotRobots.py"/>
+  <node pkg="rosbag" type="record" args="-o /home/mocaplinux/NNvisitData/sensor_testGaussian /Robot_1/gaussianReading /Robot_2/gaussianReading /Robot_3/gaussianReading /Robot_4/gaussianReading /Robot_5/gaussianReading /mocap_node/Robot_1/pose /mocap_node/Robot_2/pose /mocap_node/Robot_3/pose /mocap_node/Robot_4/pose /mocap_node/Robot_5/pose" name="mps_record_data" />
+
+</launch>

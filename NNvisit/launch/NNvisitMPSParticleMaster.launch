@@ -1,0 +1,73 @@
+<launch>
+  <arg name="SpawnUAV1" default="True"/>
+  <arg name="SpawnUAV2" default="True"/>
+  <arg name="SpawnUAV3" default="True"/>
+  <arg name="SpawnUAV4" default="True"/>
+  <arg name="SpawnUAV5" default="True"/>
+
+  <arg name="plotGaussian" default="True"/>
+
+  <param name="startTest"        type="bool"  value="False" />
+  <param name="SpawnUAV1"        type="bool"  value="$(arg SpawnUAV1)" />
+  <param name="SpawnUAV2"        type="bool"  value="$(arg SpawnUAV2)" />
+  <param name="SpawnUAV3"        type="bool"  value="$(arg SpawnUAV3)" />
+  <param name="SpawnUAV4"        type="bool"  value="$(arg SpawnUAV4)" />
+  <param name="SpawnUAV5"        type="bool"  value="$(arg SpawnUAV5)" />
+
+  <arg name = "log" default="log"/>
+  <param name="plumeType"         type="int"     value="3"        /> # 1 = gaussian, 2 = gaden, 3 = MPS
+  <node name="plotRobots" pkg="NNvisit" type="plotRobots.py" output="screen"/>
+
+  <node name="plotGaussianParticleMocap" pkg="NNvisit" type="plotMPSParticleMocap.py" output="screen" if="$(eval plotGaussian)"/>
+
+  <!-- Robot_1 -->
+  <group ns="Robot_1" if="$(eval SpawnUAV1)">
+    <!-- <include file="$(find platform_sims)/launch/fakeRobotPoseRaster.launch">
+      <arg name="xmin" default="0.1524"/>
+      <arg name="xmax" default="2.5908"/>
+      <arg name="ymin" default="0.1524"/>
+      <arg name="ymax" default="4.1148"/>
+      <arg name="flipXY"    default="True"/>
+      <arg name="RobotID"    default="1"/>
+    </include> -->
+
+    <include file="$(find NNvisit)/launch/NNvisitPFparams_mps.launch">
+      <arg name="plumeType"     default="3"/>
+      <arg name="quadID"     default="1"/>
+    </include>
+  </group>
+
+  <!-- Robot_2 -->
+  <group ns="Robot_2" if="$(eval SpawnUAV2)">
+    <include file="$(find NNvisit)/launch/NNvisitPFparams_mps.launch">
+      <arg name="plumeType"     default="3"/>
+      <arg name="quadID"     default="2"/>
+    </include>
+  </group>
+
+  <!-- Robot_3 -->
+  <group ns="Robot_3" if="$(eval SpawnUAV3)">
+    <include file="$(find NNvisit)/launch/NNvisitPFparams_mps.launch">
+      <arg name="plumeType"     default="3"/>
+      <arg name="quadID"     default="3"/>
+    </include>
+  </group>
+
+  <!-- Robot_4 -->
+  <group ns="Robot_4" if="$(eval SpawnUAV4)">
+    <include file="$(find NNvisit)/launch/NNvisitPFparams_mps.launch">
+      <arg name="plumeType"     default="3"/>
+      <arg name="quadID"     default="4"/>
+    </include>
+  </group>
+
+  <!-- Robot_5 -->
+  <group ns="Robot_5" if="$(eval SpawnUAV5)">
+    <include file="$(find NNvisit)/launch/NNvisitPFparams_mps.launch">
+      <arg name="plumeType"     default="3"/>
+      <arg name="quadID"     default="5"/>
+    </include>
+  </group>
+
+  <!-- <node pkg="rosbag" type="record" args="-o /home/mocaplinux/NNvisitData/sensor_test /Robot_1/mps_data /Robot_2/mps_data /Robot_3/mps_data /Robot_4/mps_data /Robot_5/mps_data /mocap_node/Robot_1/pose /mocap_node/Robot_2/pose /mocap_node/Robot_3/pose /mocap_node/Robot_4/pose /mocap_node/Robot_5/pose /Robot_1/particles /Robot_1/estimatedGaussian /Robot_2/particles /Robot_2/estimatedGaussian /Robot_3/particles /Robot_3/estimatedGaussian /Robot_4/particles /Robot_4/estimatedGaussian /Robot_5/particles /Robot_5/estimatedGaussian /mocap_node/PlumeSource/pose" name="mps_record_data" /> -->
+</launch>

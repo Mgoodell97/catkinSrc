@@ -1,0 +1,15 @@
+<launch>
+  <arg name="log" default="screen"/>
+  <arg name="RobotID" default="1"/>
+  <arg name="platformSim" default="True"/>
+  <group ns="Robot_$(arg RobotID)">
+  <node pkg="mps_driver" type="mps_driver" name="mps_driver" output="$(arg log)" respawn="true"/>
+    <param name="device" value="/dev/mps" type="string"/>
+    <param name="port" value="0" type="int"/>
+    <param name="frequency" value="1" type="double"/>
+    <param name="Robot_ID" value="$(arg RobotID)" type="int"/>
+    <param name="platformSim" type="bool" value="True"/>
+<!-- <node pkg="rosbag" type="record" args="-O mps_data_launch.bag mps_data" name="mps_record_data"/> --> 
+
+  </group>
+</launch>
