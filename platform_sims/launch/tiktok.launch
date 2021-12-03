@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="subToR1Pose" default="True"/>
+  <arg name="subToR2Pose" default="False"/>
+  <arg name="subToR3Pose" default="False"/>
+  <arg name="subToR4Pose" default="False"/>
+  <arg name="subToR5Pose" default="False"/>
+
+  <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
+
+  <param name = "subToR1Pose" value = "$(arg subToR1Pose)" />
+  <param name = "subToR2Pose" value = "$(arg subToR2Pose)" />
+  <param name = "subToR3Pose" value = "$(arg subToR3Pose)" />
+  <param name = "subToR4Pose" value = "$(arg subToR4Pose)" />
+  <param name = "subToR5Pose" value = "$(arg subToR5Pose)" />
+
+  <!-- Robot_1 -->
+  <group ns="Robot_1" if="$(eval subToR1Pose)">
+    <rosparam param="waypoints_x">[0]</rosparam>
+    <rosparam param="waypoints_y">[0.75]</rosparam>
+    <rosparam param="waypoints_yaw">[-1.57]</rosparam>
+
+  </group>
+
+
+
+</launch>

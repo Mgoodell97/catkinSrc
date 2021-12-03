@@ -37,11 +37,11 @@
 #define		NODE_NAME 							"fake_mox"
 #define		DEFAULT_GAS_TYPE					METHANE_ID
 #define		DEFAULT_SENSOR_NAME					"mox_sensor"
-#define		DEFAULT_SENSOR_MODEL				TGS2620_ID				
+#define		DEFAULT_SENSOR_MODEL				TGS2620_ID
 #define		DEFAULT_SENSOR_FRAME				"mox_frame"
 #define		DEFAULT_FIXED_FRAME					"map"
 
-	
+
 // Sensor Parameters
 int				input_sensor_model;
 std::string		input_sensor_frame;
@@ -64,6 +64,7 @@ int ch_id;                          //Chemical ID
 void  loadNodeParameters(ros::NodeHandle private_nh);
 float simulate_mox_as_line_loglog(gaden_player::GasPositionResponse GT_gas_concentrations);
 float simulate_pid(gaden_player::GasPositionResponse GT_gas_concentrations);
+float simulate_pid_new(gaden_player::GasPositionResponse GT_gas_concentrations);
 
 
 
@@ -132,7 +133,7 @@ float Sensitivity_Air[5] = {21, 1, 8.8, 10.3, 19.5};      //RS/R0 when exposed t
 
 // RS/R0 = A*conc^B (a line in the loglog scale)
 float sensitivity_lineloglog[5][7][2]={   //5 Sensors, 7 Gases, 2 Constants: A, B
-    {  //TGS2620    
+    {  //TGS2620
     {62.32, -0.7155},   //Ethanol
     {120.6, -0.4877},   //Methane
     {24.45, -0.5546},   //Hydrogen
@@ -142,7 +143,7 @@ float sensitivity_lineloglog[5][7][2]={   //5 Sensors, 7 Gases, 2 Constants: A, 
        {120.6, -0.4877}    //Acetone (To review)
     },
 
-    {  //TGS2600    
+    {  //TGS2600
     {0.6796, -0.3196},   //ethanol
     {1.018, -0.07284},   //methane
     {0.6821, -0.3532},    //hydrogen
@@ -152,7 +153,7 @@ float sensitivity_lineloglog[5][7][2]={   //5 Sensors, 7 Gases, 2 Constants: A, 
        {1.018, -0.07284}    //Acetone (To review)
     },
 
-    {  //TGS2611    
+    {  //TGS2611
     {51.11, -0.3658},    //ethanol
     {38.46, -0.4289},    //methane
     {41.3, -0.3614},     //hydrogen

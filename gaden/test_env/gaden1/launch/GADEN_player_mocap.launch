@@ -58,7 +58,11 @@
     </node>
 
     ### Sensors ###
+<<<<<<< HEAD
+    <include file="$(find test_env)/$(arg scenario)/launch/firstRowOfSensors.launch"/>
+=======
     <!-- <include file="$(find test_env)/$(arg scenario)/launch/firstRowOfSensors.launch"/> -->
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
     <!-- <include file="$(find test_env)/$(arg scenario)/launch/secondRowOfSensors.launch"/>
     <include file="$(find test_env)/$(arg scenario)/launch/thirdRowOfSensors.launch"/>
     <include file="$(find test_env)/$(arg scenario)/launch/fourthRowOfSensors.launch"/>

@@ -2,10 +2,11 @@
 <launch>
 
   <arg name="RobotID"      default="1"/>
-  <arg name="xmin" default="0.2"/>
+  <arg name="xmin" default="0.27"/>
   <arg name="xmax" default="2.4"/>
   <arg name="ymin" default="3.65"/>
-  <arg name="ymax" default="0.2"/>
+  <arg name="ymax" default="0.27"/>
+  <arg name="stayTime" default="0.05"/>
   <arg name="flipXY" default="True"/>
 
   <!-- Fake position publisher -->
@@ -17,7 +18,7 @@
     <param name="ymin"     type="double"  value="$(arg ymin)"         /> # m
     <param name="ymax"     type="double"  value="$(arg ymax)"         /> # m
     <param name="Ny"       type="double"  value="20"              />
-    <param name="stayTime" type="double"  value="0.05"           />
+    <param name="stayTime" type="double"  value="$(arg stayTime)"           />
     <param name="flipXY"   type="bool"    value="$(arg flipXY)" /> # m
     <param name="waypointRadius"          value="0.05" /> # m
   </node>
