@@ -8,11 +8,14 @@
   <arg name="ymax" default="0.1524"/>
   <arg name="flipXY" default="False"/>
   <arg name="stayTime" default="0.25"/>
-  <arg name="Nx" default="16"/>
-  <arg name="Ny" default="16"/>
+  <!-- <arg name="Nx" default="16"/>
+  <arg name="Ny" default="16"/> -->
+
+  <arg name="Nx" default="10"/>
+  <arg name="Ny" default="10"/>
 
   <!-- Fake position publisher -->
-  <node name="fakeRobotPoseRaster" pkg="platform_sims" type="fakeRobotPoseRaster_tf.py" output="screen">
+  <node name="rasterPF" pkg="gaden_sims" type="rasterPFGaden.py" output="screen">
     <param name="xmin"     type="double"  value="$(arg xmin)"    /> # m
     <param name="xmax"     type="double"  value="$(arg xmax)"    /> # m
     <param name="Nx"       type="double"  value="$(arg Nx)"      />
@@ -20,8 +23,9 @@
     <param name="ymax"     type="double"  value="$(arg ymax)"    /> # m
     <param name="Ny"       type="double"  value="$(arg Ny)"      />
     <param name="stayTime" type="double"  value="$(arg stayTime)"/>
-    <param name="flipXY"   type="bool"    value="$(arg flipXY)"  /> 
+    <param name="flipXY"   type="bool"    value="$(arg flipXY)"  />
     <param name="RobotID"  type="double"  value="$(arg RobotID)" />
+    <param name="printTimeSteps"          value="True"  />
   </node>
 
 </launch>
