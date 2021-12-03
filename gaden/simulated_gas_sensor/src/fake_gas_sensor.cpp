@@ -222,6 +222,18 @@ int main( int argc, char** argv )
                     sensor_msg.calib_A = 0.0;
                     sensor_msg.calib_B = 0.0;
                     break;
+
+                case 31:  //PID miniRaeLite
+                    sensor_msg.technology = sensor_msg.TECH_PID;
+                    sensor_msg.manufacturer = sensor_msg.MANU_RAE;
+                    sensor_msg.mpn = sensor_msg.MPN_MINIRAELITE;
+                    sensor_msg.raw_units = sensor_msg.UNITS_PPM;
+                    sensor_msg.raw = simulate_pid_new(srv.response);
+                    sensor_msg.raw_air = 0.0;
+                    sensor_msg.calib_A = 0.0;
+                    sensor_msg.calib_B = 0.0;
+                    break;
+
                 default:
                     break;
                 }
@@ -400,6 +412,78 @@ float simulate_pid(gaden_player::GasPositionResponse GT_gas_concentrations)
             accumulated_conc += GT_gas_concentrations.gas_conc[i];
     }
     return accumulated_conc;
+}
+
+// Simulate PID response : Weighted Sum of all gases
+float simulate_pid_new(gaden_player::GasPositionResponse GT_gas_concentrations)
+{
+    float accumulated_conc = 0.0;
+    if (first_reading)
+    {
+      //Handle multiple gases
+      float accumulated_conc = 0.0;
+      for (int i=0; i<GT_gas_concentrations.gas_conc.size(); i++)
+      {
+          if (use_PID_correction_factors)
+          {
+              int gas_id;
+              if (!strcmp(GT_gas_concentrations.gas_type[i].c_str(),"ethanol"))
+                  gas_id = 0;
+              else if (!strcmp(GT_gas_concentrations.gas_type[i].c_str(),"methane"))
+                  gas_id = 1;
+              else if (!strcmp(GT_gas_concentrations.gas_type[i].c_str(),"hydrogen"))
+                  gas_id = 2;
+              else
+              {
+                  ROS_ERROR("[fake_PID] PID response is not configured for this gas type!");
+                  return 0.0;
+              }
+              if (PID_correction_factors[gas_id] != 0)
+                  accumulated_conc += GT_gas_concentrations.gas_conc[i] / PID_correction_factors[gas_id];
+          }
+          else
+              accumulated_conc += GT_gas_concentrations.gas_conc[i];
+      }
+        //Init sensor to its Baseline lvl
+        sensor_output = accumulated_conc;
+        previous_sensor_output = sensor_output;
+        first_reading = false;
+    }
+    else
+    {
+        //Handle multiple gases
+        float accumulated_conc = 0.0;
+        for (int i=0; i<GT_gas_concentrations.gas_conc.size(); i++)
+        {
+            if (use_PID_correction_factors)
+            {
+                int gas_id;
+                if (!strcmp(GT_gas_concentrations.gas_type[i].c_str(),"ethanol"))
+                    gas_id = 0;
+                else if (!strcmp(GT_gas_concentrations.gas_type[i].c_str(),"methane"))
+                    gas_id = 1;
+                else if (!strcmp(GT_gas_concentrations.gas_type[i].c_str(),"hydrogen"))
+                    gas_id = 2;
+                else
+                {
+                    ROS_ERROR("[fake_PID] PID response is not configured for this gas type!");
+                    return 0.0;
+                }
+                if (PID_correction_factors[gas_id] != 0)
+                    accumulated_conc += GT_gas_concentrations.gas_conc[i] / PID_correction_factors[gas_id];
+            }
+            else
+                accumulated_conc += GT_gas_concentrations.gas_conc[i];
+        }
+
+        //filtered response (uses previous estimation):
+        sensor_output = (accumulated_conc+previous_sensor_output)/2;
+
+        //Update values
+        previous_sensor_output = accumulated_conc;
+    }
+    // Return Sensor response for current time instant as the Sensor Resistance in Ohms
+    return (sensor_output);
 }
 
 // ===============================//
