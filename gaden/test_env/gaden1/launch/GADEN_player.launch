@@ -2,6 +2,42 @@
 
 <launch>
 
+<<<<<<< HEAD
+    <arg name="scenario" default="gaden1" />
+
+    <param name="xMapMin" value="0"/>
+    <param name="xMapMax" value="4.3"/>
+    <param name="yMapMin" value="0"/>
+    <param name="yMapMax" value="2.8"/>
+    <param name="zMapMin" value="0"/>
+    <param name="zMapMax" value="2"/>
+
+    ### NODE environment (for RVIZ visualization) ###
+    <node pkg="gaden_environment" type="environment" name="environment" output="screen">
+	    <param name="verbose" value="false"/>
+        <param name="wait_preprocessing" value="false"/>    	  ### wait for the ok from gaden_preprocessing before running
+        <!-- <param name="fixed_frame" value="map_gaden"/> -->
+        <param name="fixed_frame" value="map"/>
+
+	    # Plot CAD models (Collada format .dae)
+      <param name="number_of_CAD" value="0"/>
+	    <rosparam subst_value="True">
+      </rosparam>
+
+	    # Plot 3D OccupancyGridmap_gaden
+	    <param name="occupancy3D_data" value="$(find test_env)/$(arg scenario)/OccupancyGrid3D.csv" />
+
+	    # Plot gas sources
+        <param name="number_of_sources" value="1"/>
+        <rosparam>
+            source_0_position_x: 2.5
+            source_0_position_y: 1.32
+            source_0_position_z: 0.2
+            source_0_scale: 0.1
+            source_0_color: [0.0, 1.0, 0.0]
+        </rosparam>
+    </node>
+=======
   <arg name="scenario" default="gaden1" />
 
   <param name="xMapMin" value="0"/>
@@ -37,12 +73,32 @@
     </rosparam>
 
   </node>
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
 
 
     ### NODE PLAYER ###
     #-------------------
     <node pkg="gaden_player" type="gaden_player" name="gaden_player" output="screen">
         <param name="verbose" value="false" />
+<<<<<<< HEAD
+        <param name="particleDivider" value="500" />
+	    <param name="player_freq" value="3" />         ###(Hz) Freq for loading the simulation log_files
+	    <param name="initial_iteration" value="100" />
+	    <param name="num_simulators" value="1" />      ### Number of simulations to load [1-inf] (useful for multiple sources and gases)
+
+        # Data from the "filament_simulator" pkg. Multiple sources can be set here
+        <param name="simulation_data_0" value="$(find test_env)/$(arg scenario)/gas_simulations/FilamentSimulation_gasType_3_sourcePosition_0.45_1.40_0.30_iteration_" />
+
+        # Loop options
+        <param name="allow_looping" value="true" />
+        <param name="loop_from_iteration" value="100" />
+        <param name="loop_to_iteration" value="298" />
+
+    </node>
+
+    ### Sensors ###
+    <include file="$(find test_env)/$(arg scenario)/launch/firstRowOfSensors.launch"/>
+=======
         <param name="particleDivider" value="1000" />
 	    <param name="player_freq" value="5" />         ###(Hz) Freq for loading the simulation log_files
 	    <param name="initial_iteration" value="0" />
@@ -59,6 +115,7 @@
 
     ### Sensors ###
     <!-- <include file="$(find test_env)/$(arg scenario)/launch/firstRowOfSensors.launch"/>
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
     <include file="$(find test_env)/$(arg scenario)/launch/secondRowOfSensors.launch"/>
     <include file="$(find test_env)/$(arg scenario)/launch/thirdRowOfSensors.launch"/>
     <include file="$(find test_env)/$(arg scenario)/launch/fourthRowOfSensors.launch"/>
@@ -66,6 +123,18 @@
     <include file="$(find test_env)/$(arg scenario)/launch/sixthRowOfSensors.launch"/>
     <include file="$(find test_env)/$(arg scenario)/launch/seventhRowOfSensors.launch"/>
     <include file="$(find test_env)/$(arg scenario)/launch/eighthRowOfSensors.launch"/>
+<<<<<<< HEAD
+    <include file="$(find test_env)/$(arg scenario)/launch/ninthRowOfSensors.launch"/>
+
+    ### RVIZ ###
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find test_env)/$(arg scenario)/launch/ros/gaden.rviz"/>
+
+    <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/Gaden/sensorGrid/sensorGridFarLeftPlume1_4 /PID__0_43__0_46__0_3/Sensor_reading/raw /PID__0_43__0_91__0_3/Sensor_reading/raw /PID__0_43__1_37__0_3/Sensor_reading/raw /PID__0_43__1_83__0_3/Sensor_reading/raw /PID__0_43__2_29__0_3/Sensor_reading/raw /PID__0_85__0_46__0_3/Sensor_reading/raw /PID__0_85__0_91__0_3/Sensor_reading/raw /PID__0_85__1_37__0_3/Sensor_reading/raw /PID__0_85__1_83__0_3/Sensor_reading/raw /PID__0_85__2_29__0_3/Sensor_reading/raw /PID__1_28__0_46__0_3/Sensor_reading/raw /PID__1_28__0_91__0_3/Sensor_reading/raw /PID__1_28__1_37__0_3/Sensor_reading/raw /PID__1_28__1_83__0_3/Sensor_reading/raw /PID__1_28__2_29__0_3/Sensor_reading/raw /PID__1_71__0_46__0_3/Sensor_reading/raw /PID__1_71__0_91__0_3/Sensor_reading/raw /PID__1_71__1_37__0_3/Sensor_reading/raw /PID__1_71__1_83__0_3/Sensor_reading/raw /PID__1_71__2_29__0_3/Sensor_reading/raw " name="rosbagRecord1_4"/>
+
+    <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/Gaden/sensorGrid/sensorGridFarLeftPlume1_5 /PID__2_13__0_46__0_3/Sensor_reading/raw /PID__2_13__0_91__0_3/Sensor_reading/raw /PID__2_13__1_37__0_3/Sensor_reading/raw /PID__2_13__1_83__0_3/Sensor_reading/raw /PID__2_13__2_29__0_3/Sensor_reading/raw /PID__2_56__0_46__0_3/Sensor_reading/raw /PID__2_56__0_91__0_3/Sensor_reading/raw /PID__2_56__1_37__0_3/Sensor_reading/raw /PID__2_56__1_83__0_3/Sensor_reading/raw /PID__2_56__2_29__0_3/Sensor_reading/raw /PID__2_99__0_46__0_3/Sensor_reading/raw /PID__2_99__0_91__0_3/Sensor_reading/raw /PID__2_99__1_37__0_3/Sensor_reading/raw /PID__2_99__1_83__0_3/Sensor_reading/raw /PID__2_99__2_29__0_3/Sensor_reading/raw /PID__3_41__0_46__0_3/Sensor_reading/raw /PID__3_41__0_91__0_3/Sensor_reading/raw /PID__3_41__1_37__0_3/Sensor_reading/raw /PID__3_41__1_83__0_3/Sensor_reading/raw /PID__3_41__2_29__0_3/Sensor_reading/raw" name="rosbagRecord5_8"/>
+
+    <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/Gaden/sensorGrid/sensorGridFarLeftPlume /PID__3_84__0_46__0_3/Sensor_reading/raw /PID__3_84__0_91__0_3/Sensor_reading/raw /PID__3_84__1_37__0_3/Sensor_reading/raw /PID__3_84__1_83__0_3/Sensor_reading/raw /PID__3_84__2_29__0_3/Sensor_reading/raw" name="rosbagRecord9"/>
+=======
     <include file="$(find test_env)/$(arg scenario)/launch/ninthRowOfSensors.launch"/> -->
 
     ### RVIZ ###
@@ -78,6 +147,7 @@
     <!-- <node pkg="rosbag" type="record" args="-o /home/mocaplinux/Desktop/gaden1SensorGrid/sensorGrid3 /PID__3_84__0_46__0_2/Sensor_reading/raw /PID__3_84__0_91__0_2/Sensor_reading/raw /PID__3_84__1_37__0_2/Sensor_reading/raw /PID__3_84__1_83__0_2/Sensor_reading/raw /PID__3_84__2_29__0_2/Sensor_reading/raw" name="rosbagRecord9"/> -->
     <!-- <node pkg="rosbag" type="record" args="-o /home/mocaplinux/Desktop/gaden1SensorGrid/sensorGrid" name="rosbagRecord9"/> -->
 
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
 
 
 </launch>

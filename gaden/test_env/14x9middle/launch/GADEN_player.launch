@@ -77,6 +77,10 @@
 
     <node pkg="rosbag" type="record" args="-o /home/matthew/google-drive/Gaden/sensorGrid/middle/sensorGridMiddlePlume9 /PID__3_84__0_46__0_3/Sensor_reading/raw /PID__3_84__0_91__0_3/Sensor_reading/raw /PID__3_84__1_37__0_3/Sensor_reading/raw /PID__3_84__1_83__0_3/Sensor_reading/raw /PID__3_84__2_29__0_3/Sensor_reading/raw" name="rosbagRecord9"/> -->
 
+<<<<<<< HEAD
+    <node pkg="rosbag" type="record" name="rosbag_record_diag" args="record -o /home/matthew/sensorGrid/TestBag"/>
+=======
     <node pkg="rosbag" type="record" name="rosbag_record_diag" args="record -o /home/Deskton/gaden1SensorGrid"/>
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
 
 </launch>

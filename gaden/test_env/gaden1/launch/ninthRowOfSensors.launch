@@ -9,16 +9,28 @@
     # PID: MiniRaeLite=30
 
     # ninth row of 5 X = 3_84m
+<<<<<<< HEAD
+    <node pkg="tf" type="static_transform_publisher" name="pid40_broadcaster" args="3.84 0.46 0.3 0 0 0 map pid40_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid41_broadcaster" args="3.84 0.91 0.3 0 0 0 map pid41_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid42_broadcaster" args="3.84 1.37 0.3 0 0 0 map pid42_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid43_broadcaster" args="3.84 1.83 0.3 0 0 0 map pid43_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid45_broadcaster" args="3.84 2.29 0.3 0 0 0 map pid44_frame 50" />
+=======
     <node pkg="tf" type="static_transform_publisher" name="pid40_broadcaster" args="3.84 0.46 0.2 0 0 0 map pid40_frame 50" />
     <node pkg="tf" type="static_transform_publisher" name="pid41_broadcaster" args="3.84 0.91 0.2 0 0 0 map pid41_frame 50" />
     <node pkg="tf" type="static_transform_publisher" name="pid42_broadcaster" args="3.84 1.37 0.2 0 0 0 map pid42_frame 50" />
     <node pkg="tf" type="static_transform_publisher" name="pid43_broadcaster" args="3.84 1.83 0.2 0 0 0 map pid43_frame 50" />
     <node pkg="tf" type="static_transform_publisher" name="pid45_broadcaster" args="3.84 2.29 0.2 0 0 0 map pid44_frame 50" />
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
 
 
     # ninth row of 5 X = 3_84m
     #                X    Y    Z
+<<<<<<< HEAD
+    <group ns="PID__3_84__0_46__0_3">
+=======
     <group ns="PID__3_84__0_46__0_2">
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
         <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
 	        <param name="/sensor_model" value="30" />
 	        <param name="/sensor_frame" value="pid40_frame" />
@@ -26,7 +38,11 @@
         </node>
     </group>
 
+<<<<<<< HEAD
+    <group ns="PID__3_84__0_91__0_3">
+=======
     <group ns="PID__3_84__0_91__0_2">
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
         <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
 	        <param name="/sensor_model" value="30" />
 	        <param name="/sensor_frame" value="pid41_frame" />
@@ -34,7 +50,11 @@
         </node>
     </group>
 
+<<<<<<< HEAD
+    <group ns="PID__3_84__1_37__0_3">
+=======
     <group ns="PID__3_84__1_37__0_2">
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
         <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
 	        <param name="/sensor_model" value="30" />
 	        <param name="/sensor_frame" value="pid42_frame" />
@@ -42,7 +62,11 @@
         </node>
     </group>
 
+<<<<<<< HEAD
+    <group ns="PID__3_84__1_83__0_3">
+=======
     <group ns="PID__3_84__1_83__0_2">
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
         <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
           <param name="/sensor_model" value="30" />
           <param name="/sensor_frame" value="pid43_frame" />
@@ -50,7 +74,11 @@
         </node>
     </group>
 
+<<<<<<< HEAD
+    <group ns="PID__3_84__2_29__0_3">
+=======
     <group ns="PID__3_84__2_29__0_2">
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
         <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
           <param name="/sensor_model" value="30" />
           <param name="/sensor_frame" value="pid44_frame" />
@@ -60,7 +88,11 @@
 
     ### RQT PLOT Sensors ###
     #-----------------------
+<<<<<<< HEAD
+    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot9"  args="/PID__3_84__0_46__0_3/Sensor_reading/raw /PID__3_84__0_91__0_3/Sensor_reading/raw /PID__3_84__1_37__0_3/Sensor_reading/raw /PID__3_84__1_83__0_3/Sensor_reading/raw /PID__3_84__2_29__0_3/Sensor_reading/raw"/>
+=======
     <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot9"  args="/PID__3_84__0_46__0_2/Sensor_reading/raw /PID__3_84__0_91__0_2/Sensor_reading/raw /PID__3_84__1_37__0_2/Sensor_reading/raw /PID__3_84__1_83__0_2/Sensor_reading/raw /PID__3_84__2_29__0_2/Sensor_reading/raw"/>
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
 
 
 </launch>
