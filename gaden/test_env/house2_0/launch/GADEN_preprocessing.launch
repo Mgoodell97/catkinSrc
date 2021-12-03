@@ -1,0 +1,40 @@
+<!-- Mission file for GADEN preprocessing
+    ROS - KINETIC
+-->
+
+<launch>
+    <arg name="scenario" default="house2_0" />
+
+    <node pkg="gaden_preprocessing" type="preprocessing" name="preprocessing" output="screen" >
+
+        #Cell size
+        <param name="cell_size" value="0.1"/>
+
+        #CAD models of the enviroment (.stl)
+        <param name="number_of_models" value="5"/>
+        <param name="model_0" value="$(find test_env)/$(arg scenario)/cad_models/walls.STL"/>
+        <param name="model_1" value="$(find test_env)/$(arg scenario)/cad_models/obs1.STL"/>
+        <param name="model_2" value="$(find test_env)/$(arg scenario)/cad_models/obs2.STL"/>
+        <param name="model_3" value="$(find test_env)/$(arg scenario)/cad_models/obs3.STL"/>
+        <param name="model_4" value="$(find test_env)/$(arg scenario)/cad_models/house.STL"/>
+
+        #CAD model of the outlets (.stl)
+        <param name="number_of_outlet_models" value="4"/>
+        <param name="outlets_model_3" value="$(find test_env)/$(arg scenario)/cad_models/out4.STL"/>
+        <param name="outlets_model_2" value="$(find test_env)/$(arg scenario)/cad_models/out3.STL"/>
+        <param name="outlets_model_1" value="$(find test_env)/$(arg scenario)/cad_models/out2.STL"/>
+        <param name="outlets_model_0" value="$(find test_env)/$(arg scenario)/cad_models/out1.STL"/>
+
+        #3D Location of a point in free-space
+        <param name="empty_point_x" value="1.0"/>      ### (m)
+        <param name="empty_point_y" value="1.0"/>      ### (m)
+        <param name="empty_point_z" value="0.5"/>      ### (m)
+
+
+        #Wind Data (the node will append _i.csv to the name that is specified here)
+        <param name="wind_files" value="$(find test_env)/$(arg scenario)/wind_simulations/1ms/wind_at_cell_centers"/>
+
+        #Where to write the output files
+        <param name="output_path" value="$(find test_env)/$(arg scenario)" />
+    </node>
+</launch>

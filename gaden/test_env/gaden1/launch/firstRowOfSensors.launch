@@ -1,0 +1,98 @@
+<!-- mission file for GADEN player -->
+
+<launch>
+
+    ### NODE Simulated Gas Sensor ###
+    #--------------------------------
+    # SENSOR MODELS:
+    # MOX: TGS2620=0, TGS2600=1, TGS2611=2
+    # PID: MiniRaeLite=30
+
+    # First row of 5 X = 0.43m
+<<<<<<< HEAD
+    <node pkg="tf" type="static_transform_publisher" name="pid0_broadcaster" args="0.43 0.46 0.3 0 0 0 map pid0_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid1_broadcaster" args="0.43 0.91 0.3 0 0 0 map pid1_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid2_broadcaster" args="0.43 1.37 0.3 0 0 0 map pid2_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid3_broadcaster" args="0.43 1.83 0.3 0 0 0 map pid3_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid4_broadcaster" args="0.43 2.29 0.3 0 0 0 map pid4_frame 50" />
+=======
+    <node pkg="tf" type="static_transform_publisher" name="pid0_broadcaster" args="0.43 0.46 0.2 0 0 0 map pid0_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid1_broadcaster" args="0.43 0.91 0.2 0 0 0 map pid1_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid2_broadcaster" args="0.43 1.37 0.2 0 0 0 map pid2_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid3_broadcaster" args="0.43 1.83 0.2 0 0 0 map pid3_frame 50" />
+    <node pkg="tf" type="static_transform_publisher" name="pid4_broadcaster" args="0.43 2.29 0.2 0 0 0 map pid4_frame 50" />
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
+
+
+    # First row of 5 X = 0.43m
+    #                X    Y    Z
+<<<<<<< HEAD
+    <group ns="PID__0_43__0_46__0_3">
+=======
+    <group ns="PID__0_43__0_46__0_2">
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
+        <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
+	        <param name="/sensor_model" value="30" />
+	        <param name="/sensor_frame" value="pid0_frame" />
+	        <param name="/fixed_frame" value="map"/>
+        </node>
+    </group>
+
+<<<<<<< HEAD
+    <group ns="PID__0_43__0_91__0_3">
+=======
+    <group ns="PID__0_43__0_91__0_2">
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
+        <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
+	        <param name="/sensor_model" value="30" />
+	        <param name="/sensor_frame" value="pid1_frame" />
+	        <param name="/fixed_frame" value="map"/>
+        </node>
+    </group>
+
+<<<<<<< HEAD
+    <group ns="PID__0_43__1_37__0_3">
+=======
+    <group ns="PID__0_43__1_37__0_2">
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
+        <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
+	        <param name="/sensor_model" value="30" />
+	        <param name="/sensor_frame" value="pid2_frame" />
+	        <param name="/fixed_frame" value="map"/>
+        </node>
+    </group>
+
+<<<<<<< HEAD
+    <group ns="PID__0_43__1_83__0_3">
+=======
+    <group ns="PID__0_43__1_83__0_2">
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
+        <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
+          <param name="/sensor_model" value="30" />
+          <param name="/sensor_frame" value="pid3_frame" />
+          <param name="/fixed_frame" value="map"/>
+        </node>
+    </group>
+
+<<<<<<< HEAD
+    <group ns="PID__0_43__2_29__0_3">
+=======
+    <group ns="PID__0_43__2_29__0_2">
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
+        <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="screen">
+          <param name="/sensor_model" value="30" />
+          <param name="/sensor_frame" value="pid4_frame" />
+          <param name="/fixed_frame" value="map"/>
+        </node>
+    </group>
+
+    ### RQT PLOT Sensors ###
+    #-----------------------
+<<<<<<< HEAD
+    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot1"  args="/PID__0_43__0_46__0_3/Sensor_reading/raw /PID__0_43__0_91__0_3/Sensor_reading/raw /PID__0_43__1_37__0_3/Sensor_reading/raw /PID__0_43__1_83__0_3/Sensor_reading/raw /PID__0_43__2_29__0_3/Sensor_reading/raw"/>
+=======
+    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot1"  args="/PID__0_43__0_46__0_2/Sensor_reading/raw /PID__0_43__0_91__0_2/Sensor_reading/raw /PID__0_43__1_37__0_2/Sensor_reading/raw /PID__0_43__1_83__0_2/Sensor_reading/raw /PID__0_43__2_29__0_2/Sensor_reading/raw"/>
+>>>>>>> 3f0a3d0a3012fafba52980d21fb09af74a1d5697
+
+
+</launch>
