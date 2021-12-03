@@ -1,0 +1,85 @@
+<launch>
+  <arg name="SpawnUAV1" default="True"/>
+  <arg name="SpawnUAV2" default="True"/>
+  <arg name="SpawnUAV3" default="True"/>
+  <arg name="SpawnUAV4" default="True"/>
+  <arg name="SpawnUAV5" default="True"/>
+
+  <arg name="plotGaussian" default="True"/>
+
+  <param name="startTest"        type="bool"  value="False" />
+  <param name="SpawnUAV1"        type="bool"  value="$(arg SpawnUAV1)" />
+  <param name="SpawnUAV2"        type="bool"  value="$(arg SpawnUAV2)" />
+  <param name="SpawnUAV3"        type="bool"  value="$(arg SpawnUAV3)" />
+  <param name="SpawnUAV4"        type="bool"  value="$(arg SpawnUAV4)" />
+  <param name="SpawnUAV5"        type="bool"  value="$(arg SpawnUAV5)" />
+
+  <!-- Plume parameters -->
+  <param name="QPlume"            type="double"  value="0.000077" /> #  ppm     release rate
+  <param name="vPlume"            type="double"  value="0.447"    /> #  m/s      velocity
+  <param name="DyPlume"           type="double"  value="0.0075"    /> #  m        diffusion along y
+  <param name="DzPlume"           type="double"  value="0.000075"   /> #  m        diffusion along z
+
+  <!-- Plume location -->
+  <param name="xPlume"            type="double"  value="0.3048"   /> # m
+  <param name="yPlume"            type="double"  value="1.3716"   /> # m
+  <param name="zPlume"            type="double"  value="0"        /> # m
+  <param name="careAboutZ"        type="bool"    value="False"    /> # boolean
+  <param name="thetaPlume"        type="double"  value="0"        /> # degrees (both methods need to know the wind direction)
+
+  <param name="sensorRate"        type="double"  value="5"        /> # Hz
+  <param name="plumeType"         type="int"     value="1"        /> # 1 = gaussian, 2 = gaden, 3 = MPS
+
+  <!-- <include file="$(find mocap_optitrack)/launch/mocap.launch"/> -->
+
+  <node name="plotRobots" pkg="NNvisit" type="plotRobots.py"/>
+
+  <node name="plotGaussianParticleMocap" pkg="platform_sims" type="plotGaussianParticleMocap.py" output="screen" if="$(eval plotGaussian)"/>
+
+  <!-- Robot_1 -->
+  <group ns="Robot_1" if="$(eval SpawnUAV1)">
+    <!-- <include file="$(find platform_sims)/launch/fakeRobotPoseRaster.launch">
+      <arg name="xmin" default="0.1524"/>
+      <arg name="xmax" default="2.5908"/>
+      <arg name="ymin" default="0.1524"/>
+      <arg name="ymax" default="4.1148"/>
+      <arg name="flipXY"    default="True"/>
+      <arg name="RobotID"    default="1"/>
+    </include> -->
+
+    <include file="$(find NNvisit)/launch/NNvisitPFparams_gaussian.launch">
+      <arg name="quadID"     default="1"/>
+    </include>
+  </group>
+
+  <!-- Robot_2 -->
+  <group ns="Robot_2" if="$(eval SpawnUAV2)">
+    <include file="$(find NNvisit)/launch/NNvisitPFparams_gaussian.launch">
+      <arg name="quadID"     default="2"/>
+    </include>
+  </group>
+
+  <!-- Robot_3 -->
+  <group ns="Robot_3" if="$(eval SpawnUAV3)">
+    <include file="$(find NNvisit)/launch/NNvisitPFparams_gaussian.launch">
+      <arg name="quadID"     default="3"/>
+    </include>
+  </group>
+
+  <!-- Robot_4 -->
+  <group ns="Robot_4" if="$(eval SpawnUAV4)">
+    <include file="$(find NNvisit)/launch/NNvisitPFparams_gaussian.launch">
+      <arg name="quadID"     default="4"/>
+    </include>
+  </group>
+
+  <!-- Robot_5 -->
+  <group ns="Robot_5" if="$(eval SpawnUAV5)">
+    <include file="$(find NNvisit)/launch/NNvisitPFparams_gaussian.launch">
+      <arg name="quadID"     default="5"/>
+    </include>
+  </group>
+
+  <node pkg="rosbag" type="record" args="-o /home/mocaplinux/NNvisitData/gaussianPF /Robot_1/gaussianReading /Robot_2/gaussianReading /Robot_3/gaussianReading /Robot_4/gaussianReading /Robot_5/gaussianReading /mocap_node/Robot_1/pose /mocap_node/Robot_2/pose /mocap_node/Robot_3/pose /mocap_node/Robot_4/pose /mocap_node/Robot_5/pose /Robot_1/particles /Robot_1/estimatedGaussian /Robot_2/particles /Robot_2/estimatedGaussian /Robot_3/particles /Robot_3/estimatedGaussian /Robot_4/particles /Robot_4/estimatedGaussian /Robot_5/particles /Robot_5/estimatedGaussian" name="mps_record_data" />
+
+</launch>

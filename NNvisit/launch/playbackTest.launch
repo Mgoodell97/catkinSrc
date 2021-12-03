@@ -1,0 +1,6 @@
+<launch>
+  <node name="PlaybackTest" pkg="particle_filter" type="playback_test.py" output="screen"/>
+
+
+  <!-- <node pkg="rosbag" type="record" args="-o /home/mocaplinux/NNvisitData/sensor_test /Robot_1/mps_data /Robot_2/mps_data /Robot_3/mps_data /Robot_4/mps_data /Robot_5/mps_data /mocap_node/Robot_1/pose /mocap_node/Robot_2/pose /mocap_node/Robot_3/pose /mocap_node/Robot_4/pose /mocap_node/Robot_5/pose /particles /estimatedGaussian /mocap_node/PlumeSource/pose" name="mps_record_data" /> -->
+</launch>
