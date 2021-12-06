@@ -315,7 +315,7 @@ def main():
     ## Initialization of Particles and Sensor ##
     rate = rospy.Rate(1)
 
-    particle_params = rospy.get_param("particleFilter") # get params defined in launch file
+    particle_params = rospy.get_param("rasterPF") # get params defined in launch file
 
     # Saves dictionary entries from launch file as variables
     for key,val in particle_params.items():
