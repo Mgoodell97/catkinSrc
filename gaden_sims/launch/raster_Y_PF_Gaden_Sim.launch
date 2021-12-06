@@ -4,9 +4,9 @@
   <param name="startTest" type="bool"  value="True" />
 
   <arg name="xminMap" default="0"/>
-  <arg name="xmaxMap" default="2.67"/>
+  <arg name="xmaxMap" default="4.2"/>
   <arg name="yminMap" default="0"/>
-  <arg name="ymaxMap" default="4.2"/>
+  <arg name="ymaxMap" default="2.67"/>
 
   # Start sim
   <include file="$(find plume_sims)/launch/gaden6.launch"/>
@@ -18,10 +18,11 @@
   <group ns="Robot_1">
     <include file="$(find gaden_sims)/launch/raster_PF_Gaden.launch">
       <arg name="stayTime" default="0.25"/>
-      <arg name="xminRaster"     default="0.1"/>
-      <arg name="xmaxRaster"     default="2.5"/>
+      <arg name="xminRaster"     default="4.1"/>
+      <arg name="xmaxRaster"     default="0.1"/>
       <arg name="yminRaster"     default="0.1"/>
-      <arg name="ymaxRaster"     default="3.65"/>
+      <arg name="ymaxRaster"     default="2.57"/>
+      <arg name="flipXY"         default="True"/>
     </include>
 
     <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log">

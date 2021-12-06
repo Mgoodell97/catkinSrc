@@ -1,31 +1,33 @@
 <?xml version="1.0"?>
 <launch>
 
+  <group ns="rasterPF">
+    <rosparam file="$(find gaden_sims)/config/pfParams.yaml" />
+  </group>
+
   <arg name="RobotID"      default="1"/>
-  <arg name="xmin" default="0.1524"/>
-  <arg name="xmax" default="2.5"/>
-  <arg name="ymin" default="2.5908"/>
-  <arg name="ymax" default="0.1524"/>
+  <arg name="xminRaster" default="0.1"/>
+  <arg name="xmaxRaster" default="2.57"/>
+  <arg name="yminRaster" default="4.1"/>
+  <arg name="ymaxRaster" default="0.1"/>
   <arg name="flipXY" default="False"/>
   <arg name="stayTime" default="0.25"/>
-  <!-- <arg name="Nx" default="16"/>
-  <arg name="Ny" default="16"/> -->
 
-  <arg name="Nx" default="10"/>
-  <arg name="Ny" default="10"/>
+  <arg name="Nx" default="30"/>
+  <arg name="Ny" default="30"/>
 
   <!-- Fake position publisher -->
   <node name="rasterPF" pkg="gaden_sims" type="rasterPFGaden.py" output="screen">
-    <param name="xmin"     type="double"  value="$(arg xmin)"    /> # m
-    <param name="xmax"     type="double"  value="$(arg xmax)"    /> # m
+    <param name="xmin"     type="double"  value="$(arg xminRaster)"    /> # m
+    <param name="xmax"     type="double"  value="$(arg xmaxRaster)"    /> # m
     <param name="Nx"       type="double"  value="$(arg Nx)"      />
-    <param name="ymin"     type="double"  value="$(arg ymin)"    /> # m
-    <param name="ymax"     type="double"  value="$(arg ymax)"    /> # m
+    <param name="ymin"     type="double"  value="$(arg yminRaster)"    /> # m
+    <param name="ymax"     type="double"  value="$(arg ymaxRaster)"    /> # m
     <param name="Ny"       type="double"  value="$(arg Ny)"      />
     <param name="stayTime" type="double"  value="$(arg stayTime)"/>
     <param name="flipXY"   type="bool"    value="$(arg flipXY)"  />
     <param name="RobotID"  type="double"  value="$(arg RobotID)" />
-    <param name="printTimeSteps"          value="True"  />
+    <param name="printTimeSteps"          value="False"  />
   </node>
 
 </launch>
