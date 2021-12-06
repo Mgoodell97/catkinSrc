@@ -985,6 +985,8 @@ void CFilamentSimulator::save_state_to_file()
 	inbuf.push(ist);
 	ist << charArray;
 
+	ROS_INFO_STREAM("Saved file : "<<out_filename);
+
 	std::ofstream fi(out_filename);
 	boost::iostreams::copy(inbuf,fi);
 }
@@ -1052,6 +1054,7 @@ int main(int argc, char **argv)
         {
             if ( floor(sim.sim_time/sim.results_time_step) != sim.last_saved_step ){
 			    sim.save_state_to_file();
+
 			}
 	    }
 
