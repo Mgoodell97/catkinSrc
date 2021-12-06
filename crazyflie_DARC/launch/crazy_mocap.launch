@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
+  <node name="connection" pkg="crazyflie_DARC" type="connect_log_param.py" output="screen"/>
+</launch>
