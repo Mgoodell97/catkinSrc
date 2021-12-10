@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+
+  <param name="plumeType" type="int" value="2"/> # 1 = gaussian, 2 = gaden, 3 = MPS
+  <rosparam param="xPlumeLoc">[2.39, 6.30]</rosparam>
+  <rosparam param="yPlumeLoc">[5.01, 8.57]</rosparam>
+  <include file="$(find test_env)/gaden21/launch/GADEN_player_mocap.launch"/>
+
+</launch>
