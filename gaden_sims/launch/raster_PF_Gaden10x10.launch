@@ -27,7 +27,7 @@
     <param name="stayTime" type="double"  value="$(arg stayTime)"/>
     <param name="flipXY"   type="bool"    value="$(arg flipXY)"  />
     <param name="RobotID"  type="double"  value="$(arg RobotID)" />
-    <param name="printTimeSteps"          value="True"  />
+    <param name="printTimeSteps"          value="False"  />
   </node>
 
 </launch>
