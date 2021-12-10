@@ -4,24 +4,25 @@
   <param name="startTest" type="bool"  value="True" />
 
   <arg name="xminMap" default="0"/>
-  <arg name="xmaxMap" default="2.67"/>
+  <arg name="xmaxMap" default="4.2"/>
   <arg name="yminMap" default="0"/>
-  <arg name="ymaxMap" default="4.2"/>
+  <arg name="ymaxMap" default="2.67"/>
 
   # Start sim
-  <include file="$(find plume_sims)/launch/gaden6.launch"/>
+  <include file="$(find plume_sims)/launch/gaden7.launch"/>
 
   # Create simulated sensor
   <node pkg="tf" type="static_transform_publisher" name="ROBOTS2GADEN" args="0.0 0.0 0.0 0 0 0 map_gaden world 100" />
   <node pkg="tf" type="static_transform_publisher" name="Robot_to_sensor1" args="0.0 0.0 0.0 0 0 0 Robot_1/base_link pid0_frame 50" />
 
   <group ns="Robot_1">
-    <include file="$(find gaden_sims)/launch/raster_PF_Gaden.launch">
-      <arg name="stayTime" default="0.25"/>
-      <arg name="xminRaster"     default="0.1"/>
-      <arg name="xmaxRaster"     default="2.5"/>
+    <include file="$(find gaden_sims)/launch/raster_PF_Gaden4x3.launch">
+      <arg name="stayTime" default="0.01"/>
+      <arg name="xminRaster"     default="4.1"/>
+      <arg name="xmaxRaster"     default="0.1"/>
       <arg name="yminRaster"     default="0.1"/>
-      <arg name="ymaxRaster"     default="3.65"/>
+      <arg name="ymaxRaster"     default="2.57"/>
+      <arg name="flipXY"         default="True"/>
     </include>
 
     <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log">
@@ -32,7 +33,7 @@
   </group>
 
   # Plot particles
-  <node name="plotMultiPlumePF" pkg="gaden_sims" type="plotMultiPlumePF.py" output="screen">
+  <node name="plotMultiPlumePF" pkg="gaden_sims" type="plotMultiPlumePF.py" output="log">
     <param name="xmin"     type="double"  value="$(arg xminMap)"    /> # m
     <param name="xmax"     type="double"  value="$(arg xmaxMap)"    /> # m
     <param name="ymin"     type="double"  value="$(arg yminMap)"    /> # m

@@ -2,19 +2,19 @@
 <launch>
 
   <group ns="rasterPF">
-    <rosparam file="$(find gaden_sims)/config/pfParams.yaml" />
+    <rosparam file="$(find gaden_sims)/config/pfParams10x10.yaml" />
   </group>
 
   <arg name="RobotID"      default="1"/>
-  <arg name="xminRaster" default="0.1"/>
-  <arg name="xmaxRaster" default="2.57"/>
-  <arg name="yminRaster" default="4.1"/>
-  <arg name="ymaxRaster" default="0.1"/>
+  <arg name="xminRaster" default="0.25"/>
+  <arg name="xmaxRaster" default="9.75"/>
+  <arg name="yminRaster" default="9.75"/>
+  <arg name="ymaxRaster" default="0.25"/>
   <arg name="flipXY" default="False"/>
   <arg name="stayTime" default="0.25"/>
 
-  <arg name="Nx" default="30"/>
-  <arg name="Ny" default="30"/>
+  <arg name="Nx" default="40"/>
+  <arg name="Ny" default="40"/>
 
   <!-- Fake position publisher -->
   <node name="rasterPF" pkg="gaden_sims" type="rasterPFGaden.py" output="screen">
@@ -27,7 +27,7 @@
     <param name="stayTime" type="double"  value="$(arg stayTime)"/>
     <param name="flipXY"   type="bool"    value="$(arg flipXY)"  />
     <param name="RobotID"  type="double"  value="$(arg RobotID)" />
-    <param name="printTimeSteps"          value="False"  />
+    <param name="printTimeSteps"          value="True"  />
   </node>
 
 </launch>

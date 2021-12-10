@@ -9,11 +9,12 @@ import os, rospkg
 import json
 import pickle
 from math import pi
+import matplotlib.pyplot as plt
 
 # Custom modules
 from particleFilterPackage import ParticleFilter
 from rasterScanGeneration import rasterScanGen, rasterScanGenYX
-from GaussianSensorPackage import combinePlumesNew, GaussianMultiPlumeNBNoClass
+from GaussianSensorPackage import combinePlumesNew, GaussianMultiPlumeNBNoClass, computeGaussianPlumeMapNBNoClass
 
 # Messages
 from geometry_msgs.msg import PoseStamped, TransformStamped
@@ -68,12 +69,25 @@ def main():
     # Get raster parameters
     printTimeSteps  = rospy.get_param("~printTimeSteps")
     particle_params = rospy.get_param("rasterPF") # get params defined in launch file
+    startTest  = rospy.get_param("/startTest")
+    xPlumeLoc  = rospy.get_param("/xPlumeLoc")
+    yPlumeLoc  = rospy.get_param("/yPlumeLoc")
+    simNumber  = rospy.get_param("/simNumber")
+    saveResults  = rospy.get_param("/saveResults")
+
+    # for saving results
+    if len(xPlumeLoc) == 1:
+        plumeDir = "p1/"
+    elif len(xPlumeLoc) == 2:
+        plumeDir = "p2/"
+    elif len(xPlumeLoc) == 3:
+        plumeDir = "p3/"
+    elif len(xPlumeLoc) == 4:
+        plumeDir = "p4/"
 
     # Saves dictionary entries from launch file as variables
     for key,val in particle_params.items():
         exec(key + '=val')
-
-    startTest = rospy.get_param("/startTest")
 
     global sensorMsg_cb_flag
 
@@ -98,18 +112,31 @@ def main():
     waypointIndex = 0
     if flipXY:
         desiredWaypointsList = rasterScanGenYX([xmin, xmax], Nx, [ymin, ymax], Ny)
+        rasterString = "rasterY/"
     else:
         desiredWaypointsList = rasterScanGen([xmin, xmax], Nx, [ymin, ymax], Ny)
+        rasterString = "rasterX/"
 
     # =============================================================================
     # PF params
     # =============================================================================
 
     Theta_u = windDir+Theta_range
+    Theta_l = windDir-Theta_range
 
     # =============================================================================
     # Create PF
     # =============================================================================
+
+    print(X_u , X_l, mapPercent)
+    print(Y_u , Y_l)
+    print(Z_u , Z_l)
+    print(Theta_u , Theta_l, percentTheta)
+    print(Q_u , Q_l, percentQ)
+    print(V_u , V_l, percentV)
+    print(Dy_u , Dy_l, percentDy)
+    print(Dz_u , Dz_l, percentDz)
+    print(pdf_std, NumOfParticles)
 
     X_n = (X_u - X_l) * mapPercent
     Y_n = (Y_u - Y_l) * mapPercent
@@ -143,6 +170,7 @@ def main():
     # Saving data
     # =============================================================================
 
+    ATrueLocations = np.matrix([xPlumeLoc,yPlumeLoc])
     kVec     = []
     xVec     = []
     A        = []
@@ -190,125 +218,127 @@ def main():
     while not rospy.is_shutdown():
         # Wait until new sensor reading is recieved
         while ((not rospy.is_shutdown() and not sensorMsg_cb_flag) ):
+            # print("Here")
             rate.sleep()
             global_waypoint_pub.publish(DesiredWaypoint);
             br.sendTransform(static_tf)
             if sensorMsg_cb_flag:
-                sensorMsg_cb_flag = False
                 break
+
+        sensorMsg_cb_flag = False
 
         # Once a new reading has been reieved and your at the waypoint perform estimation and move robot
-        if(rospy.get_rostime() - waypointStartTime >= rospy.Duration(stayTime)):
-            k +=1
+        k +=1
 
-            # 1. Get Robot Pose
-            x_t = np.array([robotSensorReadingPoseGaden.local_x, robotSensorReadingPoseGaden.local_y, robotSensorReadingPoseGaden.local_z])
+        # 1. Get Robot Pose
+        x_t = np.array([robotSensorReadingPoseGaden.local_x, robotSensorReadingPoseGaden.local_y, robotSensorReadingPoseGaden.local_z])
 
-            # 2. Get sensor reading and modifiy it with found plumes
-            z_t = robotSensorReadingPoseGaden.raw - multiPlumeSub.getReading(x_t[0], x_t[1], x_t[2])
+        # 2. Get sensor reading and modifiy it with found plumes
+        z_t = robotSensorReadingPoseGaden.raw - multiPlumeSub.getReading(x_t[0], x_t[1], x_t[2])
 
-            kVec.append(k)
-            xVec.append(x_t)
-            zVec.append(z_t)
+        kVec.append(k)
+        xVec.append(x_t)
+        zVec.append(z_t)
 
-            # 3. Measurement prediction
-            gaussHatVec = R1_Pf.calculateXhatNumbaNew(z_t, x_t, Ahat)
+        # 3. Measurement prediction
+        gaussHatVec = R1_Pf.calculateXhatNumbaNew(z_t, x_t, Ahat)
 
-            # 3.5 publish current gaussian estimate and particles
-            estimatedGaussMsg.X           = (gaussHatVec[0],)
-            estimatedGaussMsg.Y           = (gaussHatVec[1],)
-            estimatedGaussMsg.Z           = (gaussHatVec[2],)
-            estimatedGaussMsg.theta       = (gaussHatVec[3],)
-            estimatedGaussMsg.Q           = (gaussHatVec[4],)
-            estimatedGaussMsg.v           = (gaussHatVec[5],)
-            estimatedGaussMsg.Dy          = (gaussHatVec[6],)
-            estimatedGaussMsg.Dz          = (gaussHatVec[7],)
+        # 3.5 publish current gaussian estimate and particles
+        estimatedGaussMsg.X           = (gaussHatVec[0],)
+        estimatedGaussMsg.Y           = (gaussHatVec[1],)
+        estimatedGaussMsg.Z           = (gaussHatVec[2],)
+        estimatedGaussMsg.theta       = (gaussHatVec[3],)
+        estimatedGaussMsg.Q           = (gaussHatVec[4],)
+        estimatedGaussMsg.v           = (gaussHatVec[5],)
+        estimatedGaussMsg.Dy          = (gaussHatVec[6],)
+        estimatedGaussMsg.Dz          = (gaussHatVec[7],)
 
-            particlesMsg.X       = R1_Pf.xp[:,0]
-            particlesMsg.Y       = R1_Pf.xp[:,1]
-            particlesMsg.Z       = R1_Pf.xp[:,2]
-            particlesMsg.theta   = R1_Pf.xp[:,3]
-            particlesMsg.Q       = R1_Pf.xp[:,4]
-            particlesMsg.v       = R1_Pf.xp[:,5]
-            particlesMsg.Dy      = R1_Pf.xp[:,6]
-            particlesMsg.Dz      = R1_Pf.xp[:,7]
-            particlesMsg.weights = R1_Pf.wp
+        particlesMsg.X       = R1_Pf.xp[:,0]
+        particlesMsg.Y       = R1_Pf.xp[:,1]
+        particlesMsg.Z       = R1_Pf.xp[:,2]
+        particlesMsg.theta   = R1_Pf.xp[:,3]
+        particlesMsg.Q       = R1_Pf.xp[:,4]
+        particlesMsg.v       = R1_Pf.xp[:,5]
+        particlesMsg.Dy      = R1_Pf.xp[:,6]
+        particlesMsg.Dz      = R1_Pf.xp[:,7]
+        particlesMsg.weights = R1_Pf.wp
 
-            estimatedGaussianPublisher.publish(estimatedGaussMsg)
-            particlesPublisher.publish(particlesMsg)
+        estimatedGaussianPublisher.publish(estimatedGaussMsg)
+        particlesPublisher.publish(particlesMsg)
 
-            if printTimeSteps:
+        if printTimeSteps:
+            print("================================")
+            print()
+            print("Robot pose : ", x_t)
+            print("z [ppm]    : ", z_t)
+            print("k          : ", k)
+            print("Std        : ", R1_Pf.stdL2Norm)
+            print()
 
-                print("================================")
-                print()
-                print("Robot pose : ", x_t)
-                print("z [ppm]    : ", z_t)
-                print("k          : ", k)
-                print("Std        : ", R1_Pf.stdL2Norm)
-                print()
+        # 4. Gain confidence and consume plume
+        if confidenceThreshold >= R1_Pf.stdL2Norm:# and sensorCount>=3: # if confidence is high enough and have at least 3 measurements consume plume
+            print("Found plume")
+            Xfound = np.append(Xfound, gaussHatVec[0])
+            Yfound = np.append(Yfound, gaussHatVec[1])
+            Zfound = np.append(Zfound, gaussHatVec[2])
+            Thetafound = np.append(Thetafound, gaussHatVec[3])
+            Qfound = np.append(Qfound, gaussHatVec[4])
+            Vfound = np.append(Vfound, gaussHatVec[5])
+            Dyfound = np.append(Dyfound, gaussHatVec[6])
+            Dzfound = np.append(Dzfound, gaussHatVec[7])
 
-            # 4. Gain confidence and consume plume
-            if confidenceThreshold >= R1_Pf.stdL2Norm:# and sensorCount>=3: # if confidence is high enough and have at least 3 measurements consume plume
-                # print("Found plume")
-                Xfound = np.append(Xfound, gaussHatVec[0])
-                Yfound = np.append(Yfound, gaussHatVec[1])
-                Zfound = np.append(Zfound, gaussHatVec[2])
-                Thetafound = np.append(Thetafound, gaussHatVec[3])
-                Qfound = np.append(Qfound, gaussHatVec[4])
-                Vfound = np.append(Vfound, gaussHatVec[5])
-                Dyfound = np.append(Dyfound, gaussHatVec[6])
-                Dzfound = np.append(Dzfound, gaussHatVec[7])
+            if len(Xfound) > 1:
+                plumeList = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
 
-                if len(Xfound) > 1:
-                    plumeList = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
+                Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound = combinePlumesNew(plumeList, combineDistanceThreshold)
 
-                    Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound = combinePlumesNew(plumeList, combineDistanceThreshold)
+            Xfound = Xfound.astype(dtype=np.float32)
+            Yfound = Yfound.astype(dtype=np.float32)
+            Zfound = Zfound.astype(dtype=np.float32)
+            Thetafound = Thetafound.astype(dtype=np.float32)
+            Qfound = Qfound.astype(dtype=np.float32)
+            Vfound = Vfound.astype(dtype=np.float32)
+            Dyfound = Dyfound.astype(dtype=np.float32)
+            Dzfound = Dzfound.astype(dtype=np.float32)
 
-                Xfound = Xfound.astype(dtype=np.float32)
-                Yfound = Yfound.astype(dtype=np.float32)
-                Zfound = Zfound.astype(dtype=np.float32)
-                Thetafound = Thetafound.astype(dtype=np.float32)
-                Qfound = Qfound.astype(dtype=np.float32)
-                Vfound = Vfound.astype(dtype=np.float32)
-                Dyfound = Dyfound.astype(dtype=np.float32)
-                Dzfound = Dzfound.astype(dtype=np.float32)
+            Ahat = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
+            multiPlumeSub = GaussianMultiPlumeNBNoClass(Thetafound, Xfound, Yfound, Zfound, Qfound, Vfound, Dyfound, Dzfound)
+            R1_Pf.resetParticles()
+            R1_Pf.wp = np.ones(NumOfParticles) * 1/NumOfParticles
+            # R1_Pf.updateParticlesFromPastMeasurements(z, xVec, multiPlumeSub)
+            R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVec, xVec, Ahat)
 
-                Ahat = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
-                multiPlumeSub = GaussianMultiPlumeNBNoClass(Thetafound, Xfound, Yfound, Zfound, Qfound, Vfound, Dyfound, Dzfound)
-                R1_Pf.resetParticles()
-                R1_Pf.wp = np.ones(NumOfParticles) * 1/NumOfParticles
-                # R1_Pf.updateParticlesFromPastMeasurements(z, xVec, multiPlumeSub)
-                R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVec, xVec, Ahat)
+            # print(Ahat)
 
-                print(Ahat)
+        consumedPlumesMsg.X     = Xfound
+        consumedPlumesMsg.Y     = Yfound
+        consumedPlumesMsg.Z     = Zfound
+        consumedPlumesMsg.theta = Thetafound
+        consumedPlumesMsg.Q     = Qfound
+        consumedPlumesMsg.v     = Vfound
+        consumedPlumesMsg.Dy    = Dyfound
+        consumedPlumesMsg.Dz    = Dzfound
 
-            consumedPlumesMsg.X     = Xfound
-            consumedPlumesMsg.Y     = Yfound
-            consumedPlumesMsg.Z     = Zfound
-            consumedPlumesMsg.theta = Thetafound
-            consumedPlumesMsg.Q     = Qfound
-            consumedPlumesMsg.v     = Vfound
-            consumedPlumesMsg.Dy    = Dyfound
-            consumedPlumesMsg.Dz    = Dzfound
+        consumedPlumesPublisher.publish(consumedPlumesMsg)
 
-            consumedPlumesPublisher.publish(consumedPlumesMsg)
+        # 5. Resample (if needed)
+        resampleCheck = 1/sum(R1_Pf.wp**2)
+        if (resampleCheck <= NumOfParticles/2):
+            R1_Pf.updateParticles(resample = True)
+        else:
+            R1_Pf.updateParticles(resample = False)
 
-            # 5. Resample (if needed)
-            resampleCheck = 1/sum(R1_Pf.wp**2)
-            if (resampleCheck <= NumOfParticles/2):
-                R1_Pf.updateParticles(resample = True)
-            else:
-                R1_Pf.updateParticles(resample = False)
+        A.append(np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound]))
+        alphaHat.append(gaussHatVec)
+        stdVec.append(R1_Pf.stdL2Norm)
 
-            # Move robot to next waypoint
-            waypointIndex +=1
-            waypointStartTime = rospy.get_rostime()
+        # Move robot to next waypoint
+        waypointIndex +=1
+        waypointStartTime = rospy.get_rostime()
 
-            # Finish script when waypoint list runs out
-            if waypointIndex == len(desiredWaypointsList):
-                print("Simulation has finished")
-                break
-
+        # Finish script when waypoint list runs out
+        if waypointIndex == len(desiredWaypointsList):
+            break
 
         static_tf.header.stamp = rospy.Time.now()
         static_tf.header.frame_id = "map_gaden"
@@ -334,6 +364,23 @@ def main():
         br.sendTransform(static_tf)
 
         rate.sleep()
+
+    print("Simulation has finished")
+    rospack = rospkg.RosPack()
+
+    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec}
+
+    simNumberPadded = str(simNumber).zfill(3)
+
+    fullDirStringName = rospack.get_path('gaden_sims') + '/' + rasterString + plumeDir + simNumberPadded
+    print(fullDirStringName)
+
+    if saveResults:
+        pickle.dump( pickle_dictionary, open(fullDirStringName, "wb" ) )
+        print("Data has been saved")
+        
+    os.system('pkill roslaunch')
+
 
 
 if __name__ == '__main__':
