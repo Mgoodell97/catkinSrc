@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <group ns="rasterPF">
+  <group ns="PF">
     <rosparam file="$(find gaden_sims)/config/pfParams4x3.yaml" />
   </group>
 
@@ -17,7 +17,7 @@
   <arg name="Ny" default="10"/>
 
   <!-- Fake position publisher -->
-  <node name="rasterPF" pkg="gaden_sims" type="rasterPFGaden.py" output="screen">
+  <node name="PF" pkg="gaden_sims" type="rasterPFGaden.py" output="screen">
     <param name="xmin"     type="double"  value="$(arg xminRaster)"    /> # m
     <param name="xmax"     type="double"  value="$(arg xmaxRaster)"    /> # m
     <param name="Nx"       type="double"  value="$(arg Nx)"      />

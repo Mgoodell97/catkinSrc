@@ -21,7 +21,7 @@
   <node pkg="tf" type="static_transform_publisher" name="Robot_to_sensor1" args="0.0 0.0 0.0 0 0 0 Robot_1/base_link pid0_frame 50" />
 
   <group ns="Robot_1">
-    <include file="$(find gaden_sims)/launch/raster_PF_Gaden4x3.launch">
+    <include file="$(find gaden_sims)/launch/info_PF_Gaden4x3.launch">
       <arg name="stayTime" default="0.01"/>
       <arg name="xminRaster"     default="0.1"/>
       <arg name="xmaxRaster"     default="4.1"/>

@@ -11,7 +11,6 @@ from math import cos, sin, pi, acos, sqrt, exp
 from GaussianSensorPackage import GaussianSensorNB, getReadingMultiPlume
 
 from numba import njit, jit, float32, boolean, float64, cuda, int32
-# from numba.experimental import jitclass
 
 from sklearn.metrics.pairwise import pairwise_distances_argmin
 from sklearn.cluster import MiniBatchKMeans
@@ -69,8 +68,6 @@ def calculateXhatNumbaFunction(xp, wp, NumOfParticles, pdf_std, chem_reading, ro
     V_hat     = np.sum(wp*xp[:,5])
     Dy_hat    = np.sum(wp*xp[:,6])
     Dz_hat    = np.sum(wp*xp[:,7])
-
-    # gaussHatVec = np.squeeze(np.array([Xha_t, Yha_t, Zha_t, Theta_hat, Q_hat, V_hat, Dy_hat, Dz_hat]))
 
     gaussHatVec = np.array([Xha_t, Yha_t, Zha_t, Theta_hat, Q_hat, V_hat, Dy_hat, Dz_hat])
 
