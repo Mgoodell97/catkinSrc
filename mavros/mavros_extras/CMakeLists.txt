@@ -113,6 +113,13 @@ target_link_libraries(servo_state_publisher
   ${catkin_LIBRARIES}
 )
 
+add_executable(visualizationCustom
+  src/visualizationCustom.cpp
+)
+target_link_libraries(visualizationCustom
+  ${catkin_LIBRARIES}
+)
+
 #############
 ## Install ##
 #############
@@ -129,7 +136,7 @@ install(PROGRAMS
 )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS mavros_extras visualization servo_state_publisher
+install(TARGETS mavros_extras visualization visualizationCustom servo_state_publisher
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

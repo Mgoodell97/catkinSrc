@@ -384,45 +384,18 @@ class GaussianMultiPlume:
             reading = reading + GaussianSensor(x, y, self.thetaList[i], self.xList[i], self.yList[i], z - self.zList[i], self.QList[i], self.vList[i], self.DyList[i], self.DzList[i], self.addNoise)
         return reading
 
-class GaussianMultiPlumeNBNoClass:
-    def __init__(self, thetaList, xList, yList, zList, QList, vList, DyList, DzList, addNoise = False):
-        self.thetaList = thetaList
-        self.xList = xList
-        self.yList = yList
-        self.zList = zList
-        self.QList = QList
-        self.vList = vList
-        self.DyList = DyList
-        self.DzList = DzList
-        self.addNoise = addNoise
-
-    def getReading(self, x, y, z, addNoise= False):
-
-        xPlumes     = np.array(self.xList, dtype=np.float32)
-        yPlumes     = np.array(self.yList, dtype=np.float32)
-        zPlumes     = np.array(self.zList, dtype=np.float32)
-        thetaPlumes = np.array(self.thetaList, dtype=np.float32)
-        QPlumes     = np.array(self.QList, dtype=np.float32)
-        vPlumes     = np.array(self.xList, dtype=np.float32)
-        DyPlumes    = np.array(self.yList, dtype=np.float32)
-        DzPlumes    = np.array(self.xList, dtype=np.float32)
-
-        AMatrix = np.array([xPlumes, yPlumes, zPlumes, thetaPlumes, QPlumes, vPlumes, DyPlumes, DzPlumes])
-
-        return getReadingMultiPlume(x, y, z, AMatrix, addNoise)
-
-multiPlumeSpec = [
-    ('thetaList', float32[:]),
-    ('xList',     float32[:]),
-    ('yList',     float32[:]),
-    ('zList',     float32[:]),
-    ('QList',     float32[:]),
-    ('vList',     float32[:]),
-    ('DyList',    float32[:]),
-    ('DzList',    float32[:]),
-    ('addNoise',  boolean)
-]
-
+# multiPlumeSpec = [
+#     ('thetaList', float32[:]),
+#     ('xList',     float32[:]),
+#     ('yList',     float32[:]),
+#     ('zList',     float32[:]),
+#     ('QList',     float32[:]),
+#     ('vList',     float32[:]),
+#     ('DyList',    float32[:]),
+#     ('DzList',    float32[:]),
+#     ('addNoise',  boolean)
+# ]
+#
 # @jitclass(multiPlumeSpec)
 # class GaussianMultiPlumeNB:
 #     def __init__(self, thetaList, xList, yList, zList, QList, vList, DyList, DzList, addNoise = False):

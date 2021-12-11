@@ -12,8 +12,9 @@ from math import pi
 import matplotlib.pyplot as plt
 
 # Custom modules
+from scipy.special import roots_legendre
 from particleFilterPackage import ParticleFilter
-from rasterScanGeneration import rasterScanGen, rasterScanGenYX
+from InformationThearyPackage import RobotMotion, informationAtXNewNB
 from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume
 
 # Messages
@@ -107,15 +108,27 @@ def main():
     rospy.Subscriber("/Robot_1/Sensor_reading", gas_sensor, GADENSensorAndPose_cb)
 
     # =============================================================================
-    # RasterScanGen
+    # Setup information based motion planner
     # =============================================================================
-    waypointIndex = 0
-    if flipXY:
-        desiredWaypointsList = rasterScanGenYX([xmin, xmax], Nx, [ymin, ymax], Ny)
-        rasterString = "rasterY/"
-    else:
-        desiredWaypointsList = rasterScanGen([xmin, xmax], Nx, [ymin, ymax], Ny)
-        rasterString = "rasterX/"
+
+    xStart = np.random.uniform(xmin, xmax)
+    yStart = 0.5
+
+    # R1 = RobotMotion(PoseVec = np.array([xStart,yStart,1]), VelVec = np.array([0,0,0]), MaxVel=0.5)
+    # r = 0.25 # m/s
+
+    R1 = RobotMotion(PoseVec = np.array([xStart,yStart,1]), VelVec = np.array([0,0,0]), MaxVel=0.25)
+    r = 0.25/2 # m/s
+
+
+    xGuass, wGuass = roots_legendre(2)
+
+    thetaVecSize = 20
+    thetaVec = np.linspace(0, 2*np.pi - (2*np.pi/thetaVecSize), num=thetaVecSize)
+
+    sigma = 5000
+    ztMinMain = 0
+    ztMaxMain = 15000
 
     # =============================================================================
     # PF params
@@ -183,11 +196,11 @@ def main():
     static_tf.header.frame_id = "map_gaden"
     static_tf.child_frame_id = "Robot_1/base_link"
     DesiredWaypoint.header.frame_id = "map_gaden"
-    DesiredWaypoint.pose.position.x = desiredWaypointsList[waypointIndex,0]
-    DesiredWaypoint.pose.position.y = desiredWaypointsList[waypointIndex,1]
+    DesiredWaypoint.pose.position.x = R1.PoseVec[0]
+    DesiredWaypoint.pose.position.y = R1.PoseVec[1]
     DesiredWaypoint.pose.position.z = 0.2
-    static_tf.transform.translation.x = desiredWaypointsList[waypointIndex,0]
-    static_tf.transform.translation.y = desiredWaypointsList[waypointIndex,1]
+    static_tf.transform.translation.x = R1.PoseVec[0]
+    static_tf.transform.translation.y = R1.PoseVec[1]
     static_tf.transform.translation.z = 0.2
     q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
     static_tf.transform.rotation.x = q[0]
@@ -210,10 +223,6 @@ def main():
         if startTest:
             break
 
-    waypointStartTime = rospy.get_rostime()
-    last_request = rospy.get_rostime()
-
-
     k = 0
     while not rospy.is_shutdown():
         # Wait until new sensor reading is recieved
@@ -230,11 +239,53 @@ def main():
         # Once a new reading has been reieved and your at the waypoint perform estimation and move robot
         k +=1
 
+        # =============================================================================
+        # Compute info waypoint
+        # =============================================================================
+
+        desiredInfoVelocities = []
+        desiredInfoPositions  = []
+        infoVec = []
+
+        R1.PoseVec = np.array([robotSensorReadingPoseGaden.local_x, robotSensorReadingPoseGaden.local_y, robotSensorReadingPoseGaden.local_z])
+
+        for i in range(thetaVecSize):
+            possibleVelocity = np.array([R1.VelVec[0] + r*np.cos(thetaVec[i]), R1.VelVec[1] + r*np.sin(thetaVec[i]), robotSensorReadingPoseGaden.local_z])
+            possiblePosition = R1.updatedPoseSim(possibleVelocity, poseHeight = 0.2)
+            desiredInfoVelocities.append(possibleVelocity)
+            desiredInfoPositions.append(possiblePosition)
+
+        # print()
+        desiredInfoVelocities = np.array(desiredInfoVelocities)
+        desiredInfoPositions = np.array(desiredInfoPositions)
+
+        for i in range(len(desiredInfoPositions)):
+            xInfoDes = desiredInfoPositions[i,:]
+
+            MutualInformation = informationAtXNewNB(xInfoDes, R1_Pf.xp, R1_Pf.wp, sigma, ztMinMain, ztMaxMain, xGuass, wGuass, Ahat)
+            infoVec.append(MutualInformation)
+
+        infoVec = np.array(infoVec)
+
+        newVelocity = desiredInfoVelocities[np.argmax(infoVec),:]
+        desiredPose = desiredInfoPositions[np.argmax(infoVec),:]
+
+        R1.updatePose(1, newVelocity, poseHeight = 0.2)
+
+        if R1.PoseVec[0] > X_u:
+            R1.PoseVec[0] = X_u
+        elif R1.PoseVec[0] < X_l:
+            R1.PoseVec[0] = X_l
+
+        if R1.PoseVec[1] > Y_u:
+            R1.PoseVec[1] = Y_u
+        elif R1.PoseVec[1] < Y_l:
+            R1.PoseVec[1] = Y_l
+
         # 1. Get Robot Pose
         x_t = np.array([robotSensorReadingPoseGaden.local_x, robotSensorReadingPoseGaden.local_y, robotSensorReadingPoseGaden.local_z])
 
         # 2. Get sensor reading and modifiy it with found plumes
-        # z_t = robotSensorReadingPoseGaden.raw - multiPlumeSub.getReading(x_t[0], x_t[1], x_t[2])
         z_t = robotSensorReadingPoseGaden.raw - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
 
         kVec.append(k)
@@ -266,6 +317,8 @@ def main():
 
         estimatedGaussianPublisher.publish(estimatedGaussMsg)
         particlesPublisher.publish(particlesMsg)
+
+
 
         if printTimeSteps:
             print("================================")
@@ -303,10 +356,8 @@ def main():
             Dzfound = Dzfound.astype(dtype=np.float32)
 
             Ahat = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
-            # multiPlumeSub = GaussianMultiPlumeNBNoClass(Thetafound, Xfound, Yfound, Zfound, Qfound, Vfound, Dyfound, Dzfound)
             R1_Pf.resetParticles()
             R1_Pf.wp = np.ones(NumOfParticles) * 1/NumOfParticles
-            # R1_Pf.updateParticlesFromPastMeasurements(z, xVec, multiPlumeSub)
             R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVec, xVec, Ahat)
 
             # print(Ahat)
@@ -334,22 +385,22 @@ def main():
         stdVec.append(R1_Pf.stdL2Norm)
 
         # Move robot to next waypoint
-        waypointIndex +=1
-        waypointStartTime = rospy.get_rostime()
+        # basically
+        # x_t = R1.PoseVec
 
         # Finish script when waypoint list runs out
-        if waypointIndex == len(desiredWaypointsList):
+        if k == 1600:
             break
 
         static_tf.header.stamp = rospy.Time.now()
         static_tf.header.frame_id = "map_gaden"
         static_tf.child_frame_id = "Robot_1/base_link"
         DesiredWaypoint.header.frame_id = "map_gaden"
-        DesiredWaypoint.pose.position.x = desiredWaypointsList[waypointIndex,0]
-        DesiredWaypoint.pose.position.y = desiredWaypointsList[waypointIndex,1]
+        DesiredWaypoint.pose.position.x = R1.PoseVec[0]
+        DesiredWaypoint.pose.position.y = R1.PoseVec[1]
         DesiredWaypoint.pose.position.z = 0.2
-        static_tf.transform.translation.x = desiredWaypointsList[waypointIndex,0]
-        static_tf.transform.translation.y = desiredWaypointsList[waypointIndex,1]
+        static_tf.transform.translation.x = R1.PoseVec[0]
+        static_tf.transform.translation.y = R1.PoseVec[1]
         static_tf.transform.translation.z = 0.2
         q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
         static_tf.transform.rotation.x = q[0]
@@ -373,7 +424,7 @@ def main():
 
     simNumberPadded = str(simNumber).zfill(3)
 
-    fullDirStringName = rospack.get_path('gaden_sims') + '/' + rasterString + plumeDir + simNumberPadded
+    fullDirStringName = rospack.get_path('gaden_sims') + '/info' + plumeDir + simNumberPadded
     print(fullDirStringName)
 
     if saveResults:
