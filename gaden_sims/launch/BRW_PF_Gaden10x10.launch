@@ -2,30 +2,28 @@
 <launch>
 
   <group ns="PF">
-    <rosparam file="$(find gaden_sims)/config/pfParams4x3.yaml" />
+    <rosparam file="$(find gaden_sims)/config/pfParams10x10.yaml" />
   </group>
 
-  <arg name="RobotID"      default="1"/>
+  <arg name="RobotID"    default="1"/>
   <arg name="xminRaster" default="0.1"/>
-  <arg name="xmaxRaster" default="2.57"/>
-  <arg name="yminRaster" default="4.1"/>
-  <arg name="ymaxRaster" default="0.1"/>
-  <arg name="flipXY" default="False"/>
-  <arg name="stayTime" default="0.25"/>
+  <arg name="xmaxRaster" default="9.9"/>
+  <arg name="yminRaster" default="0.1"/>
+  <arg name="ymaxRaster" default="9.9"/>
+  <arg name="stayTime"   default="0.25"/>
+  <arg name="stepSize"   default="0.237"/>
+  <arg name="withPF"     default="True"/>
 
-  <arg name="Nx" default="10"/>
-  <arg name="Ny" default="10"/>
 
   <!-- Fake position publisher -->
-  <node name="PF" pkg="gaden_sims" type="infoPFGaden.py" output="screen">
+  <node name="PF" pkg="gaden_sims" type="BRW_PFGaden.py" output="screen">
     <param name="xmin"     type="double"  value="$(arg xminRaster)"    /> # m
     <param name="xmax"     type="double"  value="$(arg xmaxRaster)"    /> # m
-    <param name="Nx"       type="double"  value="$(arg Nx)"      />
     <param name="ymin"     type="double"  value="$(arg yminRaster)"    /> # m
     <param name="ymax"     type="double"  value="$(arg ymaxRaster)"    /> # m
-    <param name="Ny"       type="double"  value="$(arg Ny)"      />
+    <param name="stepSize" type="double"  value="$(arg stepSize)"      />
     <param name="stayTime" type="double"  value="$(arg stayTime)"/>
-    <param name="flipXY"   type="bool"    value="$(arg flipXY)"  />
+    <param name="withPF"                  value="$(arg withPF)"/>
     <param name="RobotID"  type="double"  value="$(arg RobotID)" />
     <param name="printTimeSteps"          value="True"  />
   </node>
@@ -33,7 +31,6 @@
   <node name="copter_visualization" pkg="mavros_extras" type="visualizationCustom">
       <param name="num_rotors" value="4"/>
       <param name="arm_len" value="0.22"/>
-      <!-- <param name="UAV_Name" value="$(arg UAV)"/> -->
       <param name="fixed_frame_id" value="map_gaden"/>
       <param name="child_frame_id" value="pid0_frame"/>
   </node>
