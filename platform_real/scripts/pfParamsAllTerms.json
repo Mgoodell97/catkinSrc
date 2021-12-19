@@ -1,0 +1,30 @@
+{
+    "combineDistanceThreshold": 1.8,
+	"pdf_std": 1.25,
+	"confidenceThreshold": 0.7,
+	"NumOfParticles": 3500,
+	"NumberOfParticlesToReset": 20,
+	
+	"mapPercent": 0.005,
+	"percentTheta": 0.0055,
+	"percentQ": 0.015,
+	"percentV": 0.01,
+	"percentDy": 0.01,
+	"percentDz": 0.01,
+	
+	"Theta_u": 0.523599,
+	"Theta_l": -0.523599,
+	
+	"Q_u": 0.0002582,
+	"Q_l": 0.00020656,
+
+	"V_u" : 0.8,
+	"V_l" : 0.2,
+
+	"Dy_u" : 0.05,
+	"Dy_l" : 0.02,
+
+	"Dz_u" : 0.00075,
+	"Dz_l" : 0.0003
+	
+}
