@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(NNvisit)
+project(nn_visit)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -29,7 +29,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES mps_driver
-   CATKIN_DEPENDS 
+   CATKIN_DEPENDS
    rospy
    roscpp
    message_runtime
@@ -54,5 +54,3 @@ include_directories(
 # add_dependencies(mps_driver_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-
-
