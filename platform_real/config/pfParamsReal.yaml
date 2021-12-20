@@ -12,11 +12,11 @@ percentV: 0.01
 percentDy: 0.01
 percentDz: 0.01
 
-X_u: 3.65
-X_l: 0.3
+X_u: 4.2
+X_l: 0.0
 
-Y_u: 2.4
-Y_l: 0.27
+Y_u: 2.67
+Y_l: 0.0
 
 Z_u: 0.2
 Z_l: 0.2

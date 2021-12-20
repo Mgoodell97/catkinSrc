@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="PlumeSimNumber" default="11"/>
+  <arg name="PlumeSimNumber" default="6"/>
   <arg name="simType"        default="2"/> # 1 = gaussian, 2 = gaden, 3 = MPS
 
   <arg name="simNumber" default="1"/>
@@ -18,8 +18,10 @@
   <param name="simNumber" type="int"  value="$(arg simNumber)" />
   <param name="saveResults" type="bool"  value="$(arg saveResults)" />
 
+  # Launch mocap
+  <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
 
-
+  # Launch Robot 1 group
   <group ns="Robot_1">
     <include file="$(find platform_real)/launch/info_PF_Gaden.launch">
       <arg name="stayTime" default="0.01"/>
@@ -43,6 +45,17 @@
   # Plot readings
   <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot1"  args="/Robot_1/Sensor_reading/raw" if="$(eval simType == 2)"/>
   <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot1"  args="/Robot_1/mps_data/pressure" if="$(eval simType == 3)"/>
+
+
+
+
+
+
+
+
+
+
+
 
 
 

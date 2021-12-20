@@ -265,15 +265,15 @@ def main():
 
         R1.updatePose(1, newVelocity, poseHeight = 0.2)
 
-        if R1.PoseVec[0] > X_u:
-            R1.PoseVec[0] = X_u
-        elif R1.PoseVec[0] < X_l:
-            R1.PoseVec[0] = X_l
+        if R1.PoseVec[0] > xmax:
+            R1.PoseVec[0] = xmax
+        elif R1.PoseVec[0] < xmin:
+            R1.PoseVec[0] = xmin
 
-        if R1.PoseVec[1] > Y_u:
-            R1.PoseVec[1] = Y_u
-        elif R1.PoseVec[1] < Y_l:
-            R1.PoseVec[1] = Y_l
+        if R1.PoseVec[1] > ymax:
+            R1.PoseVec[1] = ymax
+        elif R1.PoseVec[1] < ymin:
+            R1.PoseVec[1] = ymin
 
         # 1. Get Robot Pose
         # Done globally
@@ -310,8 +310,6 @@ def main():
 
         estimatedGaussianPublisher.publish(estimatedGaussMsg)
         particlesPublisher.publish(particlesMsg)
-
-
 
         if printTimeSteps:
             print("================================")
@@ -352,8 +350,6 @@ def main():
             R1_Pf.resetParticles()
             R1_Pf.wp = np.ones(NumOfParticles) * 1/NumOfParticles
             R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVec, xVec, Ahat)
-
-            # print(Ahat)
 
         consumedPlumesMsg.X     = Xfound
         consumedPlumesMsg.Y     = Yfound
@@ -413,9 +409,11 @@ def main():
         marker.id = 0
         marker.type = marker.POINTS
         marker.action = marker.ADD
-        marker.scale.x, marker.scale.y, marker.scale.z = (0.05,0.05,0.05)
-        marker.color.g = 1.0
-        marker.color.a = 0.5
+        marker.scale.x, marker.scale.y, marker.scale.z = (0.025,0.025,0.025)
+        marker.color.r = 0.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+        marker.color.a = 0.75
         marker.pose.orientation.w = 0
 
         for i in range(NumOfParticles/10):
@@ -428,6 +426,7 @@ def main():
 
 
         particlesRVIZ.publish(marker)
+        # Move robot to desired waypoint and wait for next reading
         global_waypoint_pub.publish(DesiredWaypoint)
         br.sendTransform(static_tf)
 
