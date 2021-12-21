@@ -4,6 +4,7 @@ import rospy #include <ros/ros.h> cpp equivalent
 import tf_conversions
 import tf
 import tf2_ros
+from visualization_msgs.msg import Marker
 import numpy as np
 import os, rospkg
 import json
@@ -17,22 +18,23 @@ from rasterScanGeneration import rasterScanGenRotate
 from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume
 
 # Messages
-from geometry_msgs.msg import PoseStamped, TransformStamped
+from geometry_msgs.msg import PoseStamped, TransformStamped, Point
 from olfaction_msgs.msg import gas_sensor
 
 from particle_filter.msg import particles
+from datetime import datetime
 
 ##################
 # Global variables
 ##################
 
-global chem_reading
-global current_state
 global sensorMsg_cb_flag
-
-robotSensorReadingPoseGaden = gas_sensor() # chem reading in gauss env
+global ppm_reading
+global x_t
 
 sensorMsg_cb_flag = False;
+ppm_reading = 0
+x_t = np.zeros(3)
 
 ##################
 # Functions
@@ -45,9 +47,19 @@ sensorMsg_cb_flag = False;
 ##################
 
 def GADENSensorAndPose_cb(GADENMsg):
-    global robotSensorReadingPoseGaden
     global sensorMsg_cb_flag
-    robotSensorReadingPoseGaden = GADENMsg
+    global ppm_reading
+    global x_t
+    ppm_reading = GADENMsg.raw
+    x_t = np.array([GADENMsg.local_x, GADENMsg.local_y, 0.2])
+    sensorMsg_cb_flag = True
+
+def MPS_cb(MPS_cb_msg):
+    global sensorMsg_cb_flag
+    global ppm_reading
+    global x_t
+    ppm_reading = MPS_cb_msg.pressure
+    x_t = np.array([MPS_cb_msg.local_x, MPS_cb_msg.local_y, 0.2])
     sensorMsg_cb_flag = True
 
 ##################
@@ -73,43 +85,37 @@ def main():
     xPlumeLoc  = rospy.get_param("/xPlumeLoc")
     yPlumeLoc  = rospy.get_param("/yPlumeLoc")
     simNumber  = rospy.get_param("/simNumber")
+    simType    = rospy.get_param("/simType")
     saveResults  = rospy.get_param("/saveResults")
-
-    # for saving results
-    if len(xPlumeLoc) == 1:
-        plumeDir = "p1/"
-    elif len(xPlumeLoc) == 2:
-        plumeDir = "p2/"
-    elif len(xPlumeLoc) == 3:
-        plumeDir = "p3/"
-    elif len(xPlumeLoc) == 4:
-        plumeDir = "p4/"
 
     # Saves dictionary entries from launch file as variables
     for key,val in particle_params.items():
         exec(key + '=val')
 
     global sensorMsg_cb_flag
+    global ppm_reading
+    global x_t
 
     # Set node rate
     rate = rospy.Rate(50)
 
-    # Spoof robot pose
-    fullStringName = "/mocap_node/Robot_" + str(int(RobotID)) + "/pose"
-
     # Create publishers
-    global_waypoint_pub        = rospy.Publisher(fullStringName,      PoseStamped, queue_size=1)
     particlesPublisher         = rospy.Publisher('particles',         particles, queue_size=1)
     estimatedGaussianPublisher = rospy.Publisher("estimatedGaussian", particles, queue_size=10)
     consumedPlumesPublisher    = rospy.Publisher("consumedPlumes",    particles, queue_size=1)
+    particlesRVIZ              = rospy.Publisher("particlesRVIZ",     Marker, queue_size=1)
+    global_waypoint_pub        = rospy.Publisher('desiredPos',        PoseStamped, queue_size=10)
 
     # Create subcribers
-    rospy.Subscriber("/Robot_1/Sensor_reading", gas_sensor, GADENSensorAndPose_cb)
+    if simType == 2:
+        rospy.Subscriber("/Robot_1/Sensor_reading", gas_sensor, GADENSensorAndPose_cb)
+    elif simType == 3:
+        rospy.Subscriber("mps_data", MPS, MPS_cb)
 
     # =============================================================================
     # RasterScanGen
     # =============================================================================
-    
+
     waypointIndex = 0
 
     theta = theta * np.pi / 180
@@ -215,27 +221,26 @@ def main():
 
 
     k = 0
+    waypointStartTime = rospy.get_rostime()
+
     while not rospy.is_shutdown():
         # Wait until new sensor reading is recieved
-        while ((not rospy.is_shutdown() and not sensorMsg_cb_flag) ):
-            # print("Here")
-            rate.sleep()
+        while not sensorMsg_cb_flag or not (rospy.get_rostime() - waypointStartTime >= rospy.Duration(stayTime)):
             global_waypoint_pub.publish(DesiredWaypoint);
             br.sendTransform(static_tf)
-            if sensorMsg_cb_flag:
-                break
+            rate.sleep()
 
         sensorMsg_cb_flag = False
+        waypointStartTime = rospy.get_rostime()
 
         # Once a new reading has been reieved and your at the waypoint perform estimation and move robot
         k +=1
 
         # 1. Get Robot Pose
-        x_t = np.array([robotSensorReadingPoseGaden.local_x, robotSensorReadingPoseGaden.local_y, robotSensorReadingPoseGaden.local_z])
+        # Done globally
 
         # 2. Get sensor reading and modifiy it with found plumes
-        # z_t = robotSensorReadingPoseGaden.raw - multiPlumeSub.getReading(x_t[0], x_t[1], x_t[2])
-        z_t = robotSensorReadingPoseGaden.raw - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
+        z_t = ppm_reading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
 
         kVec.append(k)
         xVec.append(x_t)
@@ -369,11 +374,11 @@ def main():
     print("Simulation has finished")
     rospack = rospkg.RosPack()
 
-    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec}
+    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'theta': theta}
 
-    simNumberPadded = str(simNumber).zfill(3)
+    dateString = str(datetime.now()).replace(" ","_")
 
-    fullDirStringName = rospack.get_path('gaden_sims') + '/' + rasterString + plumeDir + simNumberPadded
+    fullDirStringName = rospack.get_path('platform_real') + '/rasterRandom/' + dateString
     print(fullDirStringName)
 
     if saveResults:

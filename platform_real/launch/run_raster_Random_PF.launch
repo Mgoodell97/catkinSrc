@@ -12,6 +12,8 @@
   <arg name="yminMap" default="0"/>
   <arg name="ymaxMap" default="2.67"/>
 
+  <arg name="theta"   default="0"/>
+
   <param name="startTest" type="bool"  value="False" />
   <param name="simType"   value="$(arg simType)" />
 
@@ -23,7 +25,8 @@
 
   # Launch Robot 1 group
   <group ns="Robot_1">
-    <include file="$(find platform_real)/launch/info_PF.launch">
+    <include file="$(find platform_real)/launch/raster_Random_PF.launch">
+      <arg name="theta"          default="$(arg theta)"/>
     </include>
 
     <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log"  if="$(eval simType == 2)">
