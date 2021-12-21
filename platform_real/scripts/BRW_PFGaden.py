@@ -21,6 +21,7 @@ from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume, Gaussi
 # Messages
 from geometry_msgs.msg import PoseStamped, TransformStamped, Point
 from olfaction_msgs.msg import gas_sensor
+from mps_driver.msg import MPS
 
 from particle_filter.msg import particles
 from datetime import datetime
@@ -421,9 +422,9 @@ def main():
     dateString = str(datetime.now()).replace(" ","_")
 
     if withPF:
-        fullDirStringName = rospack.get_path('platform_real') + '/BRW_with_PF/' + dateString
+        fullDirStringName = rospack.get_path('platform_real') + '/results/BRW_with_PF/' + dateString
     else:
-        fullDirStringName = rospack.get_path('platform_real') + '/BRW/' + dateString
+        fullDirStringName = rospack.get_path('platform_real') + '/results/BRW/' + dateString
     print(fullDirStringName)
 
     if saveResults:

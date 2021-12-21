@@ -21,6 +21,7 @@ from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume
 # Messages
 from geometry_msgs.msg import PoseStamped, TransformStamped, Point
 from olfaction_msgs.msg import gas_sensor
+from mps_driver.msg import MPS
 
 from particle_filter.msg import particles
 from datetime import datetime
@@ -188,6 +189,8 @@ def main():
     alphaHat = []
     zVec     = []
     stdVec   = []
+    particlesOverTimeList = []
+    weightsOverTimeList = []
 
     # Sensor data stuff
     static_tf.header.stamp = rospy.Time.now()
@@ -293,6 +296,9 @@ def main():
 
         # 3. Measurement prediction
         gaussHatVec = R1_Pf.calculateXhatNumbaNew(z_t, x_t, Ahat)
+
+        particlesOverTimeList.append(np.copy(R1_Pf.xp))
+        weightsOverTimeList.append(np.copy(R1_Pf.wp))
 
         # 3.5 publish current gaussian estimate and particles
         estimatedGaussMsg.X           = (gaussHatVec[0],)
@@ -442,12 +448,12 @@ def main():
     print("Simulation has finished")
     rospack = rospkg.RosPack()
 
-    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType}
+    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'particlesOverTimeList': particlesOverTimeList, 'weightsOverTimeList': weightsOverTimeList}
 
     # datetime object containing current date and time
     dateString = str(datetime.now()).replace(" ","_")
 
-    fullDirStringName = rospack.get_path('platform_real') + '/info/' + dateString
+    fullDirStringName = rospack.get_path('platform_real') + '/results/info/' + dateString
     print(fullDirStringName)
 
     if saveResults:

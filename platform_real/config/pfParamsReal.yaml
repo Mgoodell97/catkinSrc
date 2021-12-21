@@ -1,4 +1,4 @@
-combineDistanceThreshold: 1.25
+combineDistanceThreshold: 0.75
 pdf_std: 500
 confidenceThreshold: 0.3
 NumOfParticles: 3500

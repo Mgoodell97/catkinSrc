@@ -2,7 +2,7 @@
 <launch>
 
   <param name="plumeType" type="int" value="3"/> # 1 = gaussian, 2 = gaden, 3 = MPS
-  <rosparam param="xPlumeLoc">[4.08]</rosparam>
-  <rosparam param="yPlumeLoc">[6.87]</rosparam>
+  <rosparam param="xPlumeLoc">[0.64]</rosparam>
+  <rosparam param="yPlumeLoc">[1.0744]</rosparam>
 
 </launch>

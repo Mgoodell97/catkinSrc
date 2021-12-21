@@ -71,7 +71,8 @@
   <node pkg="tf" type="static_transform_publisher" name="Robot_to_sensor1" args="0.0 0.0 0.0 0 0 0 Robot_1/base_link pid0_frame 50" />
 
   # 1 plume
-  <include file="$(find plume_sims)/launch/gaden51.launch" if="$(eval PlumeSimNumber == 51 and simType == 2)"/>
+  <include file="$(find plume_sims)/launch/gaden51.launch" if="$(eval PlumeSimNumber == 51)"/>
+  <include file="$(find plume_sims)/launch/MPS51.launch" if="$(eval PlumeSimNumber == 51 and simType == 3)"/>
 
 
 

@@ -7,6 +7,8 @@
   <arg name="simNumber" default="1"/>
   <arg name="saveResults" default="False"/>
 
+  <arg name="withPF" default="False"/>
+
   <arg name="xminMap" default="0"/>
   <arg name="xmaxMap" default="4.2"/>
   <arg name="yminMap" default="0"/>
@@ -23,7 +25,8 @@
 
   # Launch Robot 1 group
   <group ns="Robot_1">
-    <include file="$(find platform_real)/launch/info_PF.launch">
+    <include file="$(find platform_real)/launch/BRW_PF.launch">
+      <arg name="withPF" default="$(arg withPF)"/>
     </include>
 
     <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log"  if="$(eval simType == 2)">
@@ -66,7 +69,7 @@
   <node pkg="tf" type="static_transform_publisher" name="Robot_to_sensor1" args="0.0 0.0 0.0 0 0 0 Robot_1/base_link pid0_frame 50" />
 
   # 1 plume
-  <include file="$(find plume_sims)/launch/gaden51.launch" if="$(eval PlumeSimNumber == 51)"/>
+  <include file="$(find plume_sims)/launch/gaden51.launch" if="$(eval PlumeSimNumber == 51 and simType == 2)"/>
   <include file="$(find plume_sims)/launch/MPS51.launch" if="$(eval PlumeSimNumber == 51 and simType == 3)"/>
 
 

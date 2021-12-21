@@ -20,6 +20,7 @@ from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume
 # Messages
 from geometry_msgs.msg import PoseStamped, TransformStamped, Point
 from olfaction_msgs.msg import gas_sensor
+from mps_driver.msg import MPS
 
 from particle_filter.msg import particles
 from datetime import datetime
@@ -195,7 +196,7 @@ def main():
     static_tf.transform.translation.x = desiredWaypointsList[waypointIndex,0]
     static_tf.transform.translation.y = desiredWaypointsList[waypointIndex,1]
     static_tf.transform.translation.z = 0.2
-    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
+    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 1.0472)
     static_tf.transform.rotation.x = q[0]
     static_tf.transform.rotation.y = q[1]
     static_tf.transform.rotation.z = q[2]
@@ -356,7 +357,7 @@ def main():
         static_tf.transform.translation.x = desiredWaypointsList[waypointIndex,0]
         static_tf.transform.translation.y = desiredWaypointsList[waypointIndex,1]
         static_tf.transform.translation.z = 0.2
-        q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
+        q = tf_conversions.transformations.quaternion_from_euler(0, 0, 1.0472)
         static_tf.transform.rotation.x = q[0]
         static_tf.transform.rotation.y = q[1]
         static_tf.transform.rotation.z = q[2]
@@ -378,14 +379,26 @@ def main():
 
     dateString = str(datetime.now()).replace(" ","_")
 
-    fullDirStringName = rospack.get_path('platform_real') + '/rasterRandom/' + dateString
+    fullDirStringName = rospack.get_path('platform_real') + '/results/rasterRandom/' + dateString
     print(fullDirStringName)
 
     if saveResults:
         pickle.dump( pickle_dictionary, open(fullDirStringName, "wb" ) )
         print("Data has been saved")
 
-    os.system('pkill roslaunch')
+    # os.system('pkill roslaunch')
+
+
+    DesiredWaypoint.header.frame_id = "map_gaden"
+    DesiredWaypoint.pose.position.x = desiredWaypointsList[0,0]
+    DesiredWaypoint.pose.position.y = desiredWaypointsList[0,1]
+    DesiredWaypoint.pose.position.z = 0.2
+    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 1.0472)
+    DesiredWaypoint.pose.orientation.x = q[0]
+    DesiredWaypoint.pose.orientation.y = q[1]
+    DesiredWaypoint.pose.orientation.z = q[2]
+    DesiredWaypoint.pose.orientation.w = q[3]
+    global_waypoint_pub.publish(DesiredWaypoint);
 
 
 

@@ -20,6 +20,7 @@ from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume
 # Messages
 from geometry_msgs.msg import PoseStamped, TransformStamped, Point
 from olfaction_msgs.msg import gas_sensor
+from mps_driver.msg import MPS
 
 from particle_filter.msg import particles
 from datetime import datetime
@@ -119,10 +120,10 @@ def main():
     waypointIndex = 0
     if flipXY:
         desiredWaypointsList = rasterScanGenYX([xmin, xmax], Nx, [ymin, ymax], Ny)
-        rasterString = "/rasterY/"
+        rasterString = "/results/rasterY/"
     else:
         desiredWaypointsList = rasterScanGen([xmin, xmax], Nx, [ymin, ymax], Ny)
-        rasterString = "/rasterX/"
+        rasterString = "/results/rasterX/"
 
     # =============================================================================
     # PF params
