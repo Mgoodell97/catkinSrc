@@ -20,7 +20,10 @@ from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume
 # Messages
 from geometry_msgs.msg import PoseStamped, TransformStamped, Point
 from olfaction_msgs.msg import gas_sensor
+<<<<<<< HEAD
 from mps_driver.msg import MPS
+=======
+>>>>>>> 9fa362a90bcfb6910c2157706d8ad3a48f1fa181
 
 from particle_filter.msg import particles
 from datetime import datetime
@@ -196,7 +199,11 @@ def main():
     static_tf.transform.translation.x = desiredWaypointsList[waypointIndex,0]
     static_tf.transform.translation.y = desiredWaypointsList[waypointIndex,1]
     static_tf.transform.translation.z = 0.2
+<<<<<<< HEAD
     q = tf_conversions.transformations.quaternion_from_euler(0, 0, 1.0472)
+=======
+    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
+>>>>>>> 9fa362a90bcfb6910c2157706d8ad3a48f1fa181
     static_tf.transform.rotation.x = q[0]
     static_tf.transform.rotation.y = q[1]
     static_tf.transform.rotation.z = q[2]
@@ -357,7 +364,11 @@ def main():
         static_tf.transform.translation.x = desiredWaypointsList[waypointIndex,0]
         static_tf.transform.translation.y = desiredWaypointsList[waypointIndex,1]
         static_tf.transform.translation.z = 0.2
+<<<<<<< HEAD
         q = tf_conversions.transformations.quaternion_from_euler(0, 0, 1.0472)
+=======
+        q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
+>>>>>>> 9fa362a90bcfb6910c2157706d8ad3a48f1fa181
         static_tf.transform.rotation.x = q[0]
         static_tf.transform.rotation.y = q[1]
         static_tf.transform.rotation.z = q[2]
@@ -379,13 +390,18 @@ def main():
 
     dateString = str(datetime.now()).replace(" ","_")
 
+<<<<<<< HEAD
     fullDirStringName = rospack.get_path('platform_real') + '/results/rasterRandom/' + dateString
+=======
+    fullDirStringName = rospack.get_path('platform_real') + '/rasterRandom/' + dateString
+>>>>>>> 9fa362a90bcfb6910c2157706d8ad3a48f1fa181
     print(fullDirStringName)
 
     if saveResults:
         pickle.dump( pickle_dictionary, open(fullDirStringName, "wb" ) )
         print("Data has been saved")
 
+<<<<<<< HEAD
     # os.system('pkill roslaunch')
 
 
@@ -399,6 +415,9 @@ def main():
     DesiredWaypoint.pose.orientation.z = q[2]
     DesiredWaypoint.pose.orientation.w = q[3]
     global_waypoint_pub.publish(DesiredWaypoint);
+=======
+    os.system('pkill roslaunch')
+>>>>>>> 9fa362a90bcfb6910c2157706d8ad3a48f1fa181
 
 
 
