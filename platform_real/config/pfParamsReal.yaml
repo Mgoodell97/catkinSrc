@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 combineDistanceThreshold: 0.75
-=======
-combineDistanceThreshold: 1.25
->>>>>>> 9fa362a90bcfb6910c2157706d8ad3a48f1fa181
 pdf_std: 500
 confidenceThreshold: 0.3
 NumOfParticles: 3500

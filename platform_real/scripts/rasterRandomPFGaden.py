@@ -20,10 +20,7 @@ from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume
 # Messages
 from geometry_msgs.msg import PoseStamped, TransformStamped, Point
 from olfaction_msgs.msg import gas_sensor
-<<<<<<< HEAD
 from mps_driver.msg import MPS
-=======
->>>>>>> 9fa362a90bcfb6910c2157706d8ad3a48f1fa181
 
 from particle_filter.msg import particles
 from datetime import datetime
@@ -187,6 +184,8 @@ def main():
     alphaHat = []
     zVec     = []
     stdVec   = []
+    particlesOverTimeList = []
+    weightsOverTimeList = []
 
     # Sensor data stuff
     static_tf.header.stamp = rospy.Time.now()
@@ -199,11 +198,7 @@ def main():
     static_tf.transform.translation.x = desiredWaypointsList[waypointIndex,0]
     static_tf.transform.translation.y = desiredWaypointsList[waypointIndex,1]
     static_tf.transform.translation.z = 0.2
-<<<<<<< HEAD
-    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 1.0472)
-=======
-    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
->>>>>>> 9fa362a90bcfb6910c2157706d8ad3a48f1fa181
+    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0.785398)
     static_tf.transform.rotation.x = q[0]
     static_tf.transform.rotation.y = q[1]
     static_tf.transform.rotation.z = q[2]
@@ -256,6 +251,9 @@ def main():
 
         # 3. Measurement prediction
         gaussHatVec = R1_Pf.calculateXhatNumbaNew(z_t, x_t, Ahat)
+
+        particlesOverTimeList.append(np.copy(R1_Pf.xp))
+        weightsOverTimeList.append(np.copy(R1_Pf.wp))
 
         # 3.5 publish current gaussian estimate and particles
         estimatedGaussMsg.X           = (gaussHatVec[0],)
@@ -364,11 +362,7 @@ def main():
         static_tf.transform.translation.x = desiredWaypointsList[waypointIndex,0]
         static_tf.transform.translation.y = desiredWaypointsList[waypointIndex,1]
         static_tf.transform.translation.z = 0.2
-<<<<<<< HEAD
-        q = tf_conversions.transformations.quaternion_from_euler(0, 0, 1.0472)
-=======
-        q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
->>>>>>> 9fa362a90bcfb6910c2157706d8ad3a48f1fa181
+        q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0.785398)
         static_tf.transform.rotation.x = q[0]
         static_tf.transform.rotation.y = q[1]
         static_tf.transform.rotation.z = q[2]
@@ -386,39 +380,18 @@ def main():
     print("Simulation has finished")
     rospack = rospkg.RosPack()
 
-    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'theta': theta}
+    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'theta': theta, 'particlesOverTimeList': particlesOverTimeList, 'weightsOverTimeList': weightsOverTimeList}
 
     dateString = str(datetime.now()).replace(" ","_")
 
-<<<<<<< HEAD
     fullDirStringName = rospack.get_path('platform_real') + '/results/rasterRandom/' + dateString
-=======
-    fullDirStringName = rospack.get_path('platform_real') + '/rasterRandom/' + dateString
->>>>>>> 9fa362a90bcfb6910c2157706d8ad3a48f1fa181
     print(fullDirStringName)
 
     if saveResults:
         pickle.dump( pickle_dictionary, open(fullDirStringName, "wb" ) )
         print("Data has been saved")
 
-<<<<<<< HEAD
     # os.system('pkill roslaunch')
-
-
-    DesiredWaypoint.header.frame_id = "map_gaden"
-    DesiredWaypoint.pose.position.x = desiredWaypointsList[0,0]
-    DesiredWaypoint.pose.position.y = desiredWaypointsList[0,1]
-    DesiredWaypoint.pose.position.z = 0.2
-    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 1.0472)
-    DesiredWaypoint.pose.orientation.x = q[0]
-    DesiredWaypoint.pose.orientation.y = q[1]
-    DesiredWaypoint.pose.orientation.z = q[2]
-    DesiredWaypoint.pose.orientation.w = q[3]
-    global_waypoint_pub.publish(DesiredWaypoint);
-=======
-    os.system('pkill roslaunch')
->>>>>>> 9fa362a90bcfb6910c2157706d8ad3a48f1fa181
-
 
 
 if __name__ == '__main__':

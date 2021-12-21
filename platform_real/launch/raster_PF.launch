@@ -7,7 +7,7 @@
 
   <arg name="RobotID"      default="1"/>
   <arg name="xminRaster" default="3.8"/>
-  <arg name="xmaxRaster" default="0.3"/>
+  <arg name="xmaxRaster" default="0.35"/>
   <arg name="yminRaster" default="0.27"/>
   <arg name="ymaxRaster" default="2.4"/>
   <arg name="flipXY" default="False"/>

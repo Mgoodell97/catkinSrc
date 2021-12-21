@@ -373,8 +373,8 @@ class ParticleFilter:
             # r = self.pdf_std
             # self.wp = np.logaddexp(self.wp, pdf(zVec[k], yi, r))
 
-            # r = self.pdf_std*len(zVec)/25
-            r = self.pdf_std*len(zVec)/50
+            r = self.pdf_std*len(zVec)/20
+            # r = self.pdf_std*len(zVec)/100
             self.wp = self.wp * pdf(zVec[k], yi, r)
 
             # 3. Normalization

@@ -25,7 +25,7 @@
   <group ns="Robot_1">
     <include file="$(find platform_real)/launch/raster_PF.launch">
       <arg name="xminRaster" default="3.8"/>
-      <arg name="xmaxRaster" default="0.3"/>
+      <arg name="xmaxRaster" default="0.35"/>
       <arg name="yminRaster" default="0.3"/>
       <arg name="ymaxRaster" default="2.4"/>
       <arg name="flipXY" default="True"/>

@@ -194,6 +194,8 @@ def main():
     alphaHat = []
     zVec     = []
     stdVec   = []
+    particlesOverTimeList = []
+    weightsOverTimeList = []
 
     # Sensor data stuff
     static_tf.header.stamp = rospy.Time.now()
@@ -265,6 +267,9 @@ def main():
 
         # 3. Measurement prediction
         gaussHatVec = R1_Pf.calculateXhatNumbaNew(z_t, x_t, Ahat)
+
+        particlesOverTimeList.append(np.copy(R1_Pf.xp))
+        weightsOverTimeList.append(np.copy(R1_Pf.wp))
 
         # 3.5 publish current gaussian estimate and particles
         estimatedGaussMsg.X           = (gaussHatVec[0],)
@@ -417,7 +422,7 @@ def main():
     print("Simulation has finished")
     rospack = rospkg.RosPack()
 
-    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec}
+    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'particlesOverTimeList': particlesOverTimeList, 'weightsOverTimeList': weightsOverTimeList}
 
     dateString = str(datetime.now()).replace(" ","_")
 
