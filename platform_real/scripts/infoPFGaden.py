@@ -3,8 +3,8 @@
 import rospy #include <ros/ros.h> cpp equivalent
 import tf_conversions
 import tf
-from visualization_msgs.msg import Marker
 import tf2_ros
+from visualization_msgs.msg import Marker
 import numpy as np
 import os, rospkg
 import json
@@ -23,6 +23,7 @@ from geometry_msgs.msg import PoseStamped, TransformStamped, Point
 from olfaction_msgs.msg import gas_sensor
 
 from particle_filter.msg import particles
+from datetime import datetime
 
 ##################
 # Global variables
@@ -51,14 +52,16 @@ def GADENSensorAndPose_cb(GADENMsg):
     global ppm_reading
     global x_t
     ppm_reading = GADENMsg.raw
-    x_t = np.array([GADENMsg.local_x, GADENMsg.local_y, GADENMsg.local_z])
+    x_t = np.array([GADENMsg.local_x, GADENMsg.local_y, 0.2])
     sensorMsg_cb_flag = True
 
 def MPS_cb(MPS_cb_msg):
+    global sensorMsg_cb_flag
     global ppm_reading
     global x_t
     ppm_reading = MPS_cb_msg.pressure
-    x_t = np.array([MPS_cb_msg.local_x, MPS_cb_msg.local_y, MPS_cb_msg.local_z])
+    x_t = np.array([MPS_cb_msg.local_x, MPS_cb_msg.local_y, 0.2])
+    sensorMsg_cb_flag = True
 
 ##################
 # Main
@@ -91,6 +94,7 @@ def main():
         exec(key + '=val')
 
     global sensorMsg_cb_flag
+    global ppm_reading
     global x_t
 
     # Set node rate
@@ -114,10 +118,10 @@ def main():
     # =============================================================================
 
     xStart = 3.5
-    yStart = 0.5
+    yStart = 0.27
 
-    R1 = RobotMotion(PoseVec = np.array([xStart,yStart,1]), VelVec = np.array([0,0,0]), MaxVel=0.375)
-    r = 0.115 # m/s
+    R1 = RobotMotion(PoseVec = np.array([xStart,yStart,1]), VelVec = np.array([0,0,0]), MaxVel=0.2)
+    r = 0.1 # m/s
 
     xGuass, wGuass = roots_legendre(2)
 
@@ -196,7 +200,7 @@ def main():
     static_tf.transform.translation.x = R1.PoseVec[0]
     static_tf.transform.translation.y = R1.PoseVec[1]
     static_tf.transform.translation.z = 0.2
-    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
+    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0.785398)
     static_tf.transform.rotation.x = q[0]
     static_tf.transform.rotation.y = q[1]
     static_tf.transform.rotation.z = q[2]
@@ -213,21 +217,23 @@ def main():
         global_waypoint_pub.publish(DesiredWaypoint);
         br.sendTransform(static_tf)
         startTest = rospy.get_param("/startTest");
-        if startTest:
-            break
 
     k = 0
+    waypointStartTime = rospy.get_rostime()
+
     while not rospy.is_shutdown():
         # Wait until new sensor reading is recieved
-        while ((not rospy.is_shutdown() and not sensorMsg_cb_flag) ):
+        while not sensorMsg_cb_flag or not (rospy.get_rostime() - waypointStartTime >= rospy.Duration(stayTime)):
             # print("Here")
-            rate.sleep()
+            # rospy.sleep(stayTime)
             global_waypoint_pub.publish(DesiredWaypoint);
             br.sendTransform(static_tf)
-            if sensorMsg_cb_flag:
-                break
+            rate.sleep()
+            # if sensorMsg_cb_flag and (rospy.get_rostime() - waypointStartTime >= rospy.Duration(stayTime)):
+            #     break:
 
         sensorMsg_cb_flag = False
+        waypointStartTime = rospy.get_rostime()
 
         # Once a new reading has been reieved and your at the waypoint perform estimation and move robot
         k +=1
@@ -265,15 +271,15 @@ def main():
 
         R1.updatePose(1, newVelocity, poseHeight = 0.2)
 
-        if R1.PoseVec[0] > X_u:
-            R1.PoseVec[0] = X_u
-        elif R1.PoseVec[0] < X_l:
-            R1.PoseVec[0] = X_l
+        if R1.PoseVec[0] > xmax:
+            R1.PoseVec[0] = xmax
+        elif R1.PoseVec[0] < xmin:
+            R1.PoseVec[0] = xmin
 
-        if R1.PoseVec[1] > Y_u:
-            R1.PoseVec[1] = Y_u
-        elif R1.PoseVec[1] < Y_l:
-            R1.PoseVec[1] = Y_l
+        if R1.PoseVec[1] > ymax:
+            R1.PoseVec[1] = ymax
+        elif R1.PoseVec[1] < ymin:
+            R1.PoseVec[1] = ymin
 
         # 1. Get Robot Pose
         # Done globally
@@ -311,8 +317,6 @@ def main():
         estimatedGaussianPublisher.publish(estimatedGaussMsg)
         particlesPublisher.publish(particlesMsg)
 
-
-
         if printTimeSteps:
             print("================================")
             print()
@@ -320,6 +324,7 @@ def main():
             print("z [ppm]    : ", z_t)
             print("k          : ", k)
             print("Std        : ", R1_Pf.stdL2Norm)
+            # print(min(R1_Pf.wp), max(R1_Pf.wp), pdf_std)
             print()
 
         # 4. Gain confidence and consume plume
@@ -353,8 +358,6 @@ def main():
             R1_Pf.wp = np.ones(NumOfParticles) * 1/NumOfParticles
             R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVec, xVec, Ahat)
 
-            # print(Ahat)
-
         consumedPlumesMsg.X     = Xfound
         consumedPlumesMsg.Y     = Yfound
         consumedPlumesMsg.Z     = Zfound
@@ -382,7 +385,7 @@ def main():
         # x_t = R1.PoseVec
 
         # Finish script when waypoint list runs out
-        if k == 1600:
+        if k == 400:
             break
 
         static_tf.header.stamp = rospy.Time.now()
@@ -395,7 +398,7 @@ def main():
         static_tf.transform.translation.x = R1.PoseVec[0]
         static_tf.transform.translation.y = R1.PoseVec[1]
         static_tf.transform.translation.z = 0.2
-        q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
+        q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0.785398)
         static_tf.transform.rotation.x = q[0]
         static_tf.transform.rotation.y = q[1]
         static_tf.transform.rotation.z = q[2]
@@ -413,9 +416,11 @@ def main():
         marker.id = 0
         marker.type = marker.POINTS
         marker.action = marker.ADD
-        marker.scale.x, marker.scale.y, marker.scale.z = (0.05,0.05,0.05)
-        marker.color.g = 1.0
-        marker.color.a = 0.5
+        marker.scale.x, marker.scale.y, marker.scale.z = (0.025,0.025,0.025)
+        marker.color.r = 0.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+        marker.color.a = 0.75
         marker.pose.orientation.w = 0
 
         for i in range(NumOfParticles/10):
@@ -428,6 +433,7 @@ def main():
 
 
         particlesRVIZ.publish(marker)
+        # Move robot to desired waypoint and wait for next reading
         global_waypoint_pub.publish(DesiredWaypoint)
         br.sendTransform(static_tf)
 
@@ -438,16 +444,17 @@ def main():
 
     pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType}
 
-    simNumberPadded = str(simNumber).zfill(3)
+    # datetime object containing current date and time
+    dateString = str(datetime.now()).replace(" ","_")
 
-    fullDirStringName = rospack.get_path('platform_real') + '/info/' + simNumberPadded
+    fullDirStringName = rospack.get_path('platform_real') + '/info/' + dateString
     print(fullDirStringName)
 
     if saveResults:
         pickle.dump( pickle_dictionary, open(fullDirStringName, "wb" ) )
         print("Data has been saved")
 
-    os.system('pkill roslaunch')
+    # os.system('pkill roslaunch')
 
 
 

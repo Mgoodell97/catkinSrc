@@ -23,7 +23,12 @@
 
   # Launch Robot 1 group
   <group ns="Robot_1">
-    <include file="$(find platform_real)/launch/info_PF.launch">
+    <include file="$(find platform_real)/launch/raster_PF.launch">
+      <arg name="xminRaster" default="3.8"/>
+      <arg name="xmaxRaster" default="0.3"/>
+      <arg name="yminRaster" default="0.3"/>
+      <arg name="ymaxRaster" default="2.4"/>
+      <arg name="flipXY" default="True"/>
     </include>
 
     <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log"  if="$(eval simType == 2)">
