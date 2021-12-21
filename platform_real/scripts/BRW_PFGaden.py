@@ -3,8 +3,8 @@
 import rospy #include <ros/ros.h> cpp equivalent
 import tf_conversions
 import tf
-from visualization_msgs.msg import Marker
 import tf2_ros
+from visualization_msgs.msg import Marker
 import numpy as np
 import os, rospkg
 import json
@@ -23,18 +23,19 @@ from geometry_msgs.msg import PoseStamped, TransformStamped, Point
 from olfaction_msgs.msg import gas_sensor
 
 from particle_filter.msg import particles
+from datetime import datetime
 
 ##################
 # Global variables
 ##################
 
-global chem_reading
-global current_state
 global sensorMsg_cb_flag
-
-robotSensorReadingPoseGaden = gas_sensor() # chem reading in gauss env
+global ppm_reading
+global x_t
 
 sensorMsg_cb_flag = False;
+ppm_reading = 0
+x_t = np.zeros(3)
 
 ##################
 # Functions
@@ -47,9 +48,19 @@ sensorMsg_cb_flag = False;
 ##################
 
 def GADENSensorAndPose_cb(GADENMsg):
-    global robotSensorReadingPoseGaden
     global sensorMsg_cb_flag
-    robotSensorReadingPoseGaden = GADENMsg
+    global ppm_reading
+    global x_t
+    ppm_reading = GADENMsg.raw
+    x_t = np.array([GADENMsg.local_x, GADENMsg.local_y, 0.2])
+    sensorMsg_cb_flag = True
+
+def MPS_cb(MPS_cb_msg):
+    global sensorMsg_cb_flag
+    global ppm_reading
+    global x_t
+    ppm_reading = MPS_cb_msg.pressure
+    x_t = np.array([MPS_cb_msg.local_x, MPS_cb_msg.local_y, 0.2])
     sensorMsg_cb_flag = True
 
 ##################
@@ -75,46 +86,40 @@ def main():
     xPlumeLoc  = rospy.get_param("/xPlumeLoc")
     yPlumeLoc  = rospy.get_param("/yPlumeLoc")
     simNumber  = rospy.get_param("/simNumber")
+    simType    = rospy.get_param("/simType")
     saveResults  = rospy.get_param("/saveResults")
-
-    # for saving results
-    if len(xPlumeLoc) == 1:
-        plumeDir = "p1/"
-    elif len(xPlumeLoc) == 2:
-        plumeDir = "p2/"
-    elif len(xPlumeLoc) == 3:
-        plumeDir = "p3/"
-    elif len(xPlumeLoc) == 4:
-        plumeDir = "p4/"
 
     # Saves dictionary entries from launch file as variables
     for key,val in particle_params.items():
         exec(key + '=val')
 
     global sensorMsg_cb_flag
+    global ppm_reading
+    global x_t
 
     # Set node rate
     rate = rospy.Rate(50)
 
-    # Spoof robot pose
-    fullStringName = "/mocap_node/Robot_" + str(int(RobotID)) + "/pose"
-
     # Create publishers
-    global_waypoint_pub        = rospy.Publisher(fullStringName,      PoseStamped, queue_size=1)
     particlesPublisher         = rospy.Publisher('particles',         particles, queue_size=1)
     estimatedGaussianPublisher = rospy.Publisher("estimatedGaussian", particles, queue_size=10)
     consumedPlumesPublisher    = rospy.Publisher("consumedPlumes",    particles, queue_size=1)
     particlesRVIZ              = rospy.Publisher("particlesRVIZ",     Marker, queue_size=1)
+    global_waypoint_pub        = rospy.Publisher('desiredPos',        PoseStamped, queue_size=10)
 
     # Create subcribers
-    rospy.Subscriber("/Robot_1/Sensor_reading", gas_sensor, GADENSensorAndPose_cb)
+    if simType == 2:
+        rospy.Subscriber("/Robot_1/Sensor_reading", gas_sensor, GADENSensorAndPose_cb)
+    elif simType == 3:
+        rospy.Subscriber("mps_data", MPS, MPS_cb)
 
     # =============================================================================
     # Setup information based motion planner
     # =============================================================================
 
-    xStart = np.random.uniform(xmin, xmax)
-    yStart = 0.5
+    # xStart = np.random.uniform(xmin, xmax)
+    xStart = 3.5
+    yStart = 0.27
 
     biasRange = 60 * pi /180 # degrees
 
@@ -200,7 +205,7 @@ def main():
     static_tf.transform.translation.x = x_t[0]
     static_tf.transform.translation.y = x_t[1]
     static_tf.transform.translation.z = 0.2
-    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
+    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0.785398)
     static_tf.transform.rotation.x = q[0]
     static_tf.transform.rotation.y = q[1]
     static_tf.transform.rotation.z = q[2]
@@ -222,17 +227,17 @@ def main():
             break
 
     k = 0
+    waypointStartTime = rospy.get_rostime()
+
     while not rospy.is_shutdown():
         # Wait until new sensor reading is recieved
-        while ((not rospy.is_shutdown() and not sensorMsg_cb_flag) ):
-            # print("Here")
-            rate.sleep()
+        while not sensorMsg_cb_flag or not (rospy.get_rostime() - waypointStartTime >= rospy.Duration(stayTime)):
             global_waypoint_pub.publish(DesiredWaypoint);
             br.sendTransform(static_tf)
-            if sensorMsg_cb_flag:
-                break
+            rate.sleep()
 
         sensorMsg_cb_flag = False
+        waypointStartTime = rospy.get_rostime()
 
         # Once a new reading has been reieved and your at the waypoint perform estimation and move robot
         k +=1
@@ -242,10 +247,10 @@ def main():
         # =============================================================================
 
         # 1. Get Robot Pose
-        x_t = np.array([robotSensorReadingPoseGaden.local_x, robotSensorReadingPoseGaden.local_y, robotSensorReadingPoseGaden.local_z])
+        # Done globally
 
         # 2. Get sensor reading and modifiy it with found plumes
-        z_t = robotSensorReadingPoseGaden.raw - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
+        z_t = ppm_reading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
 
         if withPF:
             z_tForBRW = GaussianSensorNB(x_t[0], x_t[1], gaussHatVec[3], gaussHatVec[0], gaussHatVec[1], x_t[2] - gaussHatVec[2], gaussHatVec[4], gaussHatVec[5], gaussHatVec[6], gaussHatVec[7])
@@ -357,7 +362,7 @@ def main():
         stdVec.append(R1_Pf.stdL2Norm)
 
         # Finish script when waypoint list runs out
-        if k == 1600:
+        if k == 400:
             break
 
         static_tf.header.stamp = rospy.Time.now()
@@ -370,7 +375,7 @@ def main():
         static_tf.transform.translation.x = x_t[0]
         static_tf.transform.translation.y = x_t[1]
         static_tf.transform.translation.z = 0.2
-        q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
+        q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0.785398)
         static_tf.transform.rotation.x = q[0]
         static_tf.transform.rotation.y = q[1]
         static_tf.transform.rotation.z = q[2]
@@ -413,19 +418,19 @@ def main():
 
     pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec}
 
-    simNumberPadded = str(simNumber).zfill(3)
+    dateString = str(datetime.now()).replace(" ","_")
 
     if withPF:
-        fullDirStringName = rospack.get_path('gaden_sims') + '/BRW_with_PF/' + plumeDir + simNumberPadded
+        fullDirStringName = rospack.get_path('platform_real') + '/BRW_with_PF/' + dateString
     else:
-        fullDirStringName = rospack.get_path('gaden_sims') + '/BRW/' + plumeDir + simNumberPadded
+        fullDirStringName = rospack.get_path('platform_real') + '/BRW/' + dateString
     print(fullDirStringName)
 
     if saveResults:
         pickle.dump( pickle_dictionary, open(fullDirStringName, "wb" ) )
         print("Data has been saved")
 
-    os.system('pkill roslaunch')
+    # os.system('pkill roslaunch')
 
 
 

@@ -2,22 +2,22 @@
 <launch>
 
   <group ns="PF">
-    <rosparam file="$(find gaden_sims)/config/pfParams4x3.yaml" />
+    <rosparam file="$(find platform_real)/config/pfParamsReal.yaml" />
   </group>
 
   <arg name="RobotID"      default="1"/>
-  <arg name="xminRaster" default="0.1"/>
-  <arg name="xmaxRaster" default="2.57"/>
-  <arg name="yminRaster" default="4.1"/>
-  <arg name="ymaxRaster" default="0.1"/>
+  <arg name="xminRaster" default="3.8"/>
+  <arg name="xmaxRaster" default="0.3"/>
+  <arg name="yminRaster" default="0.27"/>
+  <arg name="ymaxRaster" default="2.4"/>
   <arg name="flipXY" default="False"/>
-  <arg name="stayTime" default="0.25"/>
+  <arg name="stayTime" default="1.25"/>
 
-  <arg name="Nx" default="10"/>
-  <arg name="Ny" default="10"/>
+  <arg name="Nx" default="20"/>
+  <arg name="Ny" default="20"/>
 
   <!-- Fake position publisher -->
-  <node name="PF" pkg="gaden_sims" type="rasterPFGaden.py" output="screen">
+  <node name="PF" pkg="platform_real" type="rasterPFGaden.py" output="screen">
     <param name="xmin"     type="double"  value="$(arg xminRaster)"    /> # m
     <param name="xmax"     type="double"  value="$(arg xmaxRaster)"    /> # m
     <param name="Nx"       type="double"  value="$(arg Nx)"      />
@@ -27,7 +27,14 @@
     <param name="stayTime" type="double"  value="$(arg stayTime)"/>
     <param name="flipXY"   type="bool"    value="$(arg flipXY)"  />
     <param name="RobotID"  type="double"  value="$(arg RobotID)" />
-    <param name="printTimeSteps"          value="False"  />
+    <param name="printTimeSteps"          value="True"  />
+  </node>
+
+  <node name="copter_visualization" pkg="mavros_extras" type="visualizationCustom">
+      <param name="num_rotors" value="4"/>
+      <param name="marker_scale" value="0.5"/>
+      <param name="fixed_frame_id" value="map_gaden"/>
+      <param name="child_frame_id" value="pid0_frame"/>
   </node>
 
 </launch>

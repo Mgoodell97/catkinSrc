@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- <arg name = "CF_ID" default = "1"/> -->
+  <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
+
+    <node name="hoverControl" pkg="crazyflie_DARC" type="hover_cf.py" output="screen"/>
+      <param name = "x_d" value = "2.6"/>
+      <param name = "y_d" value = "0.5"/>
+      <param name = "z_d" value = "0.75"/>
+
+</launch>
