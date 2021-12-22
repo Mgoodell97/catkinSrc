@@ -183,6 +183,7 @@ def main():
     A        = []
     alphaHat = []
     zVec     = []
+    zVecNotModified = []
     stdVec   = []
     particlesOverTimeList = []
     weightsOverTimeList = []
@@ -248,6 +249,7 @@ def main():
         kVec.append(k)
         xVec.append(x_t)
         zVec.append(z_t)
+        zVecNotModified.append(ppm_reading)
 
         # 3. Measurement prediction
         gaussHatVec = R1_Pf.calculateXhatNumbaNew(z_t, x_t, Ahat)
@@ -318,7 +320,7 @@ def main():
             R1_Pf.resetParticles()
             R1_Pf.wp = np.ones(NumOfParticles) * 1/NumOfParticles
             # R1_Pf.updateParticlesFromPastMeasurements(z, xVec, multiPlumeSub)
-            R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVec, xVec, Ahat)
+            R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVecNotModified, xVec, Ahat)
 
             # print(Ahat)
 
@@ -380,7 +382,7 @@ def main():
     print("Simulation has finished")
     rospack = rospkg.RosPack()
 
-    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'theta': theta, 'particlesOverTimeList': particlesOverTimeList, 'weightsOverTimeList': weightsOverTimeList}
+    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'theta': theta, 'particlesOverTimeList': particlesOverTimeList, 'weightsOverTimeList': weightsOverTimeList, 'zVecNotModified': zVecNotModified}
 
     dateString = str(datetime.now()).replace(" ","_")
 
