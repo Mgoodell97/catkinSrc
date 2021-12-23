@@ -427,7 +427,8 @@ def main():
     pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'particlesOverTimeList': particlesOverTimeList, 'weightsOverTimeList': weightsOverTimeList, 'zVecNotModified': zVecNotModified}
 
     dateString = str(datetime.now()).replace(" ","_")
-
+    dateString = dateString.replace(":","%")
+    
     if withPF:
         fullDirStringName = rospack.get_path('platform_real') + '/results/BRW_with_PF/' + dateString
     else:

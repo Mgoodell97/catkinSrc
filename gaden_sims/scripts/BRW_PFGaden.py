@@ -257,7 +257,7 @@ def main():
         kVec.append(k)
         xVec.append(x_tCopy)
         zVec.append(z_t)
-        zVecNotModified.append(ppm_reading)
+        zVecNotModified.append(robotSensorReadingPoseGaden.raw)
 
         # 3. Measurement prediction
         gaussHatVec = R1_Pf.calculateXhatNumbaNew(z_t, x_t, Ahat)

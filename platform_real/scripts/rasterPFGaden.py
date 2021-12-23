@@ -235,7 +235,6 @@ def main():
         # Done globally
 
         # 2. Get sensor reading and modifiy it with found plumes
-
         z_t = ppm_reading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
 
         kVec.append(k)
@@ -397,7 +396,8 @@ def main():
     pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'particlesOverTimeList': particlesOverTimeList, 'weightsOverTimeList': weightsOverTimeList, 'zVecNotModified': zVecNotModified}
 
     dateString = str(datetime.now()).replace(" ","_")
-
+    dateString = dateString.replace(":","%")
+    
     fullDirStringName = rospack.get_path('platform_real') + rasterString + dateString
     print(fullDirStringName)
 

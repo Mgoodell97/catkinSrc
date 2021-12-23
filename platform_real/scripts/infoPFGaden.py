@@ -454,7 +454,8 @@ def main():
 
     # datetime object containing current date and time
     dateString = str(datetime.now()).replace(" ","_")
-
+    dateString = dateString.replace(":","%")
+    
     fullDirStringName = rospack.get_path('platform_real') + '/results/info/' + dateString
     print(fullDirStringName)
 

@@ -105,7 +105,13 @@ def main():
     estimatedGaussianPublisher = rospy.Publisher("estimatedGaussian", particles, queue_size=10)
     consumedPlumesPublisher    = rospy.Publisher("consumedPlumes",    particles, queue_size=1)
     particlesRVIZ              = rospy.Publisher("particlesRVIZ",     Marker, queue_size=1)
-    global_waypoint_pub        = rospy.Publisher('desiredPos',        PoseStamped, queue_size=10)
+    # global_waypoint_pub        = rospy.Publisher('desiredPos',        PoseStamped, queue_size=10)
+
+    # Spoof robot pose
+    fullStringName = "/mocap_node/Robot_" + str(int(RobotID)) + "/pose"
+
+    # Create publishers
+    global_waypoint_pub        = rospy.Publisher(fullStringName,      PoseStamped, queue_size=1)
 
     # Create subcribers
     if simType == 2:
@@ -122,7 +128,6 @@ def main():
     theta = theta * np.pi / 180
 
     desiredWaypointsList = rasterScanGenRotate([xmin, xmax], [ymin, ymax], stepSize, theta)
-    rasterString = "rasterRandom/"
 
     # =============================================================================
     # PF params
@@ -385,6 +390,7 @@ def main():
     pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'theta': theta, 'particlesOverTimeList': particlesOverTimeList, 'weightsOverTimeList': weightsOverTimeList, 'zVecNotModified': zVecNotModified}
 
     dateString = str(datetime.now()).replace(" ","_")
+    dateString = dateString.replace(":","%")
 
     fullDirStringName = rospack.get_path('platform_real') + '/results/rasterRandom/' + dateString
     print(fullDirStringName)
