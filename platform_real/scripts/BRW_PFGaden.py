@@ -21,6 +21,7 @@ from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume, Gaussi
 # Messages
 from geometry_msgs.msg import PoseStamped, TransformStamped, Point
 from olfaction_msgs.msg import gas_sensor
+from mps_driver.msg import MPS
 
 from particle_filter.msg import particles
 from datetime import datetime
@@ -192,7 +193,10 @@ def main():
     A        = []
     alphaHat = []
     zVec     = []
+    zVecNotModified = []
     stdVec   = []
+    particlesOverTimeList = []
+    weightsOverTimeList = []
 
     # Sensor data stuff
     static_tf.header.stamp = rospy.Time.now()
@@ -261,9 +265,13 @@ def main():
         kVec.append(k)
         xVec.append(x_tCopy)
         zVec.append(z_t)
+        zVecNotModified.append(ppm_reading)
 
         # 3. Measurement prediction
         gaussHatVec = R1_Pf.calculateXhatNumbaNew(z_t, x_t, Ahat)
+
+        particlesOverTimeList.append(np.copy(R1_Pf.xp))
+        weightsOverTimeList.append(np.copy(R1_Pf.wp))
 
         # 3.5 publish current gaussian estimate and particles
         estimatedGaussMsg.X           = (gaussHatVec[0],)
@@ -335,7 +343,7 @@ def main():
             Ahat = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
             R1_Pf.resetParticles()
             R1_Pf.wp = np.ones(NumOfParticles) * 1/NumOfParticles
-            R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVec, xVec, Ahat)
+            R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVecNotModified, xVec, Ahat)
 
             # print(Ahat)
 
@@ -416,14 +424,15 @@ def main():
     print("Simulation has finished")
     rospack = rospkg.RosPack()
 
-    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec}
+    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'particlesOverTimeList': particlesOverTimeList, 'weightsOverTimeList': weightsOverTimeList, 'zVecNotModified': zVecNotModified}
 
     dateString = str(datetime.now()).replace(" ","_")
-
+    dateString = dateString.replace(":","%")
+    
     if withPF:
-        fullDirStringName = rospack.get_path('platform_real') + '/BRW_with_PF/' + dateString
+        fullDirStringName = rospack.get_path('platform_real') + '/results/BRW_with_PF/' + dateString
     else:
-        fullDirStringName = rospack.get_path('platform_real') + '/BRW/' + dateString
+        fullDirStringName = rospack.get_path('platform_real') + '/results/BRW/' + dateString
     print(fullDirStringName)
 
     if saveResults:

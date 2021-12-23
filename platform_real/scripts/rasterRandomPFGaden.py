@@ -20,6 +20,7 @@ from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume
 # Messages
 from geometry_msgs.msg import PoseStamped, TransformStamped, Point
 from olfaction_msgs.msg import gas_sensor
+from mps_driver.msg import MPS
 
 from particle_filter.msg import particles
 from datetime import datetime
@@ -104,7 +105,13 @@ def main():
     estimatedGaussianPublisher = rospy.Publisher("estimatedGaussian", particles, queue_size=10)
     consumedPlumesPublisher    = rospy.Publisher("consumedPlumes",    particles, queue_size=1)
     particlesRVIZ              = rospy.Publisher("particlesRVIZ",     Marker, queue_size=1)
-    global_waypoint_pub        = rospy.Publisher('desiredPos',        PoseStamped, queue_size=10)
+    # global_waypoint_pub        = rospy.Publisher('desiredPos',        PoseStamped, queue_size=10)
+
+    # Spoof robot pose
+    fullStringName = "/mocap_node/Robot_" + str(int(RobotID)) + "/pose"
+
+    # Create publishers
+    global_waypoint_pub        = rospy.Publisher(fullStringName,      PoseStamped, queue_size=1)
 
     # Create subcribers
     if simType == 2:
@@ -121,7 +128,6 @@ def main():
     theta = theta * np.pi / 180
 
     desiredWaypointsList = rasterScanGenRotate([xmin, xmax], [ymin, ymax], stepSize, theta)
-    rasterString = "rasterRandom/"
 
     # =============================================================================
     # PF params
@@ -182,7 +188,10 @@ def main():
     A        = []
     alphaHat = []
     zVec     = []
+    zVecNotModified = []
     stdVec   = []
+    particlesOverTimeList = []
+    weightsOverTimeList = []
 
     # Sensor data stuff
     static_tf.header.stamp = rospy.Time.now()
@@ -195,7 +204,7 @@ def main():
     static_tf.transform.translation.x = desiredWaypointsList[waypointIndex,0]
     static_tf.transform.translation.y = desiredWaypointsList[waypointIndex,1]
     static_tf.transform.translation.z = 0.2
-    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
+    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0.785398)
     static_tf.transform.rotation.x = q[0]
     static_tf.transform.rotation.y = q[1]
     static_tf.transform.rotation.z = q[2]
@@ -245,9 +254,13 @@ def main():
         kVec.append(k)
         xVec.append(x_t)
         zVec.append(z_t)
+        zVecNotModified.append(ppm_reading)
 
         # 3. Measurement prediction
         gaussHatVec = R1_Pf.calculateXhatNumbaNew(z_t, x_t, Ahat)
+
+        particlesOverTimeList.append(np.copy(R1_Pf.xp))
+        weightsOverTimeList.append(np.copy(R1_Pf.wp))
 
         # 3.5 publish current gaussian estimate and particles
         estimatedGaussMsg.X           = (gaussHatVec[0],)
@@ -312,7 +325,7 @@ def main():
             R1_Pf.resetParticles()
             R1_Pf.wp = np.ones(NumOfParticles) * 1/NumOfParticles
             # R1_Pf.updateParticlesFromPastMeasurements(z, xVec, multiPlumeSub)
-            R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVec, xVec, Ahat)
+            R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVecNotModified, xVec, Ahat)
 
             # print(Ahat)
 
@@ -356,7 +369,7 @@ def main():
         static_tf.transform.translation.x = desiredWaypointsList[waypointIndex,0]
         static_tf.transform.translation.y = desiredWaypointsList[waypointIndex,1]
         static_tf.transform.translation.z = 0.2
-        q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
+        q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0.785398)
         static_tf.transform.rotation.x = q[0]
         static_tf.transform.rotation.y = q[1]
         static_tf.transform.rotation.z = q[2]
@@ -374,19 +387,19 @@ def main():
     print("Simulation has finished")
     rospack = rospkg.RosPack()
 
-    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'theta': theta}
+    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'theta': theta, 'particlesOverTimeList': particlesOverTimeList, 'weightsOverTimeList': weightsOverTimeList, 'zVecNotModified': zVecNotModified}
 
     dateString = str(datetime.now()).replace(" ","_")
+    dateString = dateString.replace(":","%")
 
-    fullDirStringName = rospack.get_path('platform_real') + '/rasterRandom/' + dateString
+    fullDirStringName = rospack.get_path('platform_real') + '/results/rasterRandom/' + dateString
     print(fullDirStringName)
 
     if saveResults:
         pickle.dump( pickle_dictionary, open(fullDirStringName, "wb" ) )
         print("Data has been saved")
 
-    os.system('pkill roslaunch')
-
+    # os.system('pkill roslaunch')
 
 
 if __name__ == '__main__':

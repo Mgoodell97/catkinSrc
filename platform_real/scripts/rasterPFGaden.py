@@ -20,6 +20,7 @@ from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume
 # Messages
 from geometry_msgs.msg import PoseStamped, TransformStamped, Point
 from olfaction_msgs.msg import gas_sensor
+from mps_driver.msg import MPS
 
 from particle_filter.msg import particles
 from datetime import datetime
@@ -119,10 +120,10 @@ def main():
     waypointIndex = 0
     if flipXY:
         desiredWaypointsList = rasterScanGenYX([xmin, xmax], Nx, [ymin, ymax], Ny)
-        rasterString = "/rasterY/"
+        rasterString = "/results/rasterY/"
     else:
         desiredWaypointsList = rasterScanGen([xmin, xmax], Nx, [ymin, ymax], Ny)
-        rasterString = "/rasterX/"
+        rasterString = "/results/rasterX/"
 
     # =============================================================================
     # PF params
@@ -179,7 +180,10 @@ def main():
     A        = []
     alphaHat = []
     zVec     = []
+    zVecNotModified = []
     stdVec   = []
+    particlesOverTimeList = []
+    weightsOverTimeList = []
 
     # Sensor data stuff
     static_tf.header.stamp = rospy.Time.now()
@@ -236,9 +240,13 @@ def main():
         kVec.append(k)
         xVec.append(x_t)
         zVec.append(z_t)
+        zVecNotModified.append(ppm_reading)
 
         # 3. Measurement prediction
         gaussHatVec = R1_Pf.calculateXhatNumbaNew(z_t, x_t, Ahat)
+
+        particlesOverTimeList.append(np.copy(R1_Pf.xp))
+        weightsOverTimeList.append(np.copy(R1_Pf.wp))
 
         # 3.5 publish current gaussian estimate and particles
         estimatedGaussMsg.X           = (gaussHatVec[0],)
@@ -303,7 +311,7 @@ def main():
             R1_Pf.resetParticles()
             R1_Pf.wp = np.ones(NumOfParticles) * 1/NumOfParticles
             # R1_Pf.updateParticlesFromPastMeasurements(z, xVec, multiPlumeSub)
-            R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVec, xVec, Ahat)
+            R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVecNotModified, xVec, Ahat)
 
         consumedPlumesMsg.X     = Xfound
         consumedPlumesMsg.Y     = Yfound
@@ -385,10 +393,11 @@ def main():
     print("Simulation has finished")
     rospack = rospkg.RosPack()
 
-    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType}
+    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'particlesOverTimeList': particlesOverTimeList, 'weightsOverTimeList': weightsOverTimeList, 'zVecNotModified': zVecNotModified}
 
     dateString = str(datetime.now()).replace(" ","_")
-
+    dateString = dateString.replace(":","%")
+    
     fullDirStringName = rospack.get_path('platform_real') + rasterString + dateString
     print(fullDirStringName)
 

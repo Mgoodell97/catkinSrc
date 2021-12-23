@@ -176,6 +176,7 @@ def main():
     A        = []
     alphaHat = []
     zVec     = []
+    zVecNotModified = []
     stdVec   = []
 
     # Sensor data stuff
@@ -234,12 +235,12 @@ def main():
         x_t = np.array([robotSensorReadingPoseGaden.local_x, robotSensorReadingPoseGaden.local_y, robotSensorReadingPoseGaden.local_z])
 
         # 2. Get sensor reading and modifiy it with found plumes
-        # z_t = robotSensorReadingPoseGaden.raw - multiPlumeSub.getReading(x_t[0], x_t[1], x_t[2])
         z_t = robotSensorReadingPoseGaden.raw - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
 
         kVec.append(k)
         xVec.append(x_t)
         zVec.append(z_t)
+        zVecNotModified.append(robotSensorReadingPoseGaden.raw)
 
         # 3. Measurement prediction
         gaussHatVec = R1_Pf.calculateXhatNumbaNew(z_t, x_t, Ahat)
@@ -307,7 +308,7 @@ def main():
             R1_Pf.resetParticles()
             R1_Pf.wp = np.ones(NumOfParticles) * 1/NumOfParticles
             # R1_Pf.updateParticlesFromPastMeasurements(z, xVec, multiPlumeSub)
-            R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVec, xVec, Ahat)
+            R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVecNotModified, xVec, Ahat)
 
             # print(Ahat)
 
@@ -369,7 +370,7 @@ def main():
     print("Simulation has finished")
     rospack = rospkg.RosPack()
 
-    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec}
+    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'zVecNotModified': zVecNotModified}
 
     simNumberPadded = str(simNumber).zfill(3)
 
