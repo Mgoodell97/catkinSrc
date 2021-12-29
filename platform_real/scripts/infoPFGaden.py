@@ -223,6 +223,7 @@ def main():
         startTest = rospy.get_param("/startTest");
 
     k = 0
+    zPast = 0
     waypointStartTime = rospy.get_rostime()
 
     while not rospy.is_shutdown():
@@ -289,7 +290,24 @@ def main():
         # Done globally
 
         # 2. Get sensor reading and modifiy it with found plumes
-        z_t = ppm_reading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
+        if simType == 2:
+            z_t = ppm_reading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
+        elif simType == 3:
+            if ppm_reading <= -10:
+                zCurrent = -20
+            else:
+                zCurrent = ppm_reading
+
+            if zCurrent >= zPast:
+                e = 3.157/(-np.log(.1))
+            else:
+                e = 3.99/(-np.log(.1))
+
+            modifiedMPSReading = zCurrent + zPast*np.exp(-stayTime/e)
+            zPast = zCurrent
+
+            z_t = modifiedMPSReading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
+
 
         kVec.append(k)
         xVec.append(x_t)
@@ -455,7 +473,7 @@ def main():
     # datetime object containing current date and time
     dateString = str(datetime.now()).replace(" ","_")
     dateString = dateString.replace(":","%")
-    
+
     fullDirStringName = rospack.get_path('platform_real') + '/results/info/' + dateString
     print(fullDirStringName)
 
@@ -463,6 +481,7 @@ def main():
         pickle.dump( pickle_dictionary, open(fullDirStringName, "wb" ) )
         print("Data has been saved")
 
+    rospy.set_param('/releaseGas', False)
     # os.system('pkill roslaunch')
 
 

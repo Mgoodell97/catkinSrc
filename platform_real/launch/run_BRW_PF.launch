@@ -27,6 +27,7 @@
   <group ns="Robot_1">
     <include file="$(find platform_real)/launch/BRW_PF.launch">
       <arg name="withPF" default="$(arg withPF)"/>
+      <arg name="simType" default="$(arg simType)"/>
     </include>
 
     <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log"  if="$(eval simType == 2)">

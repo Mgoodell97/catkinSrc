@@ -24,6 +24,7 @@
   # Launch Robot 1 group
   <group ns="Robot_1">
     <include file="$(find platform_real)/launch/info_PF.launch">
+      <arg name="simType" default="$(arg simType)"/>
     </include>
 
     <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log"  if="$(eval simType == 2)">

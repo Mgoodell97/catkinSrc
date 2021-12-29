@@ -29,6 +29,7 @@
       <arg name="yminRaster" default="0.3"/>
       <arg name="ymaxRaster" default="2.4"/>
       <arg name="flipXY" default="True"/>
+      <arg name="simType" default="$(arg simType)"/>
     </include>
 
     <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log"  if="$(eval simType == 2)">

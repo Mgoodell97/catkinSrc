@@ -1,7 +1,12 @@
 <?xml version="1.0"?>
 <launch>
 
-  <group ns="PF">
+  <arg name="simType"        default="2"/> # 1 = gaussian, 2 = gaden, 3 = MPS
+
+  <group ns="PF" if="$(eval simType == 2)">
+    <rosparam file="$(find platform_real)/config/pfParamsGaden.yaml" />
+  </group>
+  <group ns="PF" if="$(eval simType == 3)">
     <rosparam file="$(find platform_real)/config/pfParamsReal.yaml" />
   </group>
 
