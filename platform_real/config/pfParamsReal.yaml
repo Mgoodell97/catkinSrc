@@ -1,6 +1,6 @@
 combineDistanceThreshold: 0.75
-pdf_std: 500
-confidenceThreshold: 0.3
+pdf_std: 1250
+confidenceThreshold: 0.15
 NumOfParticles: 3500
 NumberOfParticlesToReset: 20
 windDir: 0
@@ -22,17 +22,17 @@ Z_u: 0.2
 Z_l: 0.2
 
 Theta_range: 0.174533
-Theta_u: 0.523599
-Theta_l: -0.523599
+Theta_u: 0.174533
+Theta_l: -0.174533
 
-Q_u: 2.083e-4
-Q_l: 7.082e-5
+Q_u: 2.58e-4
+Q_l: 5.2e-5
 
-V_u : 3.0
-V_l : 2.0
+V_u : 4.0
+V_l : 1.0
 
-Dy_u : 5.0e-2
-Dy_l : 5.0e-3
+Dy_u : 3.8e-1
+Dy_l : 5.0e-2
 
-Dz_u : 3.0e-9
-Dz_l : 5.0e-11
+Dz_u : 3.0e-8
+Dz_l : 5.0e-9

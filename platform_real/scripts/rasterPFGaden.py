@@ -343,11 +343,12 @@ def main():
         consumedPlumesPublisher.publish(consumedPlumesMsg)
 
         # 5. Resample (if needed)
-        resampleCheck = 1/sum(R1_Pf.wp**2)
-        if (resampleCheck <= NumOfParticles/2):
-            R1_Pf.updateParticles(resample = True)
-        else:
-            R1_Pf.updateParticles(resample = False)
+        R1_Pf.updateParticles(resample = True)
+        # resampleCheck = 1/sum(R1_Pf.wp**2)
+        # if (resampleCheck <= NumOfParticles/2):
+        #     R1_Pf.updateParticles(resample = True)
+        # else:
+        #     R1_Pf.updateParticles(resample = False)
 
         A.append(np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound]))
         alphaHat.append(gaussHatVec)
