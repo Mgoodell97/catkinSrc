@@ -1,6 +1,6 @@
-combineDistanceThreshold: 0.75
-pdf_std: 1250
-confidenceThreshold: 0.15
+combineDistanceThreshold: 0.65
+pdf_std: 1000
+confidenceThreshold: 0.35
 NumOfParticles: 3500
 NumberOfParticlesToReset: 20
 windDir: 0
@@ -35,4 +35,4 @@ Dy_u : 3.8e-1
 Dy_l : 5.0e-2
 
 Dz_u : 3.0e-8
-Dz_l : 5.0e-9
+Dz_l : 5.0e-10

@@ -18,6 +18,42 @@ from scipy.spatial.distance import pdist
 # Functions
 # =============================================================================
 
+def accountForSensorDynamics(zCurrent, zPast, yPast, timeStep):
+
+    if zCurrent <= -20:
+        zCurrent = -20
+
+    if zCurrent > zPast: # rise
+        tau = 17.86
+    else: # fall
+        tau = 19.54
+
+    a = (8000/5000)/tau
+    B = 1/tau
+    gamma = 10/tau
+
+    # Working without LP
+    uDot = (zCurrent - zPast)/timeStep
+
+    zAdjusted = (uDot + zCurrent*B)/a
+
+    # With LP
+    zAdjusted = (zAdjusted*gamma + yPast)/(1+gamma)
+
+    zPast = zCurrent
+    yPast = zAdjusted
+
+    if zAdjusted <= -20:
+        zAdjusted = -20
+    elif zAdjusted >= 5000:
+        zAdjusted = 5000
+
+    return zAdjusted, zPast, yPast
+
+# =============================================================================
+#
+# =============================================================================
+
 def gaussFunc(xFunc, yFunc, zFunc, QFunc, vFunc, DyFunc, DzFunc):
     con = (QFunc/(4 * pi * xFunc * sqrt(DyFunc*DzFunc))) * exp( -vFunc/(4*xFunc) * ((yFunc**2)/DyFunc + (zFunc**2)/DzFunc))
     return con

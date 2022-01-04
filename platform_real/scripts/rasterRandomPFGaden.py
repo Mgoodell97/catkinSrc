@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 # Custom modules
 from particleFilterPackage import ParticleFilter
 from rasterScanGeneration import rasterScanGenRotate
-from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume
+from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume, accountForSensorDynamics
 
 # Messages
 from geometry_msgs.msg import PoseStamped, TransformStamped, Point
@@ -231,6 +231,7 @@ def main():
 
     k = 0
     zPast = 0
+    yPast = 0
     waypointStartTime = rospy.get_rostime()
 
     while not rospy.is_shutdown():
@@ -253,19 +254,7 @@ def main():
         if simType == 2:
             z_t = ppm_reading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
         elif simType == 3:
-            if ppm_reading <= -10:
-                zCurrent = -20
-            else:
-                zCurrent = ppm_reading
-
-            if zCurrent >= zPast:
-                e = 3.157/(-np.log(.1))
-            else:
-                e = 3.99/(-np.log(.1))
-
-            modifiedMPSReading = zCurrent + zPast*np.exp(-stayTime/e)
-            zPast = zCurrent
-
+            modifiedMPSReading, zPast, yPast = accountForSensorDynamics(ppm_reading, zPast, yPast, stayTime)
             z_t = modifiedMPSReading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
 
         kVec.append(k)
@@ -397,6 +386,28 @@ def main():
         DesiredWaypoint.pose.orientation.z = q[2]
         DesiredWaypoint.pose.orientation.w = q[3]
 
+        marker = Marker()
+        marker.header.frame_id = "map_gaden"
+        marker.header.stamp = rospy.get_rostime()
+        marker.ns = "points";
+        marker.id = 0
+        marker.type = marker.POINTS
+        marker.action = marker.ADD
+        marker.scale.x, marker.scale.y, marker.scale.z = (0.025,0.025,0.025)
+        marker.color.r = 0.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+        marker.color.a = 0.75
+        marker.pose.orientation.w = 0
+
+        for i in range(NumOfParticles/10):
+            p = Point()
+            p.x = R1_Pf.xp[i,0]
+            p.y = R1_Pf.xp[i,1]
+            p.z = R1_Pf.xp[i,2]
+            marker.points.append(p)
+
+        particlesRVIZ.publish(marker)
         global_waypoint_pub.publish(DesiredWaypoint);
         br.sendTransform(static_tf)
 

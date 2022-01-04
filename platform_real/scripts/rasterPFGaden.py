@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 # Custom modules
 from particleFilterPackage import ParticleFilter
 from rasterScanGeneration import rasterScanGen, rasterScanGenYX
-from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume
+from GaussianSensorPackage import combinePlumesNew, getReadingMultiPlume, accountForSensorDynamics
 
 # Messages
 from geometry_msgs.msg import PoseStamped, TransformStamped, Point
@@ -217,6 +217,7 @@ def main():
 
     k = 0
     zPast = 0
+    yPast = 0
     waypointStartTime = rospy.get_rostime()
 
     while not rospy.is_shutdown():
@@ -239,19 +240,7 @@ def main():
         if simType == 2:
             z_t = ppm_reading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
         elif simType == 3:
-            if ppm_reading <= -10:
-                zCurrent = -20
-            else:
-                zCurrent = ppm_reading
-
-            if zCurrent >= zPast:
-                e = 3.157/(-np.log(.1))
-            else:
-                e = 3.99/(-np.log(.1))
-
-            modifiedMPSReading = zCurrent + zPast*np.exp(-stayTime/e)
-            zPast = zCurrent
-
+            modifiedMPSReading, zPast, yPast = accountForSensorDynamics(ppm_reading, zPast, yPast, stayTime)
             z_t = modifiedMPSReading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
 
 
