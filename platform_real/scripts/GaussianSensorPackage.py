@@ -38,7 +38,7 @@ def accountForSensorDynamics(zCurrent, zPast, yPast, timeStep):
     zAdjusted = (uDot + zCurrent*B)/a
 
     # With LP
-    zAdjusted = (zAdjusted*gamma + yPast)/(1+gamma)
+    zAdjusted = (zAdjusted*gamma + yPast/timeStep)/(1/timeStep+gamma)
 
     zPast = zCurrent
     yPast = zAdjusted
