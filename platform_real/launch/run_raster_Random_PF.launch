@@ -27,6 +27,7 @@
   <group ns="Robot_1">
     <include file="$(find platform_real)/launch/raster_Random_PF.launch">
       <arg name="theta"          default="$(arg theta)"/>
+      <arg name="simType" default="$(arg simType)"/>
     </include>
 
     <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log"  if="$(eval simType == 2)">
@@ -46,7 +47,7 @@
 
   # Plot readings
   <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot1"  args="/Robot_1/Sensor_reading/raw" if="$(eval simType == 2)"/>
-  <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot1"  args="/Robot_1/mps_data/pressure" if="$(eval simType == 3)"/>
+  <!-- <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot1"  args="/Robot_1/mps_data/pressure" if="$(eval simType == 3)"/> -->
 
 
 

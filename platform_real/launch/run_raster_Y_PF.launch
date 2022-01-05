@@ -49,7 +49,7 @@
 
   # Plot readings
   <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot1"  args="/Robot_1/Sensor_reading/raw" if="$(eval simType == 2)"/>
-  <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot1"  args="/Robot_1/mps_data/pressure" if="$(eval simType == 3)"/>
+  <!-- <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot1"  args="/Robot_1/mps_data/pressure" if="$(eval simType == 3)"/> -->
 
 
 
