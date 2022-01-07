@@ -135,7 +135,7 @@ def main():
             yPltRobot1.append(Robot1_poseYft)
 
         plt.plot(xPltRobot1, yPltRobot1, color='lime')
-        plt.plot(Robot1_poseXft, Robot1_poseYft, 'D', markersize=10, color='lime')
+        plt.plot(Robot1_poseXft, Robot1_poseYft, '--D', markersize=10, color='lime')
         plt.plot(Robot1_particles.X,Robot1_particles.Y,'.', color='black')
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message="No contour levels were found within the data range.")

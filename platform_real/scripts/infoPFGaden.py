@@ -30,13 +30,10 @@ from datetime import datetime
 # Global variables
 ##################
 
-global sensorMsg_cb_flag
-global ppm_reading
-global x_t
-
 sensorMsg_cb_flag = False;
 ppm_reading = 0
 x_t = np.zeros(3)
+AHat = np.array((), dtype=np.float32)
 
 ##################
 # Functions
@@ -63,6 +60,21 @@ def MPS_cb(MPS_cb_msg):
     ppm_reading = MPS_cb_msg.pressure
     x_t = np.array([MPS_cb_msg.local_x, MPS_cb_msg.local_y, 0.2])
     sensorMsg_cb_flag = True
+
+def consumed_gauss_cb(consumed_msg):
+    global AHat
+
+    if consumed_msg.X: # check if list is empty.
+        xPlumesConsumed     = np.array(consumed_msg.X, dtype=np.float32)            # [m]
+        yPlumesConsumed     = np.array(consumed_msg.Y, dtype=np.float32)          # [m]
+        zPlumesConsumed     = np.array(consumed_msg.Z, dtype=np.float32)                # [m]
+        thetaPlumesConsumed = np.array(consumed_msg.theta, dtype=np.float32)                # [rads]
+        QsConsumed          = np.array(consumed_msg.Q, dtype=np.float32)  # [kg/s]
+        vsConsumed          = np.array(consumed_msg.v, dtype=np.float32)  # [m/s]
+        DysConsumed         = np.array(consumed_msg.Dy, dtype=np.float32)          # [m^2/s]
+        DzsConsumed         = np.array(consumed_msg.Dz, dtype=np.float32)      # [m^2/s]
+
+        AHat = np.matrix((xPlumesConsumed, yPlumesConsumed, zPlumesConsumed, thetaPlumesConsumed, QsConsumed, vsConsumed, DysConsumed, DzsConsumed), dtype=np.float32)
 
 ##################
 # Main
@@ -109,6 +121,7 @@ def main():
     global_waypoint_pub        = rospy.Publisher('desiredPos',        PoseStamped, queue_size=10)
 
     # Create subcribers
+    rospy.Subscriber("/consumedPlumes",    particles, consumed_gauss_cb)
     if simType == 2:
         rospy.Subscriber("/Robot_1/Sensor_reading", gas_sensor, GADENSensorAndPose_cb)
     elif simType == 3:
@@ -168,15 +181,15 @@ def main():
 
     R1_Pf = ParticleFilter(randomStateBoundsVec, noiseVec, pdf_std, NumOfParticles, NumberOfParticlesToReset)
 
-    Xfound     = np.array([], dtype=np.float32)
-    Yfound     = np.array([], dtype=np.float32)
-    Zfound     = np.array([], dtype=np.float32)
-    Thetafound = np.array([], dtype=np.float32)
-    Qfound     = np.array([], dtype=np.float32)
-    Vfound     = np.array([], dtype=np.float32)
-    Dyfound    = np.array([], dtype=np.float32)
-    Dzfound    = np.array([], dtype=np.float32)
-    Ahat = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
+    # Xfound     = np.array([], dtype=np.float32)
+    # Yfound     = np.array([], dtype=np.float32)
+    # Zfound     = np.array([], dtype=np.float32)
+    # Thetafound = np.array([], dtype=np.float32)
+    # Qfound     = np.array([], dtype=np.float32)
+    # Vfound     = np.array([], dtype=np.float32)
+    # Dyfound    = np.array([], dtype=np.float32)
+    # Dzfound    = np.array([], dtype=np.float32)
+    # Ahat = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
 
     # =============================================================================
     # Saving data
@@ -230,13 +243,9 @@ def main():
     while not rospy.is_shutdown():
         # Wait until new sensor reading is recieved
         while not sensorMsg_cb_flag or not (rospy.get_rostime() - waypointStartTime >= rospy.Duration(stayTime)):
-            # print("Here")
-            # rospy.sleep(stayTime)
             global_waypoint_pub.publish(DesiredWaypoint);
             br.sendTransform(static_tf)
             rate.sleep()
-            # if sensorMsg_cb_flag and (rospy.get_rostime() - waypointStartTime >= rospy.Duration(stayTime)):
-            #     break:
 
         sensorMsg_cb_flag = False
         waypointStartTime = rospy.get_rostime()
@@ -251,8 +260,6 @@ def main():
         desiredInfoVelocities = []
         desiredInfoPositions  = []
         infoVec = []
-
-        # R1.PoseVec = np.array([robotSensorReadingPoseGaden.local_x, robotSensorReadingPoseGaden.local_y, robotSensorReadingPoseGaden.local_z])
 
         for i in range(thetaVecSize):
             possibleVelocity = np.array([R1.VelVec[0] + r*np.cos(thetaVec[i]), R1.VelVec[1] + r*np.sin(thetaVec[i]), 0])
@@ -293,10 +300,10 @@ def main():
         # 2. Get sensor reading and modifiy it with found plumes
         if simType == 2:
             z_t = ppm_reading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
+
         elif simType == 3:
             modifiedMPSReading, zPast, yPast = accountForSensorDynamics(ppm_reading, zPast, yPast, stayTime)
             z_t = modifiedMPSReading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
-
 
         kVec.append(k)
         xVec.append(x_t)
@@ -354,21 +361,21 @@ def main():
             Dyfound = np.append(Dyfound, gaussHatVec[6])
             Dzfound = np.append(Dzfound, gaussHatVec[7])
 
-            if len(Xfound) > 1:
-                plumeList = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
+            # if len(Xfound) > 1:
+            #     plumeList = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
+            #
+            #     Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound = combinePlumesNew(plumeList, combineDistanceThreshold)
+            #
+            # Xfound = Xfound.astype(dtype=np.float32)
+            # Yfound = Yfound.astype(dtype=np.float32)
+            # Zfound = Zfound.astype(dtype=np.float32)
+            # Thetafound = Thetafound.astype(dtype=np.float32)
+            # Qfound = Qfound.astype(dtype=np.float32)
+            # Vfound = Vfound.astype(dtype=np.float32)
+            # Dyfound = Dyfound.astype(dtype=np.float32)
+            # Dzfound = Dzfound.astype(dtype=np.float32)
 
-                Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound = combinePlumesNew(plumeList, combineDistanceThreshold)
-
-            Xfound = Xfound.astype(dtype=np.float32)
-            Yfound = Yfound.astype(dtype=np.float32)
-            Zfound = Zfound.astype(dtype=np.float32)
-            Thetafound = Thetafound.astype(dtype=np.float32)
-            Qfound = Qfound.astype(dtype=np.float32)
-            Vfound = Vfound.astype(dtype=np.float32)
-            Dyfound = Dyfound.astype(dtype=np.float32)
-            Dzfound = Dzfound.astype(dtype=np.float32)
-
-            Ahat = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
+            # Ahat = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
             R1_Pf.resetParticles()
             R1_Pf.wp = np.ones(NumOfParticles) * 1/NumOfParticles
             R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVecNotModified, xVec, Ahat)

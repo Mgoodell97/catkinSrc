@@ -73,6 +73,8 @@
   <include file="$(find plume_sims)/launch/gaden51.launch" if="$(eval PlumeSimNumber == 51 and simType == 2)"/>
   <include file="$(find plume_sims)/launch/MPS51.launch" if="$(eval PlumeSimNumber == 51 and simType == 3)"/>
 
-
+  # 2 plume
+  <include file="$(find plume_sims)/launch/gaden61.launch" if="$(eval PlumeSimNumber == 61)"/>
+  <include file="$(find plume_sims)/launch/MPS61.launch" if="$(eval PlumeSimNumber == 61 and simType == 3)"/>
 
 </launch>

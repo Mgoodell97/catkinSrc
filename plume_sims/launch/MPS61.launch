@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+
+  <param name="plumeType" type="int" value="2"/> # 1 = gaussian, 2 = gaden, 3 = MPS
+  <rosparam param="xPlumeLoc">[0.64, 2.00]</rosparam>
+  <rosparam param="yPlumeLoc">[0.5, 1.7]</rosparam>
+
+</launch>
