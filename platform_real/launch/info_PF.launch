@@ -26,7 +26,7 @@
     <param name="ymax"     type="double"  value="$(arg ymaxRaster)"    /> # m
     <param name="stayTime" type="double"  value="$(arg stayTime)"/>
     <param name="RobotID"  type="double"  value="$(arg RobotID)" />
-    <param name="printTimeSteps"          value="False"  />
+    <param name="printTimeSteps"          value="True"  />
   </node>
 
   <node name="copter_visualization" pkg="mavros_extras" type="visualizationCustom">

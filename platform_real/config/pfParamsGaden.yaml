@@ -1,7 +1,7 @@
 combineDistanceThreshold: 0.75
 pdf_std: 500
-# confidenceThreshold: 0.3
-confidenceThreshold: 0.000000000003
+confidenceThreshold: 0.3
+# confidenceThreshold: 0.000000000003
 NumOfParticles: 3500
 NumberOfParticlesToReset: 20
 windDir: 0

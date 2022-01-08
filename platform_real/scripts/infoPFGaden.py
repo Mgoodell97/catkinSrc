@@ -33,7 +33,7 @@ from datetime import datetime
 sensorMsg_cb_flag = False;
 ppm_reading = 0
 x_t = np.zeros(3)
-AHat = np.array((), dtype=np.float32)
+AHatGlobal = np.array((), dtype=np.float32)
 
 ##################
 # Functions
@@ -62,7 +62,7 @@ def MPS_cb(MPS_cb_msg):
     sensorMsg_cb_flag = True
 
 def consumed_gauss_cb(consumed_msg):
-    global AHat
+    global AHatGlobal
 
     if consumed_msg.X: # check if list is empty.
         xPlumesConsumed     = np.array(consumed_msg.X, dtype=np.float32)            # [m]
@@ -74,7 +74,18 @@ def consumed_gauss_cb(consumed_msg):
         DysConsumed         = np.array(consumed_msg.Dy, dtype=np.float32)          # [m^2/s]
         DzsConsumed         = np.array(consumed_msg.Dz, dtype=np.float32)      # [m^2/s]
 
-        AHat = np.matrix((xPlumesConsumed, yPlumesConsumed, zPlumesConsumed, thetaPlumesConsumed, QsConsumed, vsConsumed, DysConsumed, DzsConsumed), dtype=np.float32)
+        AHatGlobal = np.matrix((xPlumesConsumed, yPlumesConsumed, zPlumesConsumed, thetaPlumesConsumed, QsConsumed, vsConsumed, DysConsumed, DzsConsumed), dtype=np.float32)
+    else:
+        Xfound     = np.array([], dtype=np.float32)
+        Yfound     = np.array([], dtype=np.float32)
+        Zfound     = np.array([], dtype=np.float32)
+        Thetafound = np.array([], dtype=np.float32)
+        Qfound     = np.array([], dtype=np.float32)
+        Vfound     = np.array([], dtype=np.float32)
+        Dyfound    = np.array([], dtype=np.float32)
+        Dzfound    = np.array([], dtype=np.float32)
+
+        AHatGlobal = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
 
 ##################
 # Main
@@ -109,6 +120,7 @@ def main():
     global sensorMsg_cb_flag
     global ppm_reading
     global x_t
+    global AHat
 
     # Set node rate
     rate = rospy.Rate(50)
@@ -118,7 +130,13 @@ def main():
     estimatedGaussianPublisher = rospy.Publisher("estimatedGaussian", particles, queue_size=10)
     consumedPlumesPublisher    = rospy.Publisher("consumedPlumes",    particles, queue_size=1)
     particlesRVIZ              = rospy.Publisher("particlesRVIZ",     Marker, queue_size=1)
-    global_waypoint_pub        = rospy.Publisher('desiredPos',        PoseStamped, queue_size=10)
+    # global_waypoint_pub        = rospy.Publisher('desiredPos',        PoseStamped, queue_size=10)
+
+    # Spoof robot pose
+    fullStringName = "/mocap_node/Robot_" + str(int(RobotID)) + "/pose"
+
+    # Create publishers
+    global_waypoint_pub        = rospy.Publisher(fullStringName,      PoseStamped, queue_size=1)
 
     # Create subcribers
     rospy.Subscriber("/consumedPlumes",    particles, consumed_gauss_cb)
@@ -181,15 +199,15 @@ def main():
 
     R1_Pf = ParticleFilter(randomStateBoundsVec, noiseVec, pdf_std, NumOfParticles, NumberOfParticlesToReset)
 
-    # Xfound     = np.array([], dtype=np.float32)
-    # Yfound     = np.array([], dtype=np.float32)
-    # Zfound     = np.array([], dtype=np.float32)
-    # Thetafound = np.array([], dtype=np.float32)
-    # Qfound     = np.array([], dtype=np.float32)
-    # Vfound     = np.array([], dtype=np.float32)
-    # Dyfound    = np.array([], dtype=np.float32)
-    # Dzfound    = np.array([], dtype=np.float32)
-    # Ahat = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
+    Xfound     = np.array([], dtype=np.float32)
+    Yfound     = np.array([], dtype=np.float32)
+    Zfound     = np.array([], dtype=np.float32)
+    Thetafound = np.array([], dtype=np.float32)
+    Qfound     = np.array([], dtype=np.float32)
+    Vfound     = np.array([], dtype=np.float32)
+    Dyfound    = np.array([], dtype=np.float32)
+    Dzfound    = np.array([], dtype=np.float32)
+    Ahat = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
 
     # =============================================================================
     # Saving data
@@ -199,6 +217,7 @@ def main():
     kVec     = []
     xVec     = []
     A        = []
+    AGlobalList  = []
     alphaHat = []
     zVec     = []
     zVecNotModified = []
@@ -243,6 +262,16 @@ def main():
     while not rospy.is_shutdown():
         # Wait until new sensor reading is recieved
         while not sensorMsg_cb_flag or not (rospy.get_rostime() - waypointStartTime >= rospy.Duration(stayTime)):
+            consumedPlumesMsg.X     = Xfound
+            consumedPlumesMsg.Y     = Yfound
+            consumedPlumesMsg.Z     = Zfound
+            consumedPlumesMsg.theta = Thetafound
+            consumedPlumesMsg.Q     = Qfound
+            consumedPlumesMsg.v     = Vfound
+            consumedPlumesMsg.Dy    = Dyfound
+            consumedPlumesMsg.Dz    = Dzfound
+
+            consumedPlumesPublisher.publish(consumedPlumesMsg)
             global_waypoint_pub.publish(DesiredWaypoint);
             br.sendTransform(static_tf)
             rate.sleep()
@@ -274,7 +303,7 @@ def main():
         for i in range(len(desiredInfoPositions)):
             xInfoDes = desiredInfoPositions[i,:]
 
-            MutualInformation = informationAtXNewNB(xInfoDes, R1_Pf.xp, R1_Pf.wp, sigma, ztMinMain, ztMaxMain, xGuass, wGuass, Ahat)
+            MutualInformation = informationAtXNewNB(xInfoDes, R1_Pf.xp, R1_Pf.wp, sigma, ztMinMain, ztMaxMain, xGuass, wGuass, AHatGlobal)
             infoVec.append(MutualInformation)
 
         infoVec = np.array(infoVec)
@@ -299,11 +328,11 @@ def main():
 
         # 2. Get sensor reading and modifiy it with found plumes
         if simType == 2:
-            z_t = ppm_reading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
+            z_t = ppm_reading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], AHatGlobal)
 
         elif simType == 3:
             modifiedMPSReading, zPast, yPast = accountForSensorDynamics(ppm_reading, zPast, yPast, stayTime)
-            z_t = modifiedMPSReading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], Ahat)
+            z_t = modifiedMPSReading - getReadingMultiPlume(x_t[0], x_t[1], x_t[2], AHatGlobal)
 
         kVec.append(k)
         xVec.append(x_t)
@@ -311,7 +340,7 @@ def main():
         zVecNotModified.append(ppm_reading)
 
         # 3. Measurement prediction
-        gaussHatVec = R1_Pf.calculateXhatNumbaNew(z_t, x_t, Ahat)
+        gaussHatVec = R1_Pf.calculateXhatNumbaNew(z_t, x_t, AHatGlobal)
 
         particlesOverTimeList.append(np.copy(R1_Pf.xp))
         weightsOverTimeList.append(np.copy(R1_Pf.wp))
@@ -378,7 +407,7 @@ def main():
             # Ahat = np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound])
             R1_Pf.resetParticles()
             R1_Pf.wp = np.ones(NumOfParticles) * 1/NumOfParticles
-            R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVecNotModified, xVec, Ahat)
+            R1_Pf.updateParticlesFromPastMeasurementsNumbaNew(zVecNotModified, xVec, AHatGlobal)
 
         consumedPlumesMsg.X     = Xfound
         consumedPlumesMsg.Y     = Yfound
@@ -402,6 +431,7 @@ def main():
         A.append(np.array([Xfound, Yfound, Zfound, Thetafound, Qfound, Vfound, Dyfound, Dzfound]))
         alphaHat.append(gaussHatVec)
         stdVec.append(R1_Pf.stdL2Norm)
+        AGlobalList.append(np.copy(AHatGlobal))
 
         # Move robot to next waypoint
         # basically
@@ -465,7 +495,7 @@ def main():
     print("Simulation has finished")
     rospack = rospkg.RosPack()
 
-    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'particlesOverTimeList': particlesOverTimeList, 'weightsOverTimeList': weightsOverTimeList, 'zVecNotModified': zVecNotModified}
+    pickle_dictionary = {'k': kVec, 'xVec': xVec, 'A': A, 'alphaHat': alphaHat, 'z': zVec, 'ATrueLocations': ATrueLocations, 'stdVec': stdVec, 'simType': simType, 'particlesOverTimeList': particlesOverTimeList, 'weightsOverTimeList': weightsOverTimeList, 'zVecNotModified': zVecNotModified, 'AGlobalList': AGlobalList}
 
     # datetime object containing current date and time
     dateString = str(datetime.now()).replace(" ","_")

@@ -70,7 +70,7 @@ def main():
     minPlot = 0.001    # For plotting only!
 
     rospy.Subscriber("/mocap_node/Robot_1/pose",  PoseStamped, Robot1_pose_cb)
-    rospy.Subscriber("consumedPlumes",    particles, consumed_gauss_cb)
+    rospy.Subscriber("/consumedPlumes",    particles, consumed_gauss_cb)
 
     xPltRobot1 = []
     yPltRobot1 = []

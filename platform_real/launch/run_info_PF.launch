@@ -18,8 +18,15 @@
   <param name="simNumber" type="int"  value="$(arg simNumber)" />
   <param name="saveResults" type="bool"  value="$(arg saveResults)" />
 
+  <group ns="PF" if="$(eval simType == 2)">
+    <rosparam file="$(find platform_real)/config/pfParamsGaden.yaml" />
+  </group>
+  <group ns="PF" if="$(eval simType == 3)">
+    <rosparam file="$(find platform_real)/config/pfParamsReal.yaml" />
+  </group>
+
   # Launch mocap
-  <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
+  <!-- <include file="$(find mocap_optitrack)/launch/mocap.launch"/> -->
 
   # Launch Robot 1 group
   <group ns="Robot_1">
@@ -41,6 +48,17 @@
     <param name="ymin"     type="double"  value="$(arg yminMap)"    /> # m
     <param name="ymax"     type="double"  value="$(arg ymaxMap)"    /> # m
   </node>
+
+  # Plot particles
+  <node name="plotMergedPlumes" pkg="platform_real" type="mergePlumePlot.py" output="screen">
+    <param name="xmin"     type="double"  value="$(arg xminMap)"    /> # m
+    <param name="xmax"     type="double"  value="$(arg xmaxMap)"    /> # m
+    <param name="ymin"     type="double"  value="$(arg yminMap)"    /> # m
+    <param name="ymax"     type="double"  value="$(arg ymaxMap)"    /> # m
+  </node>
+
+  # Merge consumed plumes particles
+  <node name="mergePlumesMaster" pkg="platform_real" type="mergePlumesMaster.py" output="screen"/>
 
   # Plot readings
   <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot1"  args="/Robot_1/Sensor_reading/raw" if="$(eval simType == 2)"/>
