@@ -24,6 +24,7 @@ import warnings
 ##################
 
 Robot1_pose = PoseStamped()
+Robot2_pose = PoseStamped()
 AHat = np.array((), dtype=np.float32)
 
 ##################
@@ -33,6 +34,10 @@ AHat = np.array((), dtype=np.float32)
 def Robot1_pose_cb(pose_cb_msg):
     global Robot1_pose
     Robot1_pose = pose_cb_msg
+
+def Robot2_pose_cb(pose_cb_msg):
+    global Robot2_pose
+    Robot2_pose = pose_cb_msg
 
 def consumed_gauss_cb(consumed_msg):
     global AHat
@@ -62,6 +67,12 @@ def main():
     xPlumeLoc = rospy.get_param("/xPlumeLoc", -100)
     yPlumeLoc = rospy.get_param("/yPlumeLoc", -100)
 
+    SpawnUAV1     = rospy.get_param("/subToR1Pose",False)
+    SpawnUAV2     = rospy.get_param("/subToR2Pose",False)
+    SpawnUAV3     = rospy.get_param("/subToR3Pose",False)
+    SpawnUAV4     = rospy.get_param("/subToR4Pose",False)
+    SpawnUAV5     = rospy.get_param("/subToR5Pose",False)
+
     # Saves dictionary entries from launch file as variables
     for key,val in map_params.items():
         exec(key + '=val')
@@ -70,10 +81,14 @@ def main():
     minPlot = 0.001    # For plotting only!
 
     rospy.Subscriber("/mocap_node/Robot_1/pose",  PoseStamped, Robot1_pose_cb)
+    rospy.Subscriber("/mocap_node/Robot_2/pose",  PoseStamped, Robot2_pose_cb)
     rospy.Subscriber("/consumedPlumes",    particles, consumed_gauss_cb)
 
     xPltRobot1 = []
     yPltRobot1 = []
+
+    xPltRobot2 = []
+    yPltRobot2 = []
 
     xPlumePlot = np.linspace(xmin, xmax, 200)
     yPlumePlot = np.linspace(ymin, ymax, 200)
@@ -101,8 +116,20 @@ def main():
             xPltRobot1.append(Robot1_poseXft)
             yPltRobot1.append(Robot1_poseYft)
 
+        Robot2_poseXft = Robot2_pose.pose.position.x
+        Robot2_poseYft = Robot2_pose.pose.position.y
+        if Robot2_poseXft != 0.0 and Robot2_poseYft != 0.0:
+            xPltRobot2.append(Robot2_poseXft)
+            yPltRobot2.append(Robot2_poseYft)
+
         plt.plot(xPltRobot1, yPltRobot1, color='lime')
         plt.plot(Robot1_poseXft, Robot1_poseYft, '--D', markersize=10, color='lime')
+
+        if SpawnUAV2 == 1:
+            plt.plot(xPltRobot2, yPltRobot2, color='hotpink')
+            plt.plot(Robot2_poseXft, Robot2_poseYft, 'D', markersize=10, color='hotpink')
+
+
 
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message="No contour levels were found within the data range.")

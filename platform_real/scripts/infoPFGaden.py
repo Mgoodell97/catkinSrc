@@ -130,13 +130,13 @@ def main():
     estimatedGaussianPublisher = rospy.Publisher("estimatedGaussian", particles, queue_size=10)
     consumedPlumesPublisher    = rospy.Publisher("consumedPlumes",    particles, queue_size=1)
     particlesRVIZ              = rospy.Publisher("particlesRVIZ",     Marker, queue_size=1)
-    # global_waypoint_pub        = rospy.Publisher('desiredPos',        PoseStamped, queue_size=10)
+    global_waypoint_pub        = rospy.Publisher('desiredPos',        PoseStamped, queue_size=10)
 
     # Spoof robot pose
-    fullStringName = "/mocap_node/Robot_" + str(int(RobotID)) + "/pose"
+    # fullStringName = "/mocap_node/Robot_" + str(int(RobotID)) + "/pose"
 
     # Create publishers
-    global_waypoint_pub        = rospy.Publisher(fullStringName,      PoseStamped, queue_size=1)
+    # global_waypoint_pub        = rospy.Publisher(fullStringName,      PoseStamped, queue_size=1)
 
     # Create subcribers
     rospy.Subscriber("/consumedPlumes",    particles, consumed_gauss_cb)
@@ -153,11 +153,11 @@ def main():
     yStart = 0.27
 
     R1 = RobotMotion(PoseVec = np.array([xStart,yStart,1]), VelVec = np.array([0,0,0]), MaxVel=0.2)
-    r = 0.125 # m/s
+    r = 0.15 # m/s
 
     xGuass, wGuass = roots_legendre(2)
 
-    thetaVecSize = 20
+    thetaVecSize = 24
     thetaVec = np.linspace(0, 2*np.pi - (2*np.pi/thetaVecSize), num=thetaVecSize)
 
     sigma = 5000
