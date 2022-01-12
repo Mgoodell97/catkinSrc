@@ -141,7 +141,8 @@ def main():
     # Create subcribers
     rospy.Subscriber("/consumedPlumes",    particles, consumed_gauss_cb)
     if simType == 2:
-        rospy.Subscriber("/Robot_1/Sensor_reading", gas_sensor, GADENSensorAndPose_cb)
+        # rospy.Subscriber("/Robot_1/Sensor_reading", gas_sensor, GADENSensorAndPose_cb)
+        rospy.Subscriber("Sensor_reading", gas_sensor, GADENSensorAndPose_cb)
     elif simType == 3:
         rospy.Subscriber("mps_data", MPS, MPS_cb)
 
@@ -228,7 +229,7 @@ def main():
     # Sensor data stuff
     static_tf.header.stamp = rospy.Time.now()
     static_tf.header.frame_id = "map_gaden"
-    static_tf.child_frame_id = "Robot_1/base_link"
+    static_tf.child_frame_id = "Robot_"+ str(int(RobotID)) +"/base_link"
     DesiredWaypoint.header.frame_id = "map_gaden"
     DesiredWaypoint.pose.position.x = R1.PoseVec[0]
     DesiredWaypoint.pose.position.y = R1.PoseVec[1]
@@ -443,7 +444,7 @@ def main():
 
         static_tf.header.stamp = rospy.Time.now()
         static_tf.header.frame_id = "map_gaden"
-        static_tf.child_frame_id = "Robot_1/base_link"
+        static_tf.child_frame_id = "Robot_"+ str(int(RobotID)) +"/base_link"
         DesiredWaypoint.header.frame_id = "map_gaden"
         DesiredWaypoint.pose.position.x = R1.PoseVec[0]
         DesiredWaypoint.pose.position.y = R1.PoseVec[1]
@@ -501,7 +502,7 @@ def main():
     dateString = str(datetime.now()).replace(" ","_")
     dateString = dateString.replace(":","%")
 
-    fullDirStringName = rospack.get_path('platform_real') + '/results/info/' + dateString
+    fullDirStringName = rospack.get_path('platform_real') + '/results/info/Robot_' + str(int(RobotID)) + '_' + dateString
     print(fullDirStringName)
 
     if saveResults:
