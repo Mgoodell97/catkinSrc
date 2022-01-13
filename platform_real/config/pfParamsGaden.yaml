@@ -1,4 +1,4 @@
-combineDistanceThreshold: 0.75
+combineDistanceThreshold: 0.8
 pdf_std: 500
 confidenceThreshold: 0.3
 # confidenceThreshold: 0.000000000003

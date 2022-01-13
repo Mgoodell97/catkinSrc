@@ -141,7 +141,6 @@ def main():
     # Create subcribers
     rospy.Subscriber("/consumedPlumes",    particles, consumed_gauss_cb)
     if simType == 2:
-        # rospy.Subscriber("/Robot_1/Sensor_reading", gas_sensor, GADENSensorAndPose_cb)
         rospy.Subscriber("Sensor_reading", gas_sensor, GADENSensorAndPose_cb)
     elif simType == 3:
         rospy.Subscriber("mps_data", MPS, MPS_cb)
@@ -150,8 +149,11 @@ def main():
     # Setup information based motion planner
     # =============================================================================
 
-    xStart = 3.5
-    yStart = 0.27
+    if RobotID == 2:
+        # xStart,yStart = 3.5 - 0.3, 0.27
+        xStart,yStart = 0.4, 2.5
+    else:
+        xStart,yStart = 3.5, 0.27
 
     R1 = RobotMotion(PoseVec = np.array([xStart,yStart,1]), VelVec = np.array([0,0,0]), MaxVel=0.2)
     r = 0.15 # m/s
