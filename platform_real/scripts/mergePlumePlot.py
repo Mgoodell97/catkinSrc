@@ -25,6 +25,7 @@ import warnings
 
 Robot1_pose = PoseStamped()
 Robot2_pose = PoseStamped()
+Robot3_pose = PoseStamped()
 AHat = np.array((), dtype=np.float32)
 
 ##################
@@ -38,6 +39,10 @@ def Robot1_pose_cb(pose_cb_msg):
 def Robot2_pose_cb(pose_cb_msg):
     global Robot2_pose
     Robot2_pose = pose_cb_msg
+
+def Robot3_pose_cb(pose_cb_msg):
+    global Robot3_pose
+    Robot3_pose = pose_cb_msg
 
 def consumed_gauss_cb(consumed_msg):
     global AHat
@@ -82,6 +87,7 @@ def main():
 
     rospy.Subscriber("/mocap_node/Robot_1/pose",  PoseStamped, Robot1_pose_cb)
     rospy.Subscriber("/mocap_node/Robot_2/pose",  PoseStamped, Robot2_pose_cb)
+    rospy.Subscriber("/mocap_node/Robot_3/pose",  PoseStamped, Robot3_pose_cb)
     rospy.Subscriber("/consumedPlumes",    particles, consumed_gauss_cb)
 
     xPltRobot1 = []
@@ -89,6 +95,9 @@ def main():
 
     xPltRobot2 = []
     yPltRobot2 = []
+
+    xPltRobot3 = []
+    yPltRobot3 = []
 
     xPlumePlot = np.linspace(xmin, xmax, 200)
     yPlumePlot = np.linspace(ymin, ymax, 200)
@@ -122,6 +131,12 @@ def main():
             xPltRobot2.append(Robot2_poseXft)
             yPltRobot2.append(Robot2_poseYft)
 
+        Robot3_poseXft = Robot3_pose.pose.position.x
+        Robot3_poseYft = Robot3_pose.pose.position.y
+        if Robot3_poseXft != 0.0 and Robot3_poseYft != 0.0:
+            xPltRobot3.append(Robot3_poseXft)
+            yPltRobot3.append(Robot3_poseYft)
+
         plt.plot(xPltRobot1, yPltRobot1, color='lime')
         plt.plot(Robot1_poseXft, Robot1_poseYft, '--D', markersize=10, color='lime')
 
@@ -129,6 +144,9 @@ def main():
             plt.plot(xPltRobot2, yPltRobot2, color='hotpink')
             plt.plot(Robot2_poseXft, Robot2_poseYft, 'D', markersize=10, color='hotpink')
 
+        if SpawnUAV3 == 1:
+            plt.plot(xPltRobot3, yPltRobot3, color='cyan')
+            plt.plot(Robot3_poseXft, Robot3_poseYft, 'D', markersize=10, color='cyan')
 
 
         with warnings.catch_warnings():

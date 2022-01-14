@@ -152,6 +152,8 @@ def main():
     if RobotID == 2:
         # xStart,yStart = 3.5 - 0.3, 0.27
         xStart,yStart = 0.4, 2.5
+    elif RobotID == 3:
+        xStart,yStart = 3.5, 2.5
     else:
         xStart,yStart = 3.5, 0.27
 
