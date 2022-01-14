@@ -2,7 +2,7 @@
 <launch>
 
   <group ns="PF">
-    <rosparam file="$(find gaden_sims)/config/pfParams10x10.yaml" />
+    <rosparam file="$(find gaden_sims)/config/pfParams10x10info.yaml" />
   </group>
 
   <arg name="RobotID"      default="1"/>
