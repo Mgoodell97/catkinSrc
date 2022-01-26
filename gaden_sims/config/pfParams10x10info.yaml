@@ -1,4 +1,4 @@
-combineDistanceThreshold: 1.75
+combineDistanceThreshold: 2
 pdf_std: 500
 confidenceThreshold: 0.3
 NumOfParticles: 3500
@@ -25,14 +25,14 @@ Theta_range: 0.174533
 Theta_u: 0.523599
 Theta_l: -0.523599
 
-Q_u: 2.083e-4
-Q_l: 7.082e-5
+Q_u: 9.083e-4
+Q_l: 1.082e-4
 
-V_u : 3.0
+V_u : 5.0
 V_l : 2.0
 
 Dy_u : 5.0e-2
 Dy_l : 5.0e-3
 
-Dz_u : 2.5e-9
+Dz_u : 1.5e-9
 Dz_l : 5.0e-11
