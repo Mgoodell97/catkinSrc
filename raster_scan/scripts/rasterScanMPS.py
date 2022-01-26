@@ -11,16 +11,16 @@ from geometry_msgs.msg import PoseStamped
 from mps_driver.msg import MPS
 
 from tf.transformations import quaternion_from_euler
+from GaussianSensorPackage import accountForSensorDynamics
 
 ##################
 # Global variables
 ##################
 
-global Robot_pose
-global ppm_reading
-
 Robot_pose = PoseStamped()
 ppm_reading = 0
+zPast = 0
+yPast = 0
 
 ##################
 # Functions
@@ -76,7 +76,9 @@ def Robot_pose_cb(pose_cb_msg):
 
 def MPS_cb(MPS_cb_msg):
     global ppm_reading
-    ppm_reading = MPS_cb_msg.pressure
+    global zPast
+    global yPast
+    ppm_reading, zPast, yPast = accountForSensorDynamics(MPS_cb_msg.pressure, zPast, yPast, 1)
 
 ##################
 # Main

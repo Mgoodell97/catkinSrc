@@ -151,9 +151,9 @@ def main():
 
     if RobotID == 2:
         # xStart,yStart = 3.5 - 0.3, 0.27
-        xStart,yStart = 0.4, 2.5
+        xStart,yStart = 3.1, 0.27
     elif RobotID == 3:
-        xStart,yStart = 3.5, 2.5
+        xStart,yStart = 3.9, 0.27
     else:
         xStart,yStart = 3.5, 0.27
 
@@ -506,7 +506,11 @@ def main():
     dateString = str(datetime.now()).replace(" ","_")
     dateString = dateString.replace(":","%")
 
-    fullDirStringName = rospack.get_path('platform_real') + '/results/info/Robot_' + str(int(RobotID)) + '_' + dateString
+    if confidenceThreshold < 0.00001:
+        fullDirStringName = rospack.get_path('platform_real_single') + '/results/info/Robot_' + str(int(RobotID)) + '_' + dateString
+    else:
+        fullDirStringName = rospack.get_path('platform_real') + '/results/info/Robot_' + str(int(RobotID)) + '_' + dateString
+
     print(fullDirStringName)
 
     if saveResults:

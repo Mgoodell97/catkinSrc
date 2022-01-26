@@ -6,7 +6,7 @@
   <arg name="subToR4Pose" default="True"/>
   <arg name="subToR5Pose" default="True"/>
 
-  <arg name="Nx" default="4"/>
+  <arg name="Nx" default="3"/>
   <arg name="Ny" default="15"/>
 
   <!-- <arg name="Nx" default="3"/>

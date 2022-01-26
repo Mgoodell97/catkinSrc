@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="PlumeSimNumber" default="51"/>
+  <arg name="simType"        default="2"/> # 1 = gaussian, 2 = gaden, 3 = MPS
+
+  <arg name="simNumber" default="1"/>
+  <arg name="saveResults" default="False"/>
+
+  <arg name="xminMap" default="0"/>
+  <arg name="xmaxMap" default="4.2"/>
+  <arg name="yminMap" default="0"/>
+  <arg name="ymaxMap" default="2.67"/>
+
+  <arg name="theta"   default="0"/>
+
+  <param name="startTest" type="bool"  value="False" />
+  <param name="simType"   value="$(arg simType)" />
+
+  <param name="simNumber" type="int"  value="$(arg simNumber)" />
+  <param name="saveResults" type="bool"  value="$(arg saveResults)" />
+
+  # Launch mocap
+  <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
+
+  # Launch Robot 1 group
+  <group ns="Robot_1">
+    <include file="$(find platform_real_single)/launch/raster_Random_PF.launch">
+      <arg name="theta"          default="$(arg theta)"/>
+      <arg name="simType" default="$(arg simType)"/>
+    </include>
+
+    <node pkg="simulated_gas_sensor" type="simulated_gas_sensor" name="fake_pid" output="log"  if="$(eval simType == 2)">
+      <param name="/sensor_model" value="31" />
+      <param name="/sensor_frame" value="pid0_frame" />
+      <param name="/fixed_frame" value="map_gaden"/>
+    </node>
+  </group>
+
+  # Plot particles
+  <node name="plotMultiPlumePF" pkg="gaden_sims" type="plotMultiPlumePF.py" output="screen">
+    <param name="xmin"     type="double"  value="$(arg xminMap)"    /> # m
+    <param name="xmax"     type="double"  value="$(arg xmaxMap)"    /> # m
+    <param name="ymin"     type="double"  value="$(arg yminMap)"    /> # m
+    <param name="ymax"     type="double"  value="$(arg ymaxMap)"    /> # m
+  </node>
+
+  # Plot readings
+  <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot1"  args="/Robot_1/Sensor_reading/raw" if="$(eval simType == 2)"/>
+  <!-- <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot1"  args="/Robot_1/mps_data/pressure" if="$(eval simType == 3)"/> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # Platform plume test!
+
+  # Create simulated sensor
+  <node pkg="tf" type="static_transform_publisher" name="ROBOTS2GADEN" args="0.0 0.0 0.0 0 0 0 map_gaden world 100" />
+  <node pkg="tf" type="static_transform_publisher" name="Robot_to_sensor1" args="0.0 0.0 0.0 0 0 0 Robot_1/base_link pid0_frame 50" />
+
+  # 1 plume
+  <include file="$(find plume_sims)/launch/gaden51.launch" if="$(eval PlumeSimNumber == 51)"/>
+  <include file="$(find plume_sims)/launch/MPS51.launch" if="$(eval PlumeSimNumber == 51 and simType == 3)"/>
+
+  # 2 plume
+  <include file="$(find plume_sims)/launch/gaden61.launch" if="$(eval PlumeSimNumber == 61)"/>
+  <include file="$(find plume_sims)/launch/MPS61.launch" if="$(eval PlumeSimNumber == 61 and simType == 3)"/>
+
+
+</launch>
