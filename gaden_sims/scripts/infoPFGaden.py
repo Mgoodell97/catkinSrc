@@ -120,7 +120,7 @@ def main():
     # r = 0.25 # m/s
 
     R1 = RobotMotion(PoseVec = np.array([xStart,yStart,1]), VelVec = np.array([0,0,0]), MaxVel=0.375)
-    r = 0.155 # m/s
+    r = 0.135 # m/s
 
 
     xGuass, wGuass = roots_legendre(2)
