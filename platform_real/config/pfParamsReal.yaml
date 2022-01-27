@@ -1,5 +1,5 @@
 combineDistanceThreshold: 0.85
-pdf_std: 1275
+pdf_std: 1250
 confidenceThreshold: 0.175
 NumOfParticles: 3500
 NumberOfParticlesToReset: 20

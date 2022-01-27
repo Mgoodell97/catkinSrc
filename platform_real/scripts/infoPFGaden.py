@@ -443,7 +443,7 @@ def main():
         # x_t = R1.PoseVec
 
         # Finish script when waypoint list runs out
-        if k == 400:
+        if k == 450:
             break
 
         static_tf.header.stamp = rospy.Time.now()
