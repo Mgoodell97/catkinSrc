@@ -1,5 +1,5 @@
 combineDistanceThreshold: 0.85
-pdf_std: 1250
+pdf_std: 1275
 confidenceThreshold: 0.175
 NumOfParticles: 3500
 NumberOfParticlesToReset: 20
@@ -16,23 +16,62 @@ X_u: 3.8
 X_l: 0.3
 
 Y_u: 2.4
-Y_l: 0.27
+Y_l: 0.23
 
-Z_u: 0.2
-Z_l: 0.2
+Z_u: 0.226
+Z_l: 0.226
 
 Theta_range: 0.174533
 Theta_u: 0.174533
 Theta_l: -0.174533
 
-Q_u: 2.58e-4
-Q_l: 5.2e-5
+Q_u: 0.5
+Q_l: 0.1
 
 V_u : 4.0
 V_l : 1.0
 
-Dy_u : 3.8e-1
-Dy_l : 5.0e-2
+Dy_u : 1.0e-1
+Dy_l : 1.0e-2
 
-Dz_u : 3.0e-8
-Dz_l : 5.0e-10
+Dz_u : 1.0e-2
+Dz_l : 1.0e-3
+
+# combineDistanceThreshold: 0.85
+# pdf_std: 1250
+# confidenceThreshold: 0.175
+# NumOfParticles: 3500
+# NumberOfParticlesToReset: 20
+# windDir: 0
+#
+# mapPercent: 0.005
+# percentTheta: 0.0055
+# percentQ: 0.015
+# percentV: 0.01
+# percentDy: 0.01
+# percentDz: 0.01
+#
+# X_u: 3.8
+# X_l: 0.3
+#
+# Y_u: 2.4
+# Y_l: 0.27
+#
+# Z_u: 0.2
+# Z_l: 0.2
+#
+# Theta_range: 0.174533
+# Theta_u: 0.174533
+# Theta_l: -0.174533
+#
+# Q_u: 2.58e-4
+# Q_l: 5.2e-5
+#
+# V_u : 4.0
+# V_l : 1.0
+#
+# Dy_u : 3.8e-1
+# Dy_l : 5.0e-2
+#
+# Dz_u : 3.0e-8
+# Dz_l : 5.0e-10
