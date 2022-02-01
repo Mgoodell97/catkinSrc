@@ -142,8 +142,10 @@ def main():
     rospy.Subscriber("/consumedPlumes",    particles, consumed_gauss_cb)
     if simType == 2:
         rospy.Subscriber("Sensor_reading", gas_sensor, GADENSensorAndPose_cb)
+        r = 0.15 # m/s
     elif simType == 3:
         rospy.Subscriber("mps_data", MPS, MPS_cb)
+        r = 0.18 # m/s
 
     # =============================================================================
     # Setup information based motion planner
@@ -155,11 +157,11 @@ def main():
     elif RobotID == 3:
         xStart,yStart = 2.3, 0.27
     else:
-        # xStart,yStart = 1.6, 0.27
-        xStart,yStart = 3.9, 0.27
+        xStart,yStart = 1.6, 0.27
+        # xStart,yStart = 3.9, 0.27
 
     R1 = RobotMotion(PoseVec = np.array([xStart,yStart,1]), VelVec = np.array([0,0,0]), MaxVel=0.2)
-    r = 0.15 # m/s
+    # r = 0.15 # m/s
 
     xGuass, wGuass = roots_legendre(2)
 
@@ -319,15 +321,15 @@ def main():
 
         R1.updatePose(1, newVelocity, poseHeight = 0.2)
 
-        if R1.PoseVec[0] > xmax:
-            R1.PoseVec[0] = xmax
+        if R1.PoseVec[0] > xmax+0.1:
+            R1.PoseVec[0] = xmax+0.1
         elif R1.PoseVec[0] < xmin:
             R1.PoseVec[0] = xmin
 
-        if R1.PoseVec[1] > ymax:
-            R1.PoseVec[1] = ymax
-        elif R1.PoseVec[1] < ymin:
-            R1.PoseVec[1] = ymin
+        if R1.PoseVec[1] > ymax+0.05:
+            R1.PoseVec[1] = ymax+0.05
+        elif R1.PoseVec[1] < ymin-0.05:
+            R1.PoseVec[1] = ymin-0.05
 
         # 1. Get Robot Pose
         # Done globally
@@ -444,7 +446,7 @@ def main():
         # x_t = R1.PoseVec
 
         # Finish script when waypoint list runs out
-        if k == 450:
+        if k == 650:
             break
 
         static_tf.header.stamp = rospy.Time.now()
