@@ -1,5 +1,45 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="subToCF1Pose" default="True"/>
+  <arg name="subToCF2Pose" default="True"/>
+  <arg name="subToCF3Pose" default="True"/>
+
   <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
-  <node name="connection_multiple" pkg="crazyflie_DARC" type="swarm_cf.py" output="screen"/>
+
+  <param name = "subToCF1Pose" value = "$(arg subToCF1Pose)" />
+  <param name = "subToCF2Pose" value = "$(arg subToCF2Pose)" />
+  <param name = "subToCF3Pose" value = "$(arg subToCF3Pose)" />
+
+  <node name="cf_swarm_wControllers" pkg="crazyflie_DARC" type="cf_swarm_wControllers.py" output="screen"/>
+
+  <!-- CF_1 -->
+  <group ns="CF_1" if="$(eval subToCF1Pose)">
+    <node name="waypoints" pkg="crazyflie_DARC" type="cf_waypoints.py" output="screen"/>
+    <param name = "CF_ID" value = "1"/>
+    <rosparam param="waypoints_x">[3.4, 2.5, 3.4, 2.5]</rosparam>
+    <rosparam param="waypoints_y">[0.5, 0.5, 0.5, 0.5]</rosparam>
+    <rosparam param="waypoints_z">[0.3, 0.3, 0.3, 0.3]</rosparam>
+    <rosparam param="waypoints_yaw">[0]</rosparam>
+  </group>
+
+  <!-- CF_2 -->
+  <group ns="CF_2" if="$(eval subToCF2Pose)">
+    <node name="waypoints" pkg="crazyflie_DARC" type="cf_waypoints.py" output="screen"/>
+    <param name = "CF_ID" value = "2"/>
+    <rosparam param="waypoints_x">[3.36,2.5,3.36,2.5]</rosparam>
+    <rosparam param="waypoints_y">[1.0,1.0,1.0,1.0]</rosparam>
+    <rosparam param="waypoints_z">[0.6,0.6,0.6,0.6]</rosparam>
+    <rosparam param="waypoints_yaw">[-2.355,0,0,0]</rosparam>
+  </group>
+
+  <!-- CF_3 -->
+  <group ns="CF_3" if="$(eval subToCF3Pose)">
+    <node name="waypoints" pkg="crazyflie_DARC" type="cf_waypoints.py" output="screen"/>
+    <param name = "CF_ID" value = "3"/>
+    <rosparam param="waypoints_x">[3.4]</rosparam>
+    <rosparam param="waypoints_y">[1.5]</rosparam>
+    <rosparam param="waypoints_z">[0.3]</rosparam>
+    <rosparam param="waypoints_yaw">[-2.355]</rosparam>
+  </group>
+
 </launch>

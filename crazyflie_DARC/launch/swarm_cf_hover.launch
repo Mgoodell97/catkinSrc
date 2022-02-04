@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
 <launch>
+
   <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
-  <node name="connection" pkg="crazyflie_DARC" type="indControl.py" output="screen"/>
+
+  <node name="hover_swarm" pkg="crazyflie_DARC" type="swarm_cf.py" output="screen"/>
+
+
+
 </launch>

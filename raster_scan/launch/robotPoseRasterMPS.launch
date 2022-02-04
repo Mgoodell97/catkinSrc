@@ -2,14 +2,14 @@
 <launch>
 
   <arg name="RobotID"      default="1"/>
-  <arg name="xmin" default="0.27"/>
-  <arg name="xmax" default="2.4"/>
-  <arg name="ymin" default="3.65"/>
-  <arg name="ymax" default="0.3"/>
-  <arg name="Nx" default="2"/>
-  <arg name="Ny" default="20"/>
-  <arg name="stayTime" default="0.05"/>
-  <arg name="flipXY" default="True"/>
+  <arg name="xmin" default="0.4"/>
+  <arg name="xmax" default="3.65"/>
+  <arg name="ymin" default="0.27"/>
+  <arg name="ymax" default="2.40"/>
+  <arg name="Nx" default="20"/>
+  <arg name="Ny" default="2"/>
+  <arg name="stayTime" default="1.1"/>
+  <arg name="flipXY" default="False"/>
 
   <!-- Fake position publisher -->
   <param name="RobotID"  type="double"  value="$(arg RobotID)" /> # m

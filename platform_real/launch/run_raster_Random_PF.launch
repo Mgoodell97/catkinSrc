@@ -80,5 +80,7 @@
   # 3 plume
   <include file="$(find plume_sims)/launch/gaden71.launch" if="$(eval PlumeSimNumber == 71)"/>
   <include file="$(find plume_sims)/launch/MPS71.launch" if="$(eval PlumeSimNumber == 71 and simType == 3)"/>
+  <include file="$(find plume_sims)/launch/gaden72.launch" if="$(eval PlumeSimNumber == 72)"/>
+  <include file="$(find plume_sims)/launch/MPS72.launch" if="$(eval PlumeSimNumber == 72 and simType == 3)"/>
 
 </launch>

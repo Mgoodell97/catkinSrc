@@ -35,7 +35,7 @@ def crazyflie3_pose_cb(pose_cb_msg):
     global crazyflie3_pose
     crazyflie3_pose = pose_cb_msg
 
-def initialize(scf):
+def initialize(scf): #initialize each cf to receive roll,pitch, thrust commands
     cf = scf.cf
     cf.commander.send_setpoint(0,0,0,0)
 
@@ -44,7 +44,7 @@ def wait_for_param_download(scf):
         time.sleep(1.0)
     print('Parameters downloaded for', scf.cf.link_uri)
 
-def run_sequence(scf,values):
+def run_sequence(scf,values): #sends info to all the cfs to do their thing
     cf = scf.cf
     cf.commander.send_setpoint(values[0],values[1],values[2],values[3])
 
@@ -52,7 +52,7 @@ def take_off(scf):
     cf = scf.cf
     cf.commander.send_setpoint(0,0,0,45000)
 
-def controller(xd,yd,zd,x,y,z,x_errori,y_errori,z_errori):
+def controller(xd,yd,zd,x,y,z,x_errori,y_errori,z_errori): #position, PID controller
     Kd = 20.0 * (10**5) * 1
     Kp = 5.5 * (10**4)
 
@@ -91,23 +91,28 @@ def main():
     global rate
     rate = rospy.Rate(120)
 
-    #Initialize crazyflies
+    #Initialize crazyflie radios
     URI1 = 'radio://0/80/2M/E7E7E7E701'
-    URI2 ='radio://0/80/2M/E7E7E7E702'
+    URI2 ='radio://0/80/2M/E7E7E7E7E7'
     URI3 ='radio://0/80/2M/E7E7E7E703'
     uris = {URI1,
             URI2,
             URI3}
+#-----------------------------Set up Subscribers---------------------------
 
     rospy.Subscriber("/mocap_node/Crazyflie_1/pose", PoseStamped, crazyflie1_pose_cb)
     rospy.Subscriber("/mocap_node/Crazyflie_2/pose", PoseStamped, crazyflie2_pose_cb)
     rospy.Subscriber("/mocap_node/Crazyflie_3/pose", PoseStamped, crazyflie3_pose_cb)
+
+#----------------------------Set up Publishers------------------------------------
 
     local_pose_pub = rospy.Publisher('Position', Pose, queue_size=10)
     Pose_pub = Pose()
     Pose_pub.position.x = 0 #thrust
     Pose_pub.position.y = 0 #error
     Pose_pub.position.z = 0 #z position
+
+#-------------------------Initialize errors----------------------------------------
 
     yerror1 = 0
     xerror1 = 0
@@ -120,7 +125,8 @@ def main():
     yerror3 = 0
     xerror3 = 0
     zerror3 = 0
-    var = 1
+
+    var = 1 #Sets desired position to just be above their starting positions
     cflib.crtp.init_drivers()
     factory = CachedCfFactory(rw_cache='./cache')
     with Swarm(uris, factory=factory) as swarm:
@@ -131,8 +137,9 @@ def main():
         #swarm.parallel(take_off)
         while(not rospy.is_shutdown() ):
             print('Running Sequence')
+
             if var == 1:
-                if crazyflie1_pose.pose.position.x != 0.0 and crazyflie1_pose.pose.position.y!=0.0:
+                if crazyflie1_pose.pose.position.x != 0.0 and crazyflie1_pose.pose.position.y!=0.0: #make sure we're actually getting something
                     xd1= crazyflie1_pose.pose.position.x
                     yd1 = crazyflie1_pose.pose.position.y
                     zd1 = 0.45
@@ -146,18 +153,6 @@ def main():
                     yd3 = crazyflie3_pose.pose.position.y
                     zd3 = 0.45
                 var = 0
-
-            # xd1 = 2.5
-            # yd1 = 1.0
-            # zd1 = 0.45
-            #
-            # xd2 = 1.5
-            # yd2 = 0.5
-            # zd2 = 0.45
-            #
-            # xd3 = 2.6
-            # yd3 = 1.5
-            # zd3 = 0.45
 
             x1=crazyflie1_pose.pose.position.x
             y1 =crazyflie1_pose.pose.position.y
@@ -183,6 +178,7 @@ def main():
             print("Roll vals",roll1,roll2,roll3)
             print("Pitch vals",pitch1,pitch2,pitch3)
             print("Thrust Vals",thrust1,thrust2,thrust3)
+
             values = {
             URI1:[(roll1,pitch1,0,math.floor(thrust1))],
             URI2:[(roll2,pitch2,0,math.floor(thrust2))],

@@ -11,6 +11,7 @@ from geometry_msgs.msg import PoseStamped
 from mps_driver.msg import MPS
 
 from tf.transformations import quaternion_from_euler
+import tf_conversions
 from GaussianSensorPackage import accountForSensorDynamics
 
 ##################
@@ -126,14 +127,23 @@ def main():
 
     rate = rospy.Rate(30)
 
-    while (not rospy.is_shutdown() or not rospy.get_param("/startTest")):
-        rate.sleep()
-        if rospy.get_param("/startTest"):
-            break
-
     # Start first waypoint right above the robot
     xWaypoint = desiredWaypointsList[waypointIndex,0]
     yWaypoint = desiredWaypointsList[waypointIndex,1]
+    q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0.785398)
+
+    while (not rospy.is_shutdown() or not rospy.get_param("/startTest")):
+        DesiredWaypoint.pose.position.x = xWaypoint
+        DesiredWaypoint.pose.position.y = yWaypoint
+        DesiredWaypoint.pose.position.z = 0 # doesn't matter for omni wheel robot (whats it going to do fly?? Am I right? sighhhhh)
+        DesiredWaypoint.pose.orientation.x = q[0]
+        DesiredWaypoint.pose.orientation.y = q[1]
+        DesiredWaypoint.pose.orientation.z = q[2]
+        DesiredWaypoint.pose.orientation.w = q[3]
+        global_waypoint_pub.publish(DesiredWaypoint);
+        rate.sleep()
+        if rospy.get_param("/startTest"):
+            break
 
     concentrationReadingList = [] # fill in list [x, y, con]
     currentConList = []
@@ -190,9 +200,6 @@ def main():
         DesiredWaypoint.pose.position.x = xWaypoint
         DesiredWaypoint.pose.position.y = yWaypoint
         DesiredWaypoint.pose.position.z = 0 # doesn't matter for omni wheel robot (whats it going to do fly?? Am I right? sighhhhh)
-
-        q = quaternion_from_euler(0, 0, 1.5708)
-
         DesiredWaypoint.pose.orientation.x = q[0]
         DesiredWaypoint.pose.orientation.y = q[1]
         DesiredWaypoint.pose.orientation.z = q[2]

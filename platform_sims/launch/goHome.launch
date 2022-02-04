@@ -19,7 +19,7 @@
   <group ns="Robot_1" if="$(eval subToR1Pose)">
     <rosparam param="waypoints_x">[3.9]</rosparam>
     <rosparam param="waypoints_y">[0.225]</rosparam>
-    <rosparam param="waypoints_yaw">[-1.57]</rosparam>
+    <rosparam param="waypoints_yaw">[-2.355]</rosparam>
 
   </group>
 
@@ -27,28 +27,28 @@
   <group ns="Robot_2" if="$(eval subToR2Pose)">
     <rosparam param="waypoints_x">[3.9]</rosparam>
     <rosparam param="waypoints_y">[0.6]</rosparam>
-    <rosparam param="waypoints_yaw">[-1.57]</rosparam>
+    <rosparam param="waypoints_yaw">[-2.355]</rosparam>
   </group>
 
   <!-- Robot_3 -->
   <group ns="Robot_3" if="$(eval subToR3Pose)">
     <rosparam param="waypoints_x">[3.9]</rosparam>
     <rosparam param="waypoints_y">[0.975]</rosparam>
-    <rosparam param="waypoints_yaw">[-1.57]</rosparam>
+    <rosparam param="waypoints_yaw">[-2.355]</rosparam>
   </group>
 
   <!-- Robot_4 -->
   <group ns="Robot_4" if="$(eval subToR4Pose)">
     <rosparam param="waypoints_x">[3.9]</rosparam>
     <rosparam param="waypoints_y">[1.35]</rosparam>
-    <rosparam param="waypoints_yaw">[-1.57]</rosparam>
+    <rosparam param="waypoints_yaw">[-2.355]</rosparam>
   </group>
 
   <!-- Robot_5 -->
   <group ns="Robot_5" if="$(eval subToR5Pose)">
     <rosparam param="waypoints_x">[3.9]</rosparam>
     <rosparam param="waypoints_y">[1.725]</rosparam>
-    <rosparam param="waypoints_yaw">[-1.57]</rosparam>
+    <rosparam param="waypoints_yaw">[-2.355]</rosparam>
   </group>
 
 </launch>

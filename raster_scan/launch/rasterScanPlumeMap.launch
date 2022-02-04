@@ -6,13 +6,15 @@
   <arg name="subToR4Pose" default="True"/>
   <arg name="subToR5Pose" default="True"/>
 
-  <arg name="Nx" default="3"/>
-  <arg name="Ny" default="15"/>
+  <arg name="Nx" default="15"/>
+  <arg name="Ny" default="3"/>
 
   <!-- <arg name="Nx" default="3"/>
   <arg name="Ny" default="3"/> -->
 
-  <arg name="stayTime" default="11"/>
+  <include file="$(find plume_sims)/launch/gaden72.launch"/>
+
+  <arg name="stayTime" default="5"/>
 
   <include file="$(find mocap_optitrack)/launch/mocap.launch"/>
 
@@ -27,9 +29,8 @@
 
   <group ns = "Robot_1">
     <include file="$(find raster_scan)/launch/robotPoseRasterMPS.launch">
-      <arg name="xmin" default="0.27"/>
-      <arg name="xmax" default="0.60631579"/>
-      <!-- <arg name="xmax" default="2.4"/> -->
+      <arg name="ymin" default="0.27"/>
+      <arg name="ymax" default="0.60631579"/>
       <arg name="Nx" default="$(arg Nx)"/>
       <arg name="Ny" default="$(arg Ny)"/>
       <arg name="stayTime" default="$(arg stayTime)"/>
@@ -39,9 +40,8 @@
 
   <group ns = "Robot_2">
     <include file="$(find raster_scan)/launch/robotPoseRasterMPS.launch">
-      <arg name="xmin" default="0.71842105"/>
-      <arg name="xmax" default="1.05473684"/>
-      <!-- <arg name="xmax" default="2.4"/> -->
+      <arg name="ymin" default="0.71842105"/>
+      <arg name="ymax" default="1.05473684"/>
       <arg name="Nx" default="$(arg Nx)"/>
       <arg name="Ny" default="$(arg Ny)"/>
       <arg name="stayTime" default="$(arg stayTime)"/>
@@ -51,9 +51,8 @@
 
   <group ns = "Robot_3">
     <include file="$(find raster_scan)/launch/robotPoseRasterMPS.launch">
-      <arg name="xmin" default="1.16684211"/>
-      <arg name="xmax" default="1.50315789"/>
-      <!-- <arg name="xmax" default="2.4"/> -->
+      <arg name="ymin" default="1.16684211"/>
+      <arg name="ymax" default="1.50315789"/>
       <arg name="Nx" default="$(arg Nx)"/>
       <arg name="Ny" default="$(arg Ny)"/>
       <arg name="stayTime" default="$(arg stayTime)"/>
@@ -63,9 +62,8 @@
 
   <group ns = "Robot_4">
     <include file="$(find raster_scan)/launch/robotPoseRasterMPS.launch">
-      <arg name="xmin" default="1.61526316"/>
-      <arg name="xmax" default="1.95157895"/>
-      <!-- <arg name="xmax" default="2.4"/> -->
+      <arg name="ymin" default="1.61526316"/>
+      <arg name="ymax" default="1.95157895"/>
       <arg name="Nx" default="$(arg Nx)"/>
       <arg name="Ny" default="$(arg Ny)"/>
       <arg name="stayTime" default="$(arg stayTime)"/>
@@ -75,9 +73,8 @@
 
   <group ns = "Robot_5">
     <include file="$(find raster_scan)/launch/robotPoseRasterMPS.launch">
-      <arg name="xmin" default="2.06368421"/>
-      <arg name="xmax" default="2.4"/>
-      <!-- <arg name="xmax" default="2.4"/> -->
+      <arg name="ymin" default="2.06368421"/>
+      <arg name="ymax" default="2.4"/>
       <arg name="Nx" default="$(arg Nx)"/>
       <arg name="Ny" default="$(arg Ny)"/>
       <arg name="stayTime" default="$(arg stayTime)"/>
